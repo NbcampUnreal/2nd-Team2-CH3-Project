@@ -1,5 +1,2 @@
-[/Script/UnrealEd.EditorLoadingSavingSettings]
-bSCCAutoAddNewFiles=False
-bAutomaticallyCheckoutOnAssetModification=True
-bPromptForCheckoutOnAssetModification=False
 show_downloads: true
+theme: jekyll-theme-slate
