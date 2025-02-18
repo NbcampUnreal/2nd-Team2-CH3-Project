@@ -1,7 +1,8 @@
-#include "Interactable/Light/InteractLight.h"
+#include "InteractLight.h"
+#include "InteractManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
-#include "InteractManager/InteractManager.h"
+
 
 AInteractLight::AInteractLight()
 {

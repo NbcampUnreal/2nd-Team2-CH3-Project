@@ -1,5 +1,5 @@
-#include "InteractManager/InteractManager.h"
-#include "Interactable/Interactable.h"
+#include "InteractManager.h"
+#include "Interactable.h"
 
 void UInteractManager::AddInteractActor(FName Key, AActor* NewActor)
 {
