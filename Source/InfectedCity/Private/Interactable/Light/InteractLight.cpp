@@ -1,5 +1,5 @@
-#include "InteractLight.h"
-#include "InteractManager.h"
+#include "Interactable/Light/InteractLight.h"
+#include "InteractManager/InteractManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 
