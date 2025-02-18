@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interactable.h"
+#include "Interactable/Interactable.h"
 #include "InteractLight.generated.h"
 
 class UPointLightComponent;
