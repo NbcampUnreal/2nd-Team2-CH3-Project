@@ -35,7 +35,7 @@ void AInteractLight::OnInteract()
 void AInteractLight::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (UInteractManager* InteractManager = GetWorld()->GetSubsystem<UInteractManager>())
 	{
 		InteractManager->AddInteractActor(TEXT("WallLight"), this);

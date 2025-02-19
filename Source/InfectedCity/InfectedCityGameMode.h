@@ -6,7 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "InfectedCityGameMode.generated.h"
 
-UCLASS(minimalapi)
+UCLASS()
 class AInfectedCityGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
