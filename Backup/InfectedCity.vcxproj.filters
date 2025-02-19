@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <None Include="..\..\InfectedCity.uproject" />
     <Filter Include="Source">
       <UniqueIdentifier>{F31BBDD1-B3E8-3BCC-9652-680E16935819}</UniqueIdentifier>
     </Filter>
-    <None Include="..\..\.editorconfig" />
-    <None Include="..\..\.gitattributes" />
-    <None Include="..\..\.gitignore" />
-    <None Include="..\..\.vsconfig" />
-    <None Include="..\..\shadertoolsconfig.json" />
     <Filter Include="Config">
       <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
     </Filter>
@@ -148,9 +142,6 @@
     <Filter Include="Source\InfectedCity">
       <UniqueIdentifier>{A86BDC0B-1CAD-3A2B-8C75-A3869B0C29FD}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\InfectedCity\Private">
-      <UniqueIdentifier>{FF77722C-2921-3837-A4F9-D587E59116A9}</UniqueIdentifier>
-    </Filter>
     <ClCompile Include="..\..\Source\InfectedCity\Private\Interactable\Interactable.cpp">
       <Filter>Source\InfectedCity\00.GameObjects\Interactable</Filter>
     </ClCompile>
@@ -160,9 +151,6 @@
     <ClCompile Include="..\..\Source\InfectedCity\Private\InteractManager\InteractManager.cpp">
       <Filter>Source\InfectedCity\01.Utility\InteractManager</Filter>
     </ClCompile>
-    <Filter Include="Source\InfectedCity\Public">
-      <UniqueIdentifier>{FE900D8A-5229-3A76-B968-72C66ABF49D4}</UniqueIdentifier>
-    </Filter>
     <None Include="..\..\Source\InfectedCity\InfectedCity.Build.cs">
       <Filter>Source\InfectedCity\99.Default</Filter>
     </None>
@@ -172,8 +160,6 @@
     <None Include="..\..\Source\InfectedCityEditor.Target.cs">
       <Filter>Source\InfectedCity\99.Default</Filter>
     </None>
-    <None Include="..\..\BackupFilter.bat" />
-    <None Include="..\..\RestoreFilter.bat" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -199,6 +185,18 @@
     </Filter>
     <Filter Include="Source\InfectedCity\00.GameObjects\EnemyCharacter">
       <UniqueIdentifier>{237c0811-96d8-422e-8702-0f835c773221}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\GameMode">
+      <UniqueIdentifier>{a5ce5cf9-c3d9-42ef-8e44-e7e6318e4616}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\GameInstance">
+      <UniqueIdentifier>{08144773-61dc-4882-88b2-a673be5c5673}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\GameState">
+      <UniqueIdentifier>{d58eb479-5052-42df-ae58-b9d3c1262e04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\PlayerController">
+      <UniqueIdentifier>{8c65e6e3-ad32-4f2b-85c5-cafca06edcd0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -240,6 +238,30 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\InfectedCity\Public\EnemyCharacter.h">
       <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\MyGameMode.h">
+      <Filter>Source\InfectedCity\01.Utility\GameMode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MyGameMode.cpp">
+      <Filter>Source\InfectedCity\01.Utility\GameMode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\InfectedCityGameInstance.h">
+      <Filter>Source\InfectedCity\01.Utility\GameInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\InfectedCityGameInstance.cpp">
+      <Filter>Source\InfectedCity\01.Utility\GameInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\InfectedCityGameState.h">
+      <Filter>Source\InfectedCity\01.Utility\GameState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\InfectedCityGameState.cpp">
+      <Filter>Source\InfectedCity\01.Utility\GameState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\InfectedCityPlayerController.h">
+      <Filter>Source\InfectedCity\01.Utility\PlayerController</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\InfectedCityPlayerController.cpp">
+      <Filter>Source\InfectedCity\01.Utility\PlayerController</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
