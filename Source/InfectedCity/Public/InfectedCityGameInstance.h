@@ -14,4 +14,12 @@ class INFECTEDCITY_API UInfectedCityGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 	
+public:
+	virtual void Init() override;
+
+	UPROPERTY()
+	UTextureRenderTarget2D* DepthRenderTarget;
+	
+	UFUNCTION()
+	UTextureRenderTarget2D* GetDepthRenderTarget();
 };
