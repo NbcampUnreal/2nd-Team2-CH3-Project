@@ -20,13 +20,7 @@ class AInfectedCityCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** 카메라를 캐릭터 뒤에 위치시키는 카메라 붐 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
-
-	/** 캐릭터 뒤에 따라오는 카메라 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
+	
 
 	/** 입력 매핑 컨텍스트 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -55,6 +49,31 @@ public:
 	AInfectedCityCharacter();
 
 protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	// Camera components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* CameraBoom; // The spring arm for TPS camera
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* TPSCameraComponent; // TPS Camera
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* FPSCameraComponent; // FPS Camera
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* RightMouseButtonAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* VKeyAction;
+	// Boolean to toggle camera modes
+	bool bIsTPSCameraActive;
+
+	// Input functions for switching between cameras
+	void SwitchToTPSCamera();
+	void SwitchToFPSCamera();
+
 	/** 캐릭터 이동을 처리하는 함수 */
 	void Move(const FInputActionValue& Value);
 
@@ -67,18 +86,21 @@ protected:
 	void StartCrouching();
 	void StopCrouching();
 
+	
+
+	// Input setup for camera switching
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void OnRightMouseButtonPressed();
+
+	// Called when V key is pressed
+	void OnVKeyPressed();
+	
+
 protected:
 	// 컨트롤러가 변경될 때 호출되는 함수
 	virtual void NotifyControllerChanged() override;
 
-	// 플레이어 입력 설정 함수
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
 
-public:
-	/** 카메라 붐을 반환하는 함수 */
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
-	/** 따라오는 카메라를 반환하는 함수 */
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	void CrouchCharacter();
 };
