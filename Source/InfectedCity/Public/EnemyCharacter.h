@@ -12,18 +12,22 @@ class INFECTEDCITY_API AEnemyCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AEnemyCharacter();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	USceneComponent* Scene;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item|Components")
+	TObjectPtr<class UPostProcessComponent> Outline;
+
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	void SetOutline(bool bValue);
 };
