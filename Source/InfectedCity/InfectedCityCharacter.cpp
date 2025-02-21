@@ -41,7 +41,7 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 	// Start with the TPS camera
-	SwitchToTPSCamera();
+//	SwitchToTPSCamera();
 
 	// 플레이어 컨트롤러 가져오기
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -73,6 +73,11 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+}
+
+void AInfectedCityCharacter::BeginPlay()
+{
+
 }
 
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

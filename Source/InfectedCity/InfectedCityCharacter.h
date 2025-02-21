@@ -46,8 +46,6 @@ protected:
 	UHUDWidget* HUDWidget;
 
 public:
-	// 생성자
-	AInfectedCityCharacter();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
 	TSubclassOf<UHUDWidget> HUDWidgetClass;
@@ -95,18 +93,11 @@ public:
 	// 무기 주울 때의 동작
 	void PickupWeapon();
 	// Input setup for camera switching
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 	void OnRightMouseButtonPressed();
 
 	// Called when V key is pressed
 	void OnVKeyPressed();
 	
-
-protected:
-	// 컨트롤러가 변경될 때 호출되는 함수
-	virtual void NotifyControllerChanged() override;
-
 	// 가까운 무기를 찾는 함수
 	AWeaponBase* FindNearestWeapon();
 };
