@@ -8,49 +8,20 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "InteractManager/InteractManager.h"
+#include "Kismet/GameplayStatics.h"
 
-DEFINE_LOG_CATEGORY(LogTemplateCharacter);
-
-//////////////////////////////////////////////////////////////////////////
-// AInfectedCityCharacter
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->bUsePawnControlRotation = true; // Allow camera to rotate with the player
-
-	// Create the TPS Camera
-	TPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TPSCamera"));
-	TPSCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach to camera boom
-
-	// Create the FPS Camera
-	FPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
-	FPSCameraComponent->SetupAttachment(RootComponent); // Attach directly to the player
-
-	// Default to TPS Camera
-	bIsTPSCameraActive = true;
-
-	// Set up input actions for camera toggling
-	PrimaryActorTick.bCanEverTick = true;
-	
-	
-	
+	// 기본 설정
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
-
-	
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
+	// 캐릭터 이동 설정
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -58,21 +29,16 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	
+	// 카메라 설정
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 400.0f;
+	CameraBoom->bUsePawnControlRotation = true;
+
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void AInfectedCityCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// Start with the TPS camera
-	SwitchToTPSCamera();
-}
-
 
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
@@ -91,8 +57,8 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -110,39 +76,24 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		// Crouching (Ctrl key)
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartCrouching);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopCrouching);
-		Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-
-		EnhancedInputComponent->BindAction(RightMouseButtonAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::OnRightMouseButtonPressed);
-
-			// V Key (for FPS Camera switch)
-		EnhancedInputComponent->BindAction(VKeyAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::OnVKeyPressed);
-		
+		// Pickup Weapon (F key)
+		EnhancedInputComponent->BindAction(PickupWeaponAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::PickupWeapon);
 	}
-	else
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
+	
 }
 
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
-		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
@@ -150,70 +101,88 @@ void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 
 void AInfectedCityCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
-		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
 
-// Start Running (Shift Key)
 void AInfectedCityCharacter::StartRunning()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // Increase walk speed for running
 }
 
-// Stop Running (Shift Key)
 void AInfectedCityCharacter::StopRunning()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 500.f; // Reset walk speed to normal
 }
 
-// Start Crouching (Ctrl Key)
 void AInfectedCityCharacter::StartCrouching()
 {
 	Crouch(); // Make the character crouch
 }
 
-// Stop Crouching (Ctrl Key)
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
 }
-void AInfectedCityCharacter::OnRightMouseButtonPressed()
+
+void AInfectedCityCharacter::PickupWeapon()
 {
-	// Switch to TPS Camera (Zoom In or Out)
-	if (!bIsTPSCameraActive)
+	AWeaponBase* NearestWeapon = FindNearestWeapon();
+	if (NearestWeapon)
 	{
-		SwitchToTPSCamera();
+		// 무기를 줍고, 인벤토리나 장비에 추가
+		CurrentWeapon = NearestWeapon;
+
+		// 무기의 충돌을 비활성화 (무기와 캐릭터 간의 충돌을 무시)
+		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
+		if (WeaponComponent)
+		{
+			// 충돌을 비활성화하여 캐릭터와의 충돌을 피함
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 비활성화
+		}
+
+		// 총이 보이도록 설정 (HiddenInGame을 false로 설정)
+		NearestWeapon->SetActorHiddenInGame(false);
+
+		// 무기를 왼손 소켓(AkGun)에 붙이기
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: 소켓 위치에 맞춰서 붙임
+		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()는 캐릭터의 Skeletal Mesh 컴포넌트
+
+		// 무기 제거 (월드에서 제거하거나 인벤토리에 추가하는 로직 구현)
+		
+		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("There are no weapons nearby"));
 	}
 }
 
-void AInfectedCityCharacter::OnVKeyPressed()
+AWeaponBase* AInfectedCityCharacter::FindNearestWeapon()
 {
-	// Switch to FPS Camera when "V" is pressed
-	if (bIsTPSCameraActive)
+	TArray<AActor*> NearbyWeapons;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBase::StaticClass(), NearbyWeapons);
+
+	AWeaponBase* NearestWeapon = nullptr;
+	float NearestDistance = FLT_MAX;
+
+	for (AActor* Actor : NearbyWeapons)
 	{
-		SwitchToFPSCamera();
+		AWeaponBase* Weapon = Cast<AWeaponBase>(Actor);
+		{
+			float Distance = FVector::Dist(GetActorLocation(), Weapon->GetActorLocation());
+			if (Distance < NearestDistance)
+			{
+				NearestWeapon = Weapon;
+				NearestDistance = Distance;
+			}
+		}
 	}
-}
 
-void AInfectedCityCharacter::SwitchToTPSCamera()
-{
-	// Activate the TPS camera and deactivate FPS camera
-	TPSCameraComponent->SetActive(true);
-	FPSCameraComponent->SetActive(false);
-	bIsTPSCameraActive = true;
-}
-
-void AInfectedCityCharacter::SwitchToFPSCamera()
-{
-	// Activate the FPS camera and deactivate TPS camera
-	FPSCameraComponent->SetActive(true);
-	TPSCameraComponent->SetActive(false);
-	bIsTPSCameraActive = false;
+	return NearestWeapon;
 }

@@ -1,7 +1,8 @@
 #include "Interactable/Light/InteractLight.h"
+#include "InteractManager/InteractManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
-#include "InteractManager/InteractManager.h"
+
 
 AInteractLight::AInteractLight()
 {
@@ -34,7 +35,7 @@ void AInteractLight::OnInteract()
 void AInteractLight::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (UInteractManager* InteractManager = GetWorld()->GetSubsystem<UInteractManager>())
 	{
 		InteractManager->AddInteractActor(TEXT("WallLight"), this);
