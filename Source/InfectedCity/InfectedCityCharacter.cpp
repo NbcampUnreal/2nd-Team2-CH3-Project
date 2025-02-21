@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "InfectedCityCharacter.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
@@ -10,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "InteractManager/InteractManager.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -18,18 +17,38 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
-	// Set size for collision capsule
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->bUsePawnControlRotation = true; // Allow camera to rotate with the player
+
+	// Create the TPS Camera
+	TPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TPSCamera"));
+	TPSCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach to camera boom
+
+	// Create the FPS Camera
+	FPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
+	FPSCameraComponent->SetupAttachment(RootComponent); // Attach directly to the player
+
+	// Default to TPS Camera
+	bIsTPSCameraActive = true;
+
+	// Set up input actions for camera toggling
+	PrimaryActorTick.bCanEverTick = true;
+	
+	
+	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
+	
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
@@ -40,22 +59,20 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+
+void AInfectedCityCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Start with the TPS camera
+	SwitchToTPSCamera();
+}
+
 
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
@@ -68,14 +85,15 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
-	}
+	}   
+	//asdfasfd
 }
 
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -85,6 +103,22 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::Look);
+
+		// Running (Shift key)
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartRunning);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopRunning);
+
+		// Crouching (Ctrl key)
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartCrouching);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopCrouching);
+		Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+
+		EnhancedInputComponent->BindAction(RightMouseButtonAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::OnRightMouseButtonPressed);
+
+			// V Key (for FPS Camera switch)
+		EnhancedInputComponent->BindAction(VKeyAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::OnVKeyPressed);
+		
 	}
 	else
 	{
@@ -105,7 +139,7 @@ void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -126,4 +160,61 @@ void AInfectedCityCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+// Start Running (Shift Key)
+void AInfectedCityCharacter::StartRunning()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // Increase walk speed for running
+}
+
+// Stop Running (Shift Key)
+void AInfectedCityCharacter::StopRunning()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 500.f; // Reset walk speed to normal
+}
+
+// Start Crouching (Ctrl Key)
+void AInfectedCityCharacter::StartCrouching()
+{
+	Crouch(); // Make the character crouch
+}
+
+// Stop Crouching (Ctrl Key)
+void AInfectedCityCharacter::StopCrouching()
+{
+	UnCrouch(); // Make the character stand up
+}
+void AInfectedCityCharacter::OnRightMouseButtonPressed()
+{
+	// Switch to TPS Camera (Zoom In or Out)
+	if (!bIsTPSCameraActive)
+	{
+		SwitchToTPSCamera();
+	}
+}
+
+void AInfectedCityCharacter::OnVKeyPressed()
+{
+	// Switch to FPS Camera when "V" is pressed
+	if (bIsTPSCameraActive)
+	{
+		SwitchToFPSCamera();
+	}
+}
+
+void AInfectedCityCharacter::SwitchToTPSCamera()
+{
+	// Activate the TPS camera and deactivate FPS camera
+	TPSCameraComponent->SetActive(true);
+	FPSCameraComponent->SetActive(false);
+	bIsTPSCameraActive = true;
+}
+
+void AInfectedCityCharacter::SwitchToFPSCamera()
+{
+	// Activate the FPS camera and deactivate TPS camera
+	FPSCameraComponent->SetActive(true);
+	TPSCameraComponent->SetActive(false);
+	bIsTPSCameraActive = false;
 }
