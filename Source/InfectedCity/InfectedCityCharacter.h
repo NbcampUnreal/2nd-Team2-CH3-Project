@@ -5,13 +5,12 @@
 #include "WeaponBase.h"
 #include "InfectedCityCharacter.generated.h"
 
+class UHUDWidget;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-
-
 
 UCLASS(config=Game)
 class AInfectedCityCharacter : public ACharacter
@@ -20,69 +19,94 @@ class AInfectedCityCharacter : public ACharacter
 
 	
 public:
-	// ±âº» »ı¼ºÀÚ
+	// ê¸°ë³¸ ìƒì„±ì
 	AInfectedCityCharacter();
 
 protected:
-	// Ä«¸Ş¶ó ºÕ (Ä³¸¯ÅÍ µÚ¿¡ Ä«¸Ş¶ó À§Ä¡ Á¶Á¤)
+	// ì¹´ë©”ë¼ ë¶ (ìºë¦­í„° ë’¤ì— ì¹´ë©”ë¼ ìœ„ì¹˜ ì¡°ì •)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
 
-	// Ä³¸¯ÅÍ µÚ¿¡ µû¶ó¿À´Â Ä«¸Ş¶ó
+	// ìºë¦­í„° ë’¤ì— ë”°ë¼ì˜¤ëŠ” ì¹´ë©”ë¼
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* FollowCamera;
 
-	// Ä³¸¯ÅÍ°¡ °¡Áö°í ÀÖ´Â ¹«±â
+	// ìºë¦­í„°ê°€ ê°€ì§€ê³  ìˆëŠ” ë¬´ê¸°
 	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 	AWeaponBase* CurrentWeapon;
-
+  
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* JumpAction; // Á¡ÇÁ ¾×¼Ç
+	UInputAction* JumpAction; // ì í”„ ì•¡ì…˜
 
-	// ¹«±â¸¦ ÁÖ¿ï ¶§ »ç¿ëÇÒ ÀÔ·Â ¾×¼Ç
+	// ë¬´ê¸°ë¥¼ ì£¼ìš¸ ë•Œ ì‚¬ìš©í•  ì…ë ¥ ì•¡ì…˜
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
+  
+	UPROPERTY()
+	UHUDWidget* HUDWidget;
 
-	// Ä³¸¯ÅÍÀÇ ÀÌµ¿ °ü·Ã ÀÔ·Â ¾×¼Çµé
+public:
+	// ìƒì„±ì
+	AInfectedCityCharacter();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
+	TSubclassOf<UHUDWidget> HUDWidgetClass;
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	// ìºë¦­í„°ì˜ ì´ë™ ê´€ë ¨ ì…ë ¥ ì•¡ì…˜ë“¤
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
 
-	// Ä³¸¯ÅÍÀÇ ½ÃÁ¡ Á¶Á¤ ÀÔ·Â ¾×¼Ç
+	// ìºë¦­í„°ì˜ ì‹œì  ì¡°ì • ì…ë ¥ ì•¡ì…˜
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
 
-	// ´Ş¸®±â ¹× ¾É±â °ü·Ã ¾×¼Ç
+	// ë‹¬ë¦¬ê¸° ë° ì•‰ê¸° ê´€ë ¨ ì•¡ì…˜
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RunAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* CrouchAction;
 
-	// ÀÔ·Â ¸ÅÇÎ ÄÁÅØ½ºÆ®
+	// ì…ë ¥ ë§¤í•‘ ì»¨í…ìŠ¤íŠ¸
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
 
 public:
-	// ÇÃ·¹ÀÌ¾î ÀÔ·Â Ã³¸® ÇÔ¼ö
+	// í”Œë ˆì´ì–´ ì…ë ¥ ì²˜ë¦¬ í•¨ìˆ˜
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// ÄÁÆ®·Ñ·¯°¡ º¯°æµÉ ¶§ È£ÃâµÇ´Â ÇÔ¼ö
+	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
 	virtual void NotifyControllerChanged() override;
 
-	// Ä³¸¯ÅÍÀÇ ÀÌµ¿ Ã³¸® ÇÔ¼ö
+	// ìºë¦­í„°ì˜ ì´ë™ ì²˜ë¦¬ í•¨ìˆ˜
 	void Move(const FInputActionValue& Value);
 
-	// Ä³¸¯ÅÍÀÇ ½ÃÁ¡ Á¶Á¤ Ã³¸® ÇÔ¼ö
+	// ìºë¦­í„°ì˜ ì‹œì  ì¡°ì • ì²˜ë¦¬ í•¨ìˆ˜
 	void Look(const FInputActionValue& Value);
 
-	// ´Ş¸®±â, ¾É±â ±â´É
+	// ë‹¬ë¦¬ê¸°, ì•‰ê¸° ê¸°ëŠ¥
 	void StartRunning();
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
 
-	// ¹«±â ÁÖ¿ï ¶§ÀÇ µ¿ÀÛ
+	// ë¬´ê¸° ì£¼ìš¸ ë•Œì˜ ë™ì‘
 	void PickupWeapon();
+	// Input setup for camera switching
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// °¡±î¿î ¹«±â¸¦ Ã£´Â ÇÔ¼ö
+	void OnRightMouseButtonPressed();
+
+	// Called when V key is pressed
+	void OnVKeyPressed();
+	
+
+protected:
+	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+	virtual void NotifyControllerChanged() override;
+
+	// ê°€ê¹Œìš´ ë¬´ê¸°ë¥¼ ì°¾ëŠ” í•¨ìˆ˜
 	AWeaponBase* FindNearestWeapon();
 };

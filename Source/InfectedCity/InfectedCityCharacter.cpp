@@ -9,17 +9,19 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "InteractManager/InteractManager.h"
+#include "HUDWidget.h"
+#include "Blueprint/UserWidget.h"
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
-	// ±âº» ¼³Á¤
+	// ê¸°ë³¸ ì„¤ì •
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Ä³¸¯ÅÍ ÀÌµ¿ ¼³Á¤
+	// ìºë¦­í„° ì´ë™ ì„¤ì •
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 700.f;
@@ -29,7 +31,7 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Ä«¸Ş¶ó ¼³Á¤
+	// ì¹´ë©”ë¼ ì„¤ì •
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f;
@@ -38,6 +40,25 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+	// Start with the TPS camera
+	SwitchToTPSCamera();
+
+	// í”Œë ˆì´ì–´ ì»¨íŠ¸ë¡¤ëŸ¬ ê°€ì ¸ì˜¤ê¸°
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && HUDWidgetClass)
+	{
+		// HUD ìœ„ì ¯ ìƒì„±
+		HUDWidget = CreateWidget<UHUDWidget>(PlayerController, HUDWidgetClass);
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
+			//UE_LOG(LogTemp, Warning, TEXT("HUD ìœ„ì ¯ì´ ì„±ê³µì ìœ¼ë¡œ ì¶”ê°€ë¨"));
+		}
+		else
+		{
+			//UE_LOG(LogTemp, Error, TEXT("HUD ìœ„ì ¯ ìƒì„± ì‹¤íŒ¨"));
+		}
+	}
 }
 
 void AInfectedCityCharacter::NotifyControllerChanged()
@@ -123,11 +144,21 @@ void AInfectedCityCharacter::StopRunning()
 void AInfectedCityCharacter::StartCrouching()
 {
 	Crouch(); // Make the character crouch
+
+	if (HUDWidget)
+	{
+		HUDWidget->SetCrouchState(true);
+	}
 }
 
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
+
+	if (HUDWidget)
+	{
+		HUDWidget->SetCrouchState(false);
+	}
 }
 
 void AInfectedCityCharacter::PickupWeapon()
@@ -135,25 +166,25 @@ void AInfectedCityCharacter::PickupWeapon()
 	AWeaponBase* NearestWeapon = FindNearestWeapon();
 	if (NearestWeapon)
 	{
-		// ¹«±â¸¦ Áİ°í, ÀÎº¥Åä¸®³ª Àåºñ¿¡ Ãß°¡
+		// ë¬´ê¸°ë¥¼ ì¤ê³ , ì¸ë²¤í† ë¦¬ë‚˜ ì¥ë¹„ì— ì¶”ê°€
 		CurrentWeapon = NearestWeapon;
 
-		// ¹«±âÀÇ Ãæµ¹À» ºñÈ°¼ºÈ­ (¹«±â¿Í Ä³¸¯ÅÍ °£ÀÇ Ãæµ¹À» ¹«½Ã)
+		// ë¬´ê¸°ì˜ ì¶©ëŒì„ ë¹„í™œì„±í™” (ë¬´ê¸°ì™€ ìºë¦­í„° ê°„ì˜ ì¶©ëŒì„ ë¬´ì‹œ)
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			// Ãæµ¹À» ºñÈ°¼ºÈ­ÇÏ¿© Ä³¸¯ÅÍ¿ÍÀÇ Ãæµ¹À» ÇÇÇÔ
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // Ãæµ¹ ºñÈ°¼ºÈ­
+			// ì¶©ëŒì„ ë¹„í™œì„±í™”í•˜ì—¬ ìºë¦­í„°ì™€ì˜ ì¶©ëŒì„ í”¼í•¨
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // ì¶©ëŒ ë¹„í™œì„±í™”
 		}
 
-		// ÃÑÀÌ º¸ÀÌµµ·Ï ¼³Á¤ (HiddenInGameÀ» false·Î ¼³Á¤)
+		// ì´ì´ ë³´ì´ë„ë¡ ì„¤ì • (HiddenInGameì„ falseë¡œ ì„¤ì •)
 		NearestWeapon->SetActorHiddenInGame(false);
 
-		// ¹«±â¸¦ ¿Ş¼Õ ¼ÒÄÏ(AkGun)¿¡ ºÙÀÌ±â
-		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ¼ÒÄÏ À§Ä¡¿¡ ¸ÂÃç¼­ ºÙÀÓ
-		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()´Â Ä³¸¯ÅÍÀÇ Skeletal Mesh ÄÄÆ÷³ÍÆ®
+		// ë¬´ê¸°ë¥¼ ì™¼ì† ì†Œì¼“(AkGun)ì— ë¶™ì´ê¸°
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ì†Œì¼“ ìœ„ì¹˜ì— ë§ì¶°ì„œ ë¶™ì„
+		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()ëŠ” ìºë¦­í„°ì˜ Skeletal Mesh ì»´í¬ë„ŒíŠ¸
 
-		// ¹«±â Á¦°Å (¿ùµå¿¡¼­ Á¦°ÅÇÏ°Å³ª ÀÎº¥Åä¸®¿¡ Ãß°¡ÇÏ´Â ·ÎÁ÷ ±¸Çö)
+		// ë¬´ê¸° ì œê±° (ì›”ë“œì—ì„œ ì œê±°í•˜ê±°ë‚˜ ì¸ë²¤í† ë¦¬ì— ì¶”ê°€í•˜ëŠ” ë¡œì§ êµ¬í˜„)
 		
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
