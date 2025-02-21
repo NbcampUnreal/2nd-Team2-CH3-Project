@@ -17,7 +17,26 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
-	// Set size for collision capsule
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->bUsePawnControlRotation = true; // Allow camera to rotate with the player
+
+	// Create the TPS Camera
+	TPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TPSCamera"));
+	TPSCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach to camera boom
+
+	// Create the FPS Camera
+	FPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
+	FPSCameraComponent->SetupAttachment(RootComponent); // Attach directly to the player
+
+	// Default to TPS Camera
+	bIsTPSCameraActive = true;
+
+	// Set up input actions for camera toggling
+	PrimaryActorTick.bCanEverTick = true;
+	
+	
+	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
@@ -40,19 +59,20 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+
+void AInfectedCityCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Start with the TPS camera
+	SwitchToTPSCamera();
+}
+
 
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
@@ -90,6 +110,14 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		// Crouching (Ctrl key)
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartCrouching);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopCrouching);
+		Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+
+		EnhancedInputComponent->BindAction(RightMouseButtonAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::OnRightMouseButtonPressed);
+
+			// V Key (for FPS Camera switch)
+		EnhancedInputComponent->BindAction(VKeyAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::OnVKeyPressed);
+		
 	}
 	else
 	{
@@ -155,4 +183,37 @@ void AInfectedCityCharacter::StartCrouching()
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
+}
+void AInfectedCityCharacter::OnRightMouseButtonPressed()
+{
+	// Switch to TPS Camera (Zoom In or Out)
+	if (!bIsTPSCameraActive)
+	{
+		SwitchToTPSCamera();
+	}
+}
+
+void AInfectedCityCharacter::OnVKeyPressed()
+{
+	// Switch to FPS Camera when "V" is pressed
+	if (bIsTPSCameraActive)
+	{
+		SwitchToFPSCamera();
+	}
+}
+
+void AInfectedCityCharacter::SwitchToTPSCamera()
+{
+	// Activate the TPS camera and deactivate FPS camera
+	TPSCameraComponent->SetActive(true);
+	FPSCameraComponent->SetActive(false);
+	bIsTPSCameraActive = true;
+}
+
+void AInfectedCityCharacter::SwitchToFPSCamera()
+{
+	// Activate the FPS camera and deactivate TPS camera
+	FPSCameraComponent->SetActive(true);
+	TPSCameraComponent->SetActive(false);
+	bIsTPSCameraActive = false;
 }
