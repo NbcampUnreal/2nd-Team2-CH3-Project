@@ -85,7 +85,8 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
-	}
+	}   
+	//asdfasfd
 }
 
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
