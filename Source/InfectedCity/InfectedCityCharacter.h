@@ -1,10 +1,8 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Logging/LogMacros.h"
+#include "WeaponBase.h"
 #include "InfectedCityCharacter.generated.h"
 
 class UHUDWidget;
@@ -14,42 +12,41 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
-
 UCLASS(config=Game)
 class AInfectedCityCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 	
+public:
+	// ê¸°ë³¸ ìƒì„±ì
+	AInfectedCityCharacter();
 
-	/** ÀÔ·Â ¸ÅÇÎ ÄÁÅØ½ºÆ® */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext;
+protected:
+	// ì¹´ë©”ë¼ ë¶ (ìºë¦­í„° ë’¤ì— ì¹´ë©”ë¼ ìœ„ì¹˜ ì¡°ì •)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	USpringArmComponent* CameraBoom;
 
-	/** Á¡ÇÁ ÀÔ·Â ¾×¼Ç */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
+	// ìºë¦­í„° ë’¤ì— ë”°ë¼ì˜¤ëŠ” ì¹´ë©”ë¼
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	UCameraComponent* FollowCamera;
 
-	/** ÀÌµ¿ ÀÔ·Â ¾×¼Ç */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+	// ìºë¦­í„°ê°€ ê°€ì§€ê³  ìˆëŠ” ë¬´ê¸°
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
+	AWeaponBase* CurrentWeapon;
+  
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* JumpAction; // ì í”„ ì•¡ì…˜
 
-	/** ½ÃÁ¡ Á¶Á¤ ÀÔ·Â ¾×¼Ç */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
-
-	// ´Ş¸®±â¿Í ¾É±â ÀÔ·Â ¾×¼Ç Ãß°¡
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* RunAction;  // Shift Å°·Î ´Ş¸®±â
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CrouchAction;  // Ctrl Å°·Î ¾É±â
-
+	// ë¬´ê¸°ë¥¼ ì£¼ìš¸ ë•Œ ì‚¬ìš©í•  ì…ë ¥ ì•¡ì…˜
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* PickupWeaponAction;
+  
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
 
 public:
-	// »ı¼ºÀÚ
+	// ìƒì„±ì
 	AInfectedCityCharacter();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
@@ -58,41 +55,45 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	// ìºë¦­í„°ì˜ ì´ë™ ê´€ë ¨ ì…ë ¥ ì•¡ì…˜ë“¤
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* MoveAction;
 
-	// Camera components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	USpringArmComponent* CameraBoom; // The spring arm for TPS camera
+	// ìºë¦­í„°ì˜ ì‹œì  ì¡°ì • ì…ë ¥ ì•¡ì…˜
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* LookAction;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* TPSCameraComponent; // TPS Camera
+	// ë‹¬ë¦¬ê¸° ë° ì•‰ê¸° ê´€ë ¨ ì•¡ì…˜
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* RunAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* CrouchAction;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* FPSCameraComponent; // FPS Camera
+	// ì…ë ¥ ë§¤í•‘ ì»¨í…ìŠ¤íŠ¸
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputMappingContext* DefaultMappingContext;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* RightMouseButtonAction;
+public:
+	// í”Œë ˆì´ì–´ ì…ë ¥ ì²˜ë¦¬ í•¨ìˆ˜
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* VKeyAction;
-	// Boolean to toggle camera modes
-	bool bIsTPSCameraActive;
+	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+	virtual void NotifyControllerChanged() override;
 
-	// Input functions for switching between cameras
-	void SwitchToTPSCamera();
-	void SwitchToFPSCamera();
-
-	/** Ä³¸¯ÅÍ ÀÌµ¿À» Ã³¸®ÇÏ´Â ÇÔ¼ö */
+	// ìºë¦­í„°ì˜ ì´ë™ ì²˜ë¦¬ í•¨ìˆ˜
 	void Move(const FInputActionValue& Value);
 
-	/** Ä³¸¯ÅÍ ½ÃÁ¡ Á¶Á¤À» Ã³¸®ÇÏ´Â ÇÔ¼ö */
+	// ìºë¦­í„°ì˜ ì‹œì  ì¡°ì • ì²˜ë¦¬ í•¨ìˆ˜
 	void Look(const FInputActionValue& Value);
 
-	// ´Ş¸®±â, ¾É±â ±â´É
+	// ë‹¬ë¦¬ê¸°, ì•‰ê¸° ê¸°ëŠ¥
 	void StartRunning();
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
 
+	// ë¬´ê¸° ì£¼ìš¸ ë•Œì˜ ë™ì‘
+	void PickupWeapon();
 	// Input setup for camera switching
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -103,9 +104,9 @@ protected:
 	
 
 protected:
-	// ÄÁÆ®·Ñ·¯°¡ º¯°æµÉ ¶§ È£ÃâµÇ´Â ÇÔ¼ö
+	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
 	virtual void NotifyControllerChanged() override;
 
-	
-
+	// ê°€ê¹Œìš´ ë¬´ê¸°ë¥¼ ì°¾ëŠ” í•¨ìˆ˜
+	AWeaponBase* FindNearestWeapon();
 };
