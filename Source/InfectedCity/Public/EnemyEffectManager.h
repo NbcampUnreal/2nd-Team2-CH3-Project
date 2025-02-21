@@ -35,7 +35,6 @@ private:
 	void SetupSceneCapture();
 	void DetectActorAtMouseCursor();
 	void DetectActorAtCenter();
-	AActor* GetRootParentActor(AActor* Actor);
 
 	class AEnemyCharacter* EnemyCharacter{ nullptr };
 };

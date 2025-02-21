@@ -190,13 +190,3 @@ void AEnemyEffectManager::DetectActorAtCenter()
         }
     }
 }
-
-AActor* AEnemyEffectManager::GetRootParentActor(AActor* Actor)
-{
-    AActor* ParentActor = Actor;
-    while (ParentActor->GetAttachParentActor() != nullptr)
-    {
-        ParentActor = ParentActor->GetAttachParentActor();
-    }
-    return ParentActor;
-}
