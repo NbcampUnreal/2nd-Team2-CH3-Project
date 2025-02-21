@@ -160,6 +160,15 @@
     <None Include="..\..\Source\InfectedCityEditor.Target.cs">
       <Filter>Source\InfectedCity\99.Default</Filter>
     </None>
+    <Filter Include="Source\InfectedCity\01.Utility\EnemyEffectManager">
+      <UniqueIdentifier>{3fa8b6e7-3b55-405c-9b62-8b66152e4417}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\98.Defines">
+      <UniqueIdentifier>{d653a606-ebdb-448c-8e48-94b273945fd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\UI">
+      <UniqueIdentifier>{4aac3c4f-77d6-4b9a-a8f7-47e43779218a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -263,5 +272,21 @@
     <ClCompile Include="..\..\Source\InfectedCity\Private\InfectedCityPlayerController.cpp">
       <Filter>Source\InfectedCity\01.Utility\PlayerController</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\EnemyEffectManager.h">
+      <Filter>Source\InfectedCity\01.Utility\EnemyEffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\EnemyEffectManager.cpp">
+      <Filter>Source\InfectedCity\01.Utility\EnemyEffectManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\InfectedCity.uproject" />
+    <None Include="..\..\.editorconfig" />
+    <None Include="..\..\.gitattributes" />
+    <None Include="..\..\.gitignore" />
+    <None Include="..\..\.vsconfig" />
+    <None Include="..\..\BackupFilter.bat" />
+    <None Include="..\..\RestoreFilter.bat" />
+    <None Include="..\..\shadertoolsconfig.json" />
   </ItemGroup>
 </Project>

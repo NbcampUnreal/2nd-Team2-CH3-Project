@@ -9,6 +9,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "InteractManager/InteractManager.h"
+#include "HUDWidget.h"
+#include "Blueprint/UserWidget.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -71,6 +74,23 @@ void AInfectedCityCharacter::BeginPlay()
 
 	// Start with the TPS camera
 	SwitchToTPSCamera();
+
+	// 플레이어 컨트롤러 가져오기
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && HUDWidgetClass)
+	{
+		// HUD 위젯 생성
+		HUDWidget = CreateWidget<UHUDWidget>(PlayerController, HUDWidgetClass);
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
+			//UE_LOG(LogTemp, Warning, TEXT("HUD 위젯이 성공적으로 추가됨"));
+		}
+		else
+		{
+			//UE_LOG(LogTemp, Error, TEXT("HUD 위젯 생성 실패"));
+		}
+	}
 }
 
 
@@ -178,12 +198,22 @@ void AInfectedCityCharacter::StopRunning()
 void AInfectedCityCharacter::StartCrouching()
 {
 	Crouch(); // Make the character crouch
+
+	if (HUDWidget)
+	{
+		HUDWidget->SetCrouchState(true);
+	}
 }
 
 // Stop Crouching (Ctrl Key)
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
+
+	if (HUDWidget)
+	{
+		HUDWidget->SetCrouchState(false);
+	}
 }
 void AInfectedCityCharacter::OnRightMouseButtonPressed()
 {

@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "InfectedCityCharacter.generated.h"
 
+class UHUDWidget;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -44,9 +45,15 @@ class AInfectedCityCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;  // Ctrl 키로 앉기
 
+	UPROPERTY()
+	UHUDWidget* HUDWidget;
+
 public:
 	// 생성자
 	AInfectedCityCharacter();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
+	TSubclassOf<UHUDWidget> HUDWidgetClass;
 
 protected:
 	// Called when the game starts or when spawned
@@ -85,8 +92,6 @@ protected:
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
-
-	
 
 	// Input setup for camera switching
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
