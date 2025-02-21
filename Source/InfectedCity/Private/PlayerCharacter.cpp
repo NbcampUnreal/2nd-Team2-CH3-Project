@@ -25,7 +25,7 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	//asdfasdfgaergkjaerkgjaejrkgjakl;ergjkl;argejkl;aregjkl;aegrkjl;aegr
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
