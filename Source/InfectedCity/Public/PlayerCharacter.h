@@ -81,5 +81,5 @@ public:
 
 	/** 따라오는 카메라를 반환하는 함수 */
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	void CrouchCharacter();
+
 };
