@@ -8,14 +8,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-<<<<<<< HEAD
 #include "InteractManager/InteractManager.h"
 #include "HUDWidget.h"
 #include "Blueprint/UserWidget.h"
-
-=======
 #include "Kismet/GameplayStatics.h"
->>>>>>> main2
 
 
 AInfectedCityCharacter::AInfectedCityCharacter()
@@ -47,7 +43,7 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 }
 
-<<<<<<< HEAD
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -56,7 +52,7 @@ void AInfectedCityCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	// Start with the TPS camera
-	SwitchToTPSCamera();
+	//SwitchToTPSCamera();
 
 	// 플레이어 컨트롤러 가져오기
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -77,8 +73,6 @@ void AInfectedCityCharacter::BeginPlay()
 }
 
 
-=======
->>>>>>> main2
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();

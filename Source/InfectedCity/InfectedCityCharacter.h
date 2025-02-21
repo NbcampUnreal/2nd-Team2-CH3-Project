@@ -19,41 +19,21 @@ class AInfectedCityCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	
-<<<<<<< HEAD
 
 	/** 입력 매핑 컨텍스트 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	/** 점프 입력 액션 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
-
-	/** 이동 입력 액션 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
-
-	/** 시점 조정 입력 액션 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
-
-	// 달리기와 앉기 입력 액션 추가
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* RunAction;  // Shift 키로 달리기
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CrouchAction;  // Ctrl 키로 앉기
-
+	
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
 
-=======
->>>>>>> main2
+
 public:
 	// 기본 생성자
 	AInfectedCityCharacter();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = UI)
 	TSubclassOf<UHUDWidget> HUDWidgetClass;
 
 protected:
@@ -90,9 +70,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* CrouchAction;
 
-	// 입력 매핑 컨텍스트
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputMappingContext* DefaultMappingContext;
 
 public:
 	// 플레이어 입력 처리 함수
@@ -113,9 +90,7 @@ public:
 	void StartCrouching();
 	void StopCrouching();
 
-<<<<<<< HEAD
-	// Input setup for camera switching
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
 
 	void OnRightMouseButtonPressed();
 
@@ -124,14 +99,11 @@ public:
 	
 
 protected:
-	// 컨트롤러가 변경될 때 호출되는 함수
-	virtual void NotifyControllerChanged() override;
 
-	
-=======
+
 	// 무기 주울 때의 동작
 	void PickupWeapon();
->>>>>>> main2
+
 
 	// 가까운 무기를 찾는 함수
 	AWeaponBase* FindNearestWeapon();
