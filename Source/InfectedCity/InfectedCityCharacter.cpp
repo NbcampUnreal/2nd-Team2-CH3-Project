@@ -9,19 +9,20 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
-#include "InteractManager/InteractManager.h"
 #include "HUDWidget.h"
+#include "InteractManager/InteractManager.h"
 #include "Blueprint/UserWidget.h"
+
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
-	// ê¸°ë³¸ ì„¤ì •
+	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// ìºë¦­í„° ì´ë™ ì„¤ì •
+	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 700.f;
@@ -31,7 +32,7 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// ì¹´ë©”ë¼ ì„¤ì •
+	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f;
@@ -40,6 +41,26 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+
+	//new camera
+	SecondCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SecondCameraBoom"));
+	SecondCameraBoom->SetupAttachment(RootComponent);
+	SecondCameraBoom->TargetArmLength = 600.0f;  // »õ Ä«¸Ş¶óÀÇ ±æÀÌ¸¦ ±âÁ¸°ú ´Ù¸£°Ô ¼³Á¤
+	SecondCameraBoom->bUsePawnControlRotation = true;
+
+	SecondFollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("SecondFollowCamera"));
+	SecondFollowCamera->SetupAttachment(SecondCameraBoom, USpringArmComponent::SocketName);
+	SecondFollowCamera->bUsePawnControlRotation = false; // Ä«¸Ş¶ó´Â È¸ÀüÇÏÁö ¾ÊÀ½
+	
+
+}
+void AInfectedCityCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	
+	
 }
 
 void AInfectedCityCharacter::NotifyControllerChanged()
@@ -96,10 +117,75 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Pickup Weapon (F key)
 		EnhancedInputComponent->BindAction(PickupWeaponAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::PickupWeapon);
+
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartAiming);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopAiming);
+
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StartShoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StopShoot);
 	}
 	
 }
 
+void AInfectedCityCharacter::StartAiming()
+{
+	bIsAiming = true;
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		PlayerController->bShowMouseCursor = true;  // ¸¶¿ì½º Ä¿¼­ º¸ÀÌ°Ô ¼³Á¤
+		RotateCharacterToMouseCursor();  // ¸¶¿ì½º¸¦ µû¶ó Ä³¸¯ÅÍ È¸Àü
+	}
+
+	// ±âÁ¸ Ä«¸Ş¶ó¿¡¼­ »õ·Î¿î Ä«¸Ş¶ó·Î ÀüÈ¯
+	FollowCamera->Deactivate();
+	SecondFollowCamera->Activate();
+
+	// »õ·Î¿î Ä«¸Ş¶ó·Î ÁÜ ÀÎ
+	SecondFollowCamera->SetFieldOfView(FMath::FInterpTo(SecondFollowCamera->FieldOfView, ZoomedFOV, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed));
+
+	// ¸¶¿ì½º¸¦ µû¶ó È¸Àü
+	RotateCharacterToMouseCursor();
+}
+
+void AInfectedCityCharacter::StopAiming()
+{
+	bIsAiming = false;
+
+	// »õ·Î¿î Ä«¸Ş¶ó¿¡¼­ ±âÁ¸ Ä«¸Ş¶ó·Î ÀüÈ¯
+	SecondFollowCamera->Deactivate();
+	FollowCamera->Activate();
+
+	// ±âÁ¸ Ä«¸Ş¶ó·Î ÁÜ ¾Æ¿ô
+	FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DefaultFOV, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed));
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		PlayerController->bShowMouseCursor = false;  // ¸¶¿ì½º Ä¿¼­ ¼û±â±â
+	}
+}
+
+void AInfectedCityCharacter::StartShoot()
+{
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->bShowMouseCursor = true;  // ¸¶¿ì½º Ä¿¼­ º¸ÀÌ°Ô ¼³Á¤
+		RotateCharacterToMouseCursor();  // ¸¶¿ì½º¸¦ µû¶ó Ä³¸¯ÅÍ È¸Àü
+	}
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire();
+	}
+}
+void AInfectedCityCharacter::StopShoot()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->bShowMouseCursor = false;  // ¸¶¿ì½º Ä¿¼­ ¼û±â±â
+	}
+
+}
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -122,11 +208,17 @@ void AInfectedCityCharacter::Look(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		
+		AddControllerYawInput(LookAxisVector.X); 
+		AddControllerPitchInput(LookAxisVector.Y); 
 	}
 }
 
+bool AInfectedCityCharacter::BHASRifle() const
+{
+	
+	return CurrentWeapon != nullptr && CurrentWeapon->IsA(AWeaponBase::StaticClass());  // ARifleWeaponÀº ¼ÒÃÑ Å¬·¡½º¸¦ ³ªÅ¸³½´Ù°í °¡Á¤
+}
 void AInfectedCityCharacter::StartRunning()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // Increase walk speed for running
@@ -135,21 +227,34 @@ void AInfectedCityCharacter::StartRunning()
 void AInfectedCityCharacter::StopRunning()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 500.f; // Reset walk speed to normal
+
 }
 
 void AInfectedCityCharacter::StartCrouching()
 {
-	Crouch(); // Make the character crouch
 
-	if (HUDWidget)
-	{
-		HUDWidget->SetCrouchState(true);
-	}
+    if (!GetCharacterMovement()->IsFalling())  
+    {
+        Crouch(); 
+		if (HUDWidget)
+		{
+			HUDWidget->SetCrouchState(true);
+		}
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("Cannot crouch while jumping"));
+    }
+
+
+
 }
 
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
+
+
 
 	if (HUDWidget)
 	{
@@ -162,25 +267,25 @@ void AInfectedCityCharacter::PickupWeapon()
 	AWeaponBase* NearestWeapon = FindNearestWeapon();
 	if (NearestWeapon)
 	{
-		// ë¬´ê¸°ë¥¼ ì¤ê³ , ì¸ë²¤í† ë¦¬ë‚˜ ì¥ë¹„ì— ì¶”ê°€
+		
 		CurrentWeapon = NearestWeapon;
 
-		// ë¬´ê¸°ì˜ ì¶©ëŒì„ ë¹„í™œì„±í™” (ë¬´ê¸°ì™€ ìºë¦­í„° ê°„ì˜ ì¶©ëŒì„ ë¬´ì‹œ)
+		
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			// ì¶©ëŒì„ ë¹„í™œì„±í™”í•˜ì—¬ ìºë¦­í„°ì™€ì˜ ì¶©ëŒì„ í”¼í•¨
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // ì¶©ëŒ ë¹„í™œì„±í™”
+			// ì¶©ëŒ??ë¹„í™œ?±í™”?˜ì—¬ ìºë¦­?°ì???ì¶©ëŒ???¼í•¨
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // ì¶©ëŒ ë¹„í™œ?±í™”
 		}
 
-		// ì´ì´ ë³´ì´ë„ë¡ ì„¤ì • (HiddenInGameì„ falseë¡œ ì„¤ì •)
+		// ì´ì´ ë³´ì´?„ë¡ ?¤ì • (HiddenInGame??falseë¡??¤ì •)
 		NearestWeapon->SetActorHiddenInGame(false);
 
-		// ë¬´ê¸°ë¥¼ ì™¼ì† ì†Œì¼“(AkGun)ì— ë¶™ì´ê¸°
-		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ì†Œì¼“ ìœ„ì¹˜ì— ë§ì¶°ì„œ ë¶™ì„
-		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()ëŠ” ìºë¦­í„°ì˜ Skeletal Mesh ì»´í¬ë„ŒíŠ¸
+		// ë¬´ê¸°ë¥??¼ì† ?Œì¼“(AkGun)??ë¶™ì´ê¸?
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ?Œì¼“ ?„ì¹˜??ë§ì¶°??ë¶™ì„
+		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()??ìºë¦­?°ì˜ Skeletal Mesh ì»´í¬?ŒíŠ¸
 
-		// ë¬´ê¸° ì œê±° (ì›”ë“œì—ì„œ ì œê±°í•˜ê±°ë‚˜ ì¸ë²¤í† ë¦¬ì— ì¶”ê°€í•˜ëŠ” ë¡œì§ êµ¬í˜„)
+		// ë¬´ê¸° ?œê±° (?”ë“œ?ì„œ ?œê±°?˜ê±°???¸ë²¤? ë¦¬??ì¶”ê??˜ëŠ” ë¡œì§ êµ¬í˜„)
 		
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
@@ -212,4 +317,37 @@ AWeaponBase* AInfectedCityCharacter::FindNearestWeapon()
 	}
 
 	return NearestWeapon;
+}
+
+void AInfectedCityCharacter::RotateCharacterToMouseCursor()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
+
+	FVector WorldLocation, WorldDirection;
+	if (PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+	{
+		// ¶óÀÎ Æ®·¹ÀÌ½º¸¦ ¼öÇàÇÏ¿© ¸¶¿ì½º°¡ °¡¸®Å°´Â °÷À» Ã£À½
+		FHitResult HitResult;
+		FVector TraceStart = WorldLocation;
+		FVector TraceEnd = TraceStart + (WorldDirection * 5000.f); // 5000 À¯´Ö °Å¸®±îÁö °Ë»ç
+
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this); // ÀÚ±â ÀÚ½ÅÀº ¹«½Ã
+
+		// ¶óÀÎ Æ®·¹ÀÌ½º ¼öÇà
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		{
+			FVector LookAtTarget = HitResult.ImpactPoint;
+			FVector CharacterLocation = GetActorLocation();
+			FVector Direction = LookAtTarget - CharacterLocation;
+			Direction.Z = 0; // »óÇÏ È¸Àü ¹æÁö
+
+			FRotator NewRotation = Direction.Rotation();
+			SetActorRotation(NewRotation);
+		}
+
+		// µğ¹ö±× ¶óÀÎ (¶óÀÎ Æ®·¹ÀÌ½º È®ÀÎ¿ë)
+		//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
+	}
 }
