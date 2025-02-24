@@ -62,27 +62,7 @@ void AInfectedCityCharacter::Tick(float DeltaTime)
 	
 	
 }
-void AInfectedCityCharacter::BeginPlay()
-{
-	Super::BeginPlay();
 
-
-
-	// 플레이어 컨트롤러 가져오기
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (PlayerController && HUDWidgetClass)
-	{
-		// HUD 위젯 생성
-		HUDWidget = CreateWidget<UHUDWidget>(PlayerController, HUDWidgetClass);
-		if (HUDWidget)
-		{
-			HUDWidget->AddToViewport();
-		}
-		else
-		{
-		}
-	}
-}
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
@@ -266,12 +246,7 @@ void AInfectedCityCharacter::StartCrouching()
         UE_LOG(LogTemp, Log, TEXT("Cannot crouch while jumping"));
     }
 
-	Crouch(); // Make the character crouch
 
-	if (HUDWidget)
-	{
-		HUDWidget->SetCrouchState(true);
-	}
 
 }
 

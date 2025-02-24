@@ -61,17 +61,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
   
-	UPROPERTY()
-	UHUDWidget* HUDWidget;
-
-public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
-	TSubclassOf<UHUDWidget> HUDWidgetClass;
-
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	
+
 	// ìºë¦­?°ì˜ ?´ë™ ê´€???…ë ¥ ?¡ì…˜??
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
@@ -145,12 +137,7 @@ public:
 	// Çã¸® ¼÷ÀÓ º¸°£À» À§ÇÑ º¯¼ö (0 = ¼­ ÀÖ´Â »óÅÂ, 1 = ¿ÏÀüÈ÷ ¼÷ÀÎ »óÅÂ)
 	float CrouchBlendFactor = 0.0f;
 
-	// Input setup for camera switching
-	void OnRightMouseButtonPressed();
 
-
-	// Called when V key is pressed
-	void OnVKeyPressed();
 	
 	// ê°€ê¹Œìš´ ë¬´ê¸°ë¥?ì°¾ëŠ” ?¨ìˆ˜
 	AWeaponBase* FindNearestWeapon();
