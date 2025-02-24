@@ -160,6 +160,24 @@
     <None Include="..\..\Source\InfectedCityEditor.Target.cs">
       <Filter>Source\InfectedCity\99.Default</Filter>
     </None>
+    <Filter Include="Source\InfectedCity\01.Utility\EnemyEffectManager">
+      <UniqueIdentifier>{3fa8b6e7-3b55-405c-9b62-8b66152e4417}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\98.Defines">
+      <UniqueIdentifier>{d653a606-ebdb-448c-8e48-94b273945fd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\UI">
+      <UniqueIdentifier>{4aac3c4f-77d6-4b9a-a8f7-47e43779218a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Weapon">
+      <UniqueIdentifier>{7502e972-68e3-439c-92e6-2c2547a8d051}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Weapon\AKWeapon">
+      <UniqueIdentifier>{7e416afa-8eb1-4f3a-ae69-ad5e0ffe80d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\EffectManager">
+      <UniqueIdentifier>{8f82e72b-62c7-43f9-920e-33fbb7b1bbaf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -263,5 +281,37 @@
     <ClCompile Include="..\..\Source\InfectedCity\Private\InfectedCityPlayerController.cpp">
       <Filter>Source\InfectedCity\01.Utility\PlayerController</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\EnemyEffectManager.h">
+      <Filter>Source\InfectedCity\01.Utility\EnemyEffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\EnemyEffectManager.cpp">
+      <Filter>Source\InfectedCity\01.Utility\EnemyEffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\WeaponBase.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\WeaponBase.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\AkWeapon.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Weapon\AKWeapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\AkWeapon.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Weapon\AKWeapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\HUDWidget.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\HUDWidget.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\InfectedCity.uproject" />
+    <None Include="..\..\.editorconfig" />
+    <None Include="..\..\.gitattributes" />
+    <None Include="..\..\.gitignore" />
+    <None Include="..\..\.vsconfig" />
+    <None Include="..\..\BackupFilter.bat" />
+    <None Include="..\..\RestoreFilter.bat" />
+    <None Include="..\..\shadertoolsconfig.json" />
   </ItemGroup>
 </Project>

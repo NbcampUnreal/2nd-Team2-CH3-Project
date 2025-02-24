@@ -10,17 +10,19 @@
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "HUDWidget.h"
+#include "InteractManager/InteractManager.h"
+#include "Blueprint/UserWidget.h"
 
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
-	// ±âº» ¼³Á¤
+	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Ä³¸¯ÅÍ ÀÌµ¿ ¼³Á¤
+	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 700.f;
@@ -30,7 +32,7 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Ä«¸Þ¶ó ¼³Á¤
+	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f;
@@ -91,6 +93,21 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+}
+
+void AInfectedCityCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && HUDWidgetClass)
+	{
+		HUDWidget = CreateWidget<UHUDWidget>(PlayerController, HUDWidgetClass);
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
 		}
 	}
 }
@@ -235,6 +252,7 @@ void AInfectedCityCharacter::StopRunning()
 
 void AInfectedCityCharacter::StartCrouching()
 {
+
     if (!GetCharacterMovement()->IsFalling())  
     {
         Crouch(); 
@@ -247,11 +265,22 @@ void AInfectedCityCharacter::StartCrouching()
     {
         UE_LOG(LogTemp, Log, TEXT("Cannot crouch while jumping"));
     }
+
+	Crouch(); // Make the character crouch
+
+	if (HUDWidget)
+	{
+		HUDWidget->SetCrouchState(true);
+	}
+
 }
 
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
+
+
+
 	if (HUDWidget)
 	{
 		HUDWidget->SetCrouchState(false);
@@ -263,25 +292,25 @@ void AInfectedCityCharacter::PickupWeapon()
 	AWeaponBase* NearestWeapon = FindNearestWeapon();
 	if (NearestWeapon)
 	{
-		// ¹«±â¸¦ ÁÝ°í, ÀÎº¥Åä¸®³ª Àåºñ¿¡ Ãß°¡
+		
 		CurrentWeapon = NearestWeapon;
 
-		// ¹«±âÀÇ Ãæµ¹À» ºñÈ°¼ºÈ­ (¹«±â¿Í Ä³¸¯ÅÍ °£ÀÇ Ãæµ¹À» ¹«½Ã)
+		
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			// Ãæµ¹À» ºñÈ°¼ºÈ­ÇÏ¿© Ä³¸¯ÅÍ¿ÍÀÇ Ãæµ¹À» ÇÇÇÔ
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // Ãæµ¹ ºñÈ°¼ºÈ­
+			// ì¶©ëŒ??ë¹„í™œ?±í™”?˜ì—¬ ìºë¦­?°ì???ì¶©ëŒ???¼í•¨
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // ì¶©ëŒ ë¹„í™œ?±í™”
 		}
 
-		// ÃÑÀÌ º¸ÀÌµµ·Ï ¼³Á¤ (HiddenInGameÀ» false·Î ¼³Á¤)
+		// ì´ì´ ë³´ì´?„ë¡ ?¤ì • (HiddenInGame??falseë¡??¤ì •)
 		NearestWeapon->SetActorHiddenInGame(false);
 
-		// ¹«±â¸¦ ¿Þ¼Õ ¼ÒÄÏ(AkGun)¿¡ ºÙÀÌ±â
-		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ¼ÒÄÏ À§Ä¡¿¡ ¸ÂÃç¼­ ºÙÀÓ
-		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()´Â Ä³¸¯ÅÍÀÇ Skeletal Mesh ÄÄÆ÷³ÍÆ®
+		// ë¬´ê¸°ë¥??¼ì† ?Œì¼“(AkGun)??ë¶™ì´ê¸?
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ?Œì¼“ ?„ì¹˜??ë§žì¶°??ë¶™ìž„
+		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()??ìºë¦­?°ì˜ Skeletal Mesh ì»´í¬?ŒíŠ¸
 
-		// ¹«±â Á¦°Å (¿ùµå¿¡¼­ Á¦°ÅÇÏ°Å³ª ÀÎº¥Åä¸®¿¡ Ãß°¡ÇÏ´Â ·ÎÁ÷ ±¸Çö)
+		// ë¬´ê¸° ?œê±° (?”ë“œ?ì„œ ?œê±°?˜ê±°???¸ë²¤? ë¦¬??ì¶”ê??˜ëŠ” ë¡œì§ êµ¬í˜„)
 		
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
