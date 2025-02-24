@@ -1,28 +1,71 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "OutlineComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class EOutlineType : uint8
+{
+	OUTLINE_ENEMY UMETA(DisplayName = "Enemy"),
+	OUTLINE_ITEM UMETA(DisplayName = "Item"),
+	OUTLINE_END UMETA(DisplayName = "None")
+};
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class INFECTEDCITY_API UOutlineComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
+public:
 	UOutlineComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+public:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-		
+	void StartCheckingDistance();
+
+	void StopCheckingDistance();
+
+	void CheckPlayerDistance();
+
+	UFUNCTION(BlueprintCallable)
+	void EnableOutline();
+
+	UFUNCTION(BlueprintCallable)
+	void DisableOutline();
+
+	UFUNCTION(BlueprintCallable)
+	void SetMaterialParam(float Thickness, FLinearColor Color);
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Outline")
+	int32 StencilValue{ 0 };
+
+	UPROPERTY(EditAnywhere, Category = "Outline")
+	UMaterialInterface* OutlineMaterial{ nullptr };
+
+	UPROPERTY(EditAnywhere, Category = "Outline")
+	EOutlineType EOutlineType{ EOutlineType::OUTLINE_END };
+
+	UPROPERTY(EditAnywhere, Category = "Outline", meta = (EditCondition = "bIsItemOutline"))
+	float CheckInterval{ 0.5f };
+
+	UPROPERTY(EditAnywhere, Category = "Outline", meta = (EditCondition = "bIsItemOutline"))
+	float ActivationDistance{ 300.0f };
+
+	UPROPERTY()
+	TArray<UMeshComponent*> MeshComponents;
+
+	FTimerHandle DistanceCheckTimer;
+
+private:
+
+	UPROPERTY()
+	bool bIsItemOutline{ false };
+
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 };

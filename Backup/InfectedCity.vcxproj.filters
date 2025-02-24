@@ -175,8 +175,17 @@
     <Filter Include="Source\InfectedCity\00.GameObjects\Weapon\AKWeapon">
       <UniqueIdentifier>{7e416afa-8eb1-4f3a-ae69-ad5e0ffe80d3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\InfectedCity\01.Utility\EffectManager">
+    <Filter Include="Source\InfectedCity\01.Utility\Effects">
+      <UniqueIdentifier>{ab624d47-ffe4-4b14-a320-f9844186aa0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\Effects\Manager">
       <UniqueIdentifier>{8f82e72b-62c7-43f9-920e-33fbb7b1bbaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\Effects\Outline">
+      <UniqueIdentifier>{6372135b-8142-47c2-a16a-14b122372085}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\Effects\Outline\Shader">
+      <UniqueIdentifier>{0950e8fd-debd-4839-9260-fdffdbd372ec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -303,6 +312,24 @@
       <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\InfectedCity\Public\HUDWidget.h" />
+    <ClCompile Include="..\..\Source\InfectedCity\Public\EffectManager.h">
+      <Filter>Source\InfectedCity\01.Utility\Effects\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\EffectManager.cpp">
+      <Filter>Source\InfectedCity\01.Utility\Effects\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\OutlineComponent.h">
+      <Filter>Source\InfectedCity\01.Utility\Effects\Outline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\OutlineComponent.cpp">
+      <Filter>Source\InfectedCity\01.Utility\Effects\Outline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\OutlinePostProcessShader.h">
+      <Filter>Source\InfectedCity\01.Utility\Effects\Outline\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\OutlinePostProcessShader.cpp">
+      <Filter>Source\InfectedCity\01.Utility\Effects\Outline\Shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\InfectedCity.uproject" />
@@ -313,5 +340,6 @@
     <None Include="..\..\BackupFilter.bat" />
     <None Include="..\..\RestoreFilter.bat" />
     <None Include="..\..\shadertoolsconfig.json" />
+    <None Include="..\..\Shaders\OutlineShader.usf" />
   </ItemGroup>
 </Project>

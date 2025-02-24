@@ -33,8 +33,10 @@ private:
 	UMaterialInterface* PostProcessMaterial;
 
 	void SetupSceneCapture();
-	void DetectActorAtMouseCursor();
-	void DetectActorAtCenter();
+	void DetectActorAtMouseCursor(APlayerController* PlayerController);
+	void DetectActorAtCenter(APlayerController* PlayerController);
 
 	class AEnemyCharacter* EnemyCharacter{ nullptr };
+
+	bool bPreMouseCursor{ false };
 };
