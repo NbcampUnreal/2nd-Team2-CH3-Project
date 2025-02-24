@@ -9,6 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
+#include "HUDWidget.h"
 
 
 AInfectedCityCharacter::AInfectedCityCharacter()
@@ -38,8 +39,48 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-}
 
+
+	//new camera
+	SecondCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SecondCameraBoom"));
+	SecondCameraBoom->SetupAttachment(RootComponent);
+	SecondCameraBoom->TargetArmLength = 600.0f;  // 새 카메라의 길이를 기존과 다르게 설정
+	SecondCameraBoom->bUsePawnControlRotation = true;
+
+	SecondFollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("SecondFollowCamera"));
+	SecondFollowCamera->SetupAttachment(SecondCameraBoom, USpringArmComponent::SocketName);
+	SecondFollowCamera->bUsePawnControlRotation = false; // 카메라는 회전하지 않음
+	
+
+}
+void AInfectedCityCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	
+	
+}
+void AInfectedCityCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+
+
+	// 플레이어 컨트롤러 가져오기
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && HUDWidgetClass)
+	{
+		// HUD 위젯 생성
+		HUDWidget = CreateWidget<UHUDWidget>(PlayerController, HUDWidgetClass);
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
+		}
+		else
+		{
+		}
+	}
+}
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
@@ -79,10 +120,75 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Pickup Weapon (F key)
 		EnhancedInputComponent->BindAction(PickupWeaponAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::PickupWeapon);
+
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartAiming);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopAiming);
+
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StartShoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StopShoot);
 	}
 	
 }
 
+void AInfectedCityCharacter::StartAiming()
+{
+	bIsAiming = true;
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		PlayerController->bShowMouseCursor = true;  // 마우스 커서 보이게 설정
+		RotateCharacterToMouseCursor();  // 마우스를 따라 캐릭터 회전
+	}
+
+	// 기존 카메라에서 새로운 카메라로 전환
+	FollowCamera->Deactivate();
+	SecondFollowCamera->Activate();
+
+	// 새로운 카메라로 줌 인
+	SecondFollowCamera->SetFieldOfView(FMath::FInterpTo(SecondFollowCamera->FieldOfView, ZoomedFOV, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed));
+
+	// 마우스를 따라 회전
+	RotateCharacterToMouseCursor();
+}
+
+void AInfectedCityCharacter::StopAiming()
+{
+	bIsAiming = false;
+
+	// 새로운 카메라에서 기존 카메라로 전환
+	SecondFollowCamera->Deactivate();
+	FollowCamera->Activate();
+
+	// 기존 카메라로 줌 아웃
+	FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DefaultFOV, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed));
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		PlayerController->bShowMouseCursor = false;  // 마우스 커서 숨기기
+	}
+}
+
+void AInfectedCityCharacter::StartShoot()
+{
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->bShowMouseCursor = true;  // 마우스 커서 보이게 설정
+		RotateCharacterToMouseCursor();  // 마우스를 따라 캐릭터 회전
+	}
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire();
+	}
+}
+void AInfectedCityCharacter::StopShoot()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->bShowMouseCursor = false;  // 마우스 커서 숨기기
+	}
+
+}
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -105,11 +211,17 @@ void AInfectedCityCharacter::Look(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		
+		AddControllerYawInput(LookAxisVector.X); 
+		AddControllerPitchInput(LookAxisVector.Y); 
 	}
 }
 
+bool AInfectedCityCharacter::BHASRifle() const
+{
+	
+	return CurrentWeapon != nullptr && CurrentWeapon->IsA(AWeaponBase::StaticClass());  // ARifleWeapon은 소총 클래스를 나타낸다고 가정
+}
 void AInfectedCityCharacter::StartRunning()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // Increase walk speed for running
@@ -118,16 +230,32 @@ void AInfectedCityCharacter::StartRunning()
 void AInfectedCityCharacter::StopRunning()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 500.f; // Reset walk speed to normal
+
 }
 
 void AInfectedCityCharacter::StartCrouching()
 {
-	Crouch(); // Make the character crouch
+    if (!GetCharacterMovement()->IsFalling())  
+    {
+        Crouch(); 
+		if (HUDWidget)
+		{
+			HUDWidget->SetCrouchState(true);
+		}
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("Cannot crouch while jumping"));
+    }
 }
 
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
+	if (HUDWidget)
+	{
+		HUDWidget->SetCrouchState(false);
+	}
 }
 
 void AInfectedCityCharacter::PickupWeapon()
@@ -185,4 +313,37 @@ AWeaponBase* AInfectedCityCharacter::FindNearestWeapon()
 	}
 
 	return NearestWeapon;
+}
+
+void AInfectedCityCharacter::RotateCharacterToMouseCursor()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
+
+	FVector WorldLocation, WorldDirection;
+	if (PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+	{
+		// 라인 트레이스를 수행하여 마우스가 가리키는 곳을 찾음
+		FHitResult HitResult;
+		FVector TraceStart = WorldLocation;
+		FVector TraceEnd = TraceStart + (WorldDirection * 5000.f); // 5000 유닛 거리까지 검사
+
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this); // 자기 자신은 무시
+
+		// 라인 트레이스 수행
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		{
+			FVector LookAtTarget = HitResult.ImpactPoint;
+			FVector CharacterLocation = GetActorLocation();
+			FVector Direction = LookAtTarget - CharacterLocation;
+			Direction.Z = 0; // 상하 회전 방지
+
+			FRotator NewRotation = Direction.Rotation();
+			SetActorRotation(NewRotation);
+		}
+
+		// 디버그 라인 (라인 트레이스 확인용)
+		//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
+	}
 }

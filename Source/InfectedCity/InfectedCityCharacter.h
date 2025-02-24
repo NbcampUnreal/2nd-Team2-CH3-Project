@@ -10,6 +10,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class UHUDWidget;
 
 
 
@@ -24,45 +25,65 @@ public:
 	AInfectedCityCharacter();
 
 protected:
-	// 카메라 붐 (캐릭터 뒤에 카메라 위치 조정)
+
+	UPROPERTY()
+	UHUDWidget* HUDWidget;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
 
-	// 캐릭터 뒤에 따라오는 카메라
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* FollowCamera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* SecondCameraBoom;
 
-	// 캐릭터가 가지고 있는 무기
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* SecondFollowCamera;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 	AWeaponBase* CurrentWeapon;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* JumpAction; // 점프 액션
+	UInputAction* JumpAction; 
 
-	// 무기를 주울 때 사용할 입력 액션
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
 
-	// 캐릭터의 이동 관련 입력 액션들
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
 
-	// 캐릭터의 시점 조정 입력 액션
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
 
-	// 달리기 및 앉기 관련 액션
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RunAction;
+
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* CrouchAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* AimingAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* ShootAction;
+	
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float ZoomedFOV = 45.0f;
 
-	// 입력 매핑 컨텍스트
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float DefaultFOV = 90.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float ZoomInterpSpeed = 10.0f;
+	bool bIsAiming = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
+	virtual void BeginPlay() override;
 
 public:
-	// 플레이어 입력 처리 함수
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
+	TSubclassOf<UHUDWidget> HUDWidgetClass;
+
+	virtual void Tick(float DeltaTime) override;
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// 컨트롤러가 변경될 때 호출되는 함수
@@ -82,7 +103,21 @@ public:
 
 	// 무기 주울 때의 동작
 	void PickupWeapon();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool BHASRifle() const;
+	
+
+	// 허리 숙임 보간을 위한 변수 (0 = 서 있는 상태, 1 = 완전히 숙인 상태)
+	float CrouchBlendFactor = 0.0f;
 
 	// 가까운 무기를 찾는 함수
 	AWeaponBase* FindNearestWeapon();
+
+	// **줌인 및 총 발사 기능**
+	void StartAiming();
+	void StopAiming();
+	void StartShoot();
+	void StopShoot();
+
+	void RotateCharacterToMouseCursor();
 };
