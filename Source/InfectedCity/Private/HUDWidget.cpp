@@ -38,7 +38,7 @@ void UHUDWidget::UpdateImageOpacity(int32 SelectedKey)
 {
     for (auto& Elem : ImageMap)
     {
-        float Opacity = (Elem.Key == SelectedKey) ? 1.0f : 0.5f;
+        float Opacity = (Elem.Key == SelectedKey) ? 1.0f : 0.1f;
         Elem.Value->SetRenderOpacity(Opacity);
     }
 }
@@ -46,7 +46,6 @@ void UHUDWidget::UpdateImageOpacity(int32 SelectedKey)
 void UHUDWidget::OnKey1Pressed() { UpdateImageOpacity(1); }
 void UHUDWidget::OnKey2Pressed() { UpdateImageOpacity(2); }
 void UHUDWidget::OnKey3Pressed() { UpdateImageOpacity(3); }
-
 void UHUDWidget::StartProgressBar(int32 Key, float Duration)
 {
     if (bIsUsingProgress) return;  // 이미 진행 중이면 실행 안 함
