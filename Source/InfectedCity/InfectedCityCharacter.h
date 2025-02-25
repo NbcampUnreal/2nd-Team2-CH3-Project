@@ -11,7 +11,6 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class UHUDWidget;
 
 UCLASS(config=Game)
 class AInfectedCityCharacter : public ACharacter
