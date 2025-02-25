@@ -4,9 +4,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Actor.h"
 
-// 생성자
 ABullet::ABullet()
 {
+    PrimaryActorTick.bCanEverTick = true;  // Tick 활성화
+
     // 충돌 컴포넌트 및 메시 설정
     CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
     CollisionComponent->InitSphereRadius(15.f);
@@ -23,24 +24,25 @@ ABullet::ABullet()
     CollisionComponent->OnComponentHit.AddDynamic(this, &ABullet::OnHit);
 }
 
-// 총알의 방향과 속도 설정
+void ABullet::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    MoveBullet();  // 매 프레임마다 총알 이동
+}
+
 void ABullet::InitializeBullet(FVector InDirection, float InSpeed)
 {
     Direction = InDirection.GetSafeNormal();
     Speed = InSpeed;
-
-    // 총알 이동 시작
-    MoveBullet();
 }
 
-// 총알 이동 처리
 void ABullet::MoveBullet()
 {
     FVector NewLocation = GetActorLocation() + (Direction * Speed * GetWorld()->GetDeltaSeconds());
     SetActorLocation(NewLocation);
 }
 
-// 충돌 처리
 void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
     // 충돌 시 이펙트 처리
@@ -53,7 +55,7 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
     AActor* HitActor = Hit.GetActor();
     if (HitActor)
     {
-        // 데미지 처리 로직 (예: 데미지 함수 호출)
+      
     }
 
     // 충돌 후 삭제

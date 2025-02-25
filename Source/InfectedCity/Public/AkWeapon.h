@@ -17,23 +17,14 @@ public:
     // 생성자
     AAkWeapon();
 
+    // 오버라이드된 총알 발사 메서드
+    virtual void Fire() override;
+
 protected:
-    // 탄창 크기
+    // 총알 발사 관련 추가 설정 가능 (예: 발사 사운드, 발사 이펙트 등)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    int32 MagazineSize;
+    USoundBase* FireSoundOverride;
 
-    // 발사 모드 (자동/반자동)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    bool bIsAutomatic;
-
-public:
-
-
-    // AK 무기의 발사 모드 설정
-    void SetFireMode(bool bIsAuto);
-
-    // 탄창 크기 설정
-    void SetMagazineSize(int32 NewSize);
-
-  
+    UParticleSystem* FireEffectOverride;
 };

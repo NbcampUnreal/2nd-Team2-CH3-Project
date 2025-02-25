@@ -126,6 +126,7 @@ public:
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
+	
 
 	// 무기 주울 ?�의 ?�작
 	void PickupWeapon();

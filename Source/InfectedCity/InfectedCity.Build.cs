@@ -21,7 +21,8 @@ public class InfectedCity : ModuleRules
             "CoreUObject",
             "Engine",
             "InputCore",
-            "EnhancedInput"
+            "EnhancedInput",
+            "Niagara"
         });
     }
 }

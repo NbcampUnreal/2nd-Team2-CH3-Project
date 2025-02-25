@@ -274,18 +274,18 @@ void AInfectedCityCharacter::PickupWeapon()
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			// 충돌??비활?�화?�여 캐릭?��???충돌???�함
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 비활?�화
+			
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 		}
 
-		// 총이 보이?�록 ?�정 (HiddenInGame??false�??�정)
+	
 		NearestWeapon->SetActorHiddenInGame(false);
 
-		// 무기�??�손 ?�켓(AkGun)??붙이�?
-		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ?�켓 ?�치??맞춰??붙임
-		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()??캐릭?�의 Skeletal Mesh 컴포?�트
+		
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true); 
+		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  
 
-		// 무기 ?�거 (?�드?�서 ?�거?�거???�벤?�리??추�??�는 로직 구현)
+		
 		
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
