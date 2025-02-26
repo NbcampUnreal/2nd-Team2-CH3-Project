@@ -32,16 +32,25 @@ void AGN_AIController::MoveToRandomLocation()
 		}
 	}
 
-	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AGN_AIController::MoveToRandomLocation);
+	float RandomDelay = FMath::RandRange(2.0f, 5.0f);
+	GetWorld()->GetTimerManager().SetTimer(PatrolTimerHandle, this, &AGN_AIController::MoveToRandomLocation, RandomDelay, false);
 }
 
 void AGN_AIController::MoveToActor(AActor* Target)
 {
+	if (!IsValid(Target))
+	{
+		UE_LOG(LogTemp, Error, TEXT("OnSeePawn: SeenPawn is NULL!"));
+		return;
+	}
+
 	if (Target)
 	{
 		FVector PlayerLocation = Target->GetActorLocation();
-
-		MoveToLocation(Target->GetActorLocation());
-		
+		if (Target)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Player : %f"), PlayerLocation.Size());
+			MoveToLocation(Target->GetActorLocation());
+		}
 	}
 }

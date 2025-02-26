@@ -15,6 +15,7 @@ AGN_Character::AGN_Character()
 
     GetCharacterMovement()->MaxWalkSpeed = 200.0f;
     CurrentState = EEnemyState::Idle;
+    
 }
 
 void AGN_Character::BeginPlay()
@@ -23,6 +24,9 @@ void AGN_Character::BeginPlay()
     
     AnimInstance = Cast<UGN_AnimInstance>(GetMesh()->GetAnimInstance());
     AIController = Cast<AGN_AIController>(GetController());
+
+    PreAnimation = IdleAnimation;
+    CurAnimation = IdleAnimation;
     Patrol();
 }
 
@@ -30,36 +34,27 @@ void AGN_Character::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // ���� �̵� �ӵ� ��������
     float Speed = GetVelocity().Size();
 
-    // �ִϸ��̼� ���� ����
     if (Speed == 0)
     {
-        // Idle �ִϸ��̼� ����
-        if (IdleAnimation)
-        {
-            GetMesh()->PlayAnimation(IdleAnimation, true);
-        }
+        PreAnimation = IdleAnimation;
     }
     else if (Speed > 0 && Speed < 400)
     {
-        // �ȱ� �ִϸ��̼� ����
-        if (WalkAnimation)
-        {
-            GetMesh()->PlayAnimation(WalkAnimation, true);
-        }
+        PreAnimation = WalkAnimation;
     }
     else if (Speed >= 400)
     {
-        // �ٱ� �ִϸ��̼� ����
-        if (RunAnimation)
-        {
-            GetMesh()->PlayAnimation(RunAnimation, true);
-        }
+        PreAnimation = RunAnimation;
     }
 
-    // ������ AI ���� ���� �ڵ� ���� (�÷��̾ ��ġ�� �ٽ� ����)
+    if (CurAnimation != PreAnimation)
+    {
+        GetMesh()->PlayAnimation(PreAnimation, true);
+        CurAnimation = PreAnimation;
+    }
+
     if (CurrentState == EEnemyState::Chasing)
     {
         APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
@@ -75,12 +70,19 @@ void AGN_Character::OnSeePawn(APawn* Pawn)
 {
     if (CurrentState != EEnemyState::Dead)
     {
-        ChasePlayer(Pawn);
+        UE_LOG(LogTemp, Warning, TEXT("Seen Pawn: %s"), *Pawn->GetName());
+
+        AIController->MoveToActor(Cast<AActor>(Pawn));
+        
+        SetEnemyState(EEnemyState::Chasing);
     }
 }
 
 void AGN_Character::SetEnemyState(EEnemyState NewState)
 {
+    if (CurrentState == NewState)
+        return;
+
     CurrentState = NewState;
 
     if (NewState == EEnemyState::Chasing)
@@ -113,10 +115,14 @@ void AGN_Character::Patrol()
 
 void AGN_Character::ChasePlayer(APawn* Player)
 {
-    if (AIController)
+    if (AIController && IsValid(Player))
     {
-        AIController->MoveToActor(Player);
-        SetEnemyState(EEnemyState::Chasing);
+        if (CurTarget != Player)
+        {
+            AIController->MoveToActor(Player);
+            CurTarget = Player;
+            SetEnemyState(EEnemyState::Chasing);
+        }
     }
 }
 

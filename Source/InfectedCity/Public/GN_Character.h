@@ -69,6 +69,11 @@ public:
     class AGN_AIController* AIController;
 
 private:
+    UAnimationAsset* PreAnimation{ nullptr };
+    UAnimationAsset* CurAnimation{ nullptr };
+
+    APawn* CurTarget{ nullptr };
     UFUNCTION()
     void OnSeePawn(APawn* Pawn);
+
 };
