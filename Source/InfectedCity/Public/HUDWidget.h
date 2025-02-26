@@ -18,6 +18,10 @@ public:
     /* Crouch 상태에 따라 UI 변경 */
         UFUNCTION(BlueprintCallable, Category = "HUD")
     void SetCrouchState(bool bIsCrouching);
+    UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+    void UpdateAmmoUI(float AmmoPercentage);
+    void DecreaseAmmo();  // 총알 감소 함수
+
 
 protected:
 
@@ -37,6 +41,10 @@ protected:
     void UpdateImageOpacity(int32 SelectedKey);
     void StartProgressBar(int32 Key, float Duration);
 
+    UPROPERTY(meta = (BindWidget))
+    UProgressBar* AmmoProgressBar;  // 반원 탄약 UI
+
+
     bool bIsUsingProgress = false;
     FTimerHandle ProgressBarTimerHandle;
     FTimerHandle ProgressBarUpdateHandle;
@@ -45,4 +53,7 @@ protected:
     TMap<int32, UProgressBar*> ProgressBarMap;
 
     float ElapsedTime = 0.0f;
+
+    int32 CurrentAmmo = 30; // 현재 탄약
+    int32 MaxAmmo = 900;     // 최대 탄약
 };

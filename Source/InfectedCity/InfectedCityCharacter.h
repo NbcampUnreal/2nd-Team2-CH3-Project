@@ -20,59 +20,49 @@ class AInfectedCityCharacter : public ACharacter
 
 	
 public:
-	// ê¸°ë³¸ ?ì„±??
 	AInfectedCityCharacter();
 
 protected:
-
-
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
-	// ì¹´ë©”??ë¶?(ìºë¦­???¤ì— ì¹´ë©”???„ì¹˜ ì¡°ì •)
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
-
-	// ìºë¦­???¤ì— ?°ë¼?¤ëŠ” ì¹´ë©”??
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SecondCameraBoom;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* SecondFollowCamera;
-	
-
-
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 	AWeaponBase* CurrentWeapon;
-  
 	UPROPERTY(EditAnywhere, Category = "Input")
-
-
-
-
-	UInputAction* JumpAction; // ?í”„ ?¡ì…˜
-
-	// ë¬´ê¸°ë¥?ì£¼ìš¸ ???¬ìš©???…ë ¥ ?¡ì…˜
+	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
   
 protected:
-	
 
-	// ìºë¦­?°ì˜ ?´ë™ ê´€???…ë ¥ ?¡ì…˜??
+	FTimerHandle FireTimerHandle; // Å¸ÀÌ¸Ó ÇÚµé
+	float FireRate = 0.755f; // ¿¬»ç °£°İ (ÃÊ ´ÜÀ§)
+
+	bool bIsFiring = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	int32 MaxAmmo = 30; // ÃÖ´ë Åº¾à ¼ö
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
+	int32 CurrentAmmo = 30; // ÇöÀç Åº¾à ¼ö
+
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
 
-	// ìºë¦­?°ì˜ ?œì  ì¡°ì • ?…ë ¥ ?¡ì…˜
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
-
-	// ?¬ë¦¬ê¸?ë°??‰ê¸° ê´€???¡ì…˜
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RunAction;
@@ -102,32 +92,26 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void FireWeapon();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
 	TSubclassOf<UHUDWidget> HUDWidgetClass;
 
 	virtual void Tick(float DeltaTime) override;
 	
-
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ???¸ì¶œ?˜ëŠ” ?¨ìˆ˜
 	virtual void NotifyControllerChanged() override;
 
-	// ìºë¦­?°ì˜ ?´ë™ ì²˜ë¦¬ ?¨ìˆ˜
 	void Move(const FInputActionValue& Value);
 
-	// ìºë¦­?°ì˜ ?œì  ì¡°ì • ì²˜ë¦¬ ?¨ìˆ˜
 	void Look(const FInputActionValue& Value);
 
-	// ?¬ë¦¬ê¸? ?‰ê¸° ê¸°ëŠ¥
 	void StartRunning();
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
 
-	// ë¬´ê¸° ì£¼ìš¸ ?Œì˜ ?™ì‘
 	void PickupWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -137,9 +121,6 @@ public:
 	// Çã¸® ¼÷ÀÓ º¸°£À» À§ÇÑ º¯¼ö (0 = ¼­ ÀÖ´Â »óÅÂ, 1 = ¿ÏÀüÈ÷ ¼÷ÀÎ »óÅÂ)
 	float CrouchBlendFactor = 0.0f;
 
-
-	
-	// ê°€ê¹Œìš´ ë¬´ê¸°ë¥?ì°¾ëŠ” ?¨ìˆ˜
 	AWeaponBase* FindNearestWeapon();
 
 	// **ÁÜÀÎ ¹× ÃÑ ¹ß»ç ±â´É**

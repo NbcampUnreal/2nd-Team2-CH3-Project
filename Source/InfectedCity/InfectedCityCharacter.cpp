@@ -53,7 +53,8 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	SecondFollowCamera->SetupAttachment(SecondCameraBoom, USpringArmComponent::SocketName);
 	SecondFollowCamera->bUsePawnControlRotation = false; // Ä«¸Þ¶ó´Â È¸ÀüÇÏÁö ¾ÊÀ½
 	
-
+	bIsFiring = false;
+	FireRate = 0.755f;
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
 {
@@ -175,7 +176,13 @@ void AInfectedCityCharacter::StartShoot()
 	}
 	if (CurrentWeapon)
 	{
-		CurrentWeapon->Fire();
+		if (!bIsFiring && CurrentAmmo > 0)
+		{
+			CurrentWeapon->Fire();
+			bIsFiring = true;
+			GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AInfectedCityCharacter::FireWeapon, FireRate, true);
+			UE_LOG(LogTemp, Warning, TEXT("fire tick open !!"));
+		}
 	}
 }
 void AInfectedCityCharacter::StopShoot()
@@ -183,6 +190,8 @@ void AInfectedCityCharacter::StopShoot()
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		PlayerController->bShowMouseCursor = false;  // ¸¶¿ì½º Ä¿¼­ ¼û±â±â
+		bIsFiring = false;
+		GetWorldTimerManager().ClearTimer(FireTimerHandle);
 	}
 
 }
@@ -274,18 +283,14 @@ void AInfectedCityCharacter::PickupWeapon()
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			// ì¶©ëŒ??ë¹„í™œ?±í™”?˜ì—¬ ìºë¦­?°ì???ì¶©ëŒ???¼í•¨
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // ì¶©ëŒ ë¹„í™œ?±í™”
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
 
-		// ì´ì´ ë³´ì´?„ë¡ ?¤ì • (HiddenInGame??falseë¡??¤ì •)
 		NearestWeapon->SetActorHiddenInGame(false);
 
-		// ë¬´ê¸°ë¥??¼ì† ?Œì¼“(AkGun)??ë¶™ì´ê¸?
-		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);  // SnapToTarget: ?Œì¼“ ?„ì¹˜??ë§žì¶°??ë¶™ìž„
-		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  // GetMesh()??ìºë¦­?°ì˜ Skeletal Mesh ì»´í¬?ŒíŠ¸
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
+		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
 
-		// ë¬´ê¸° ?œê±° (?”ë“œ?ì„œ ?œê±°?˜ê±°???¸ë²¤? ë¦¬??ì¶”ê??˜ëŠ” ë¡œì§ êµ¬í˜„)
 		
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
@@ -349,5 +354,28 @@ void AInfectedCityCharacter::RotateCharacterToMouseCursor()
 
 		// µð¹ö±× ¶óÀÎ (¶óÀÎ Æ®·¹ÀÌ½º È®ÀÎ¿ë)
 		//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
+	}
+}
+
+void AInfectedCityCharacter::FireWeapon()
+{
+	if (CurrentAmmo > 0)
+	{
+		CurrentAmmo--;
+		if (HUDWidget)
+		{
+			float AmmoPercentage = (float)CurrentAmmo / MaxAmmo;
+			HUDWidget->UpdateAmmoUI(AmmoPercentage);
+			UE_LOG(LogTemp, Warning, TEXT("fire ui update !! Ammo: %d, AmmoPercentage: %f"), CurrentAmmo, AmmoPercentage);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("HUDWidget is nullptr! UI update failed."));
+		}
+	}
+	else
+	{
+		StopShoot();
+		UE_LOG(LogTemp, Warning, TEXT("No Bullet!!!"));
 	}
 }
