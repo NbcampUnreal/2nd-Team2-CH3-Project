@@ -196,6 +196,9 @@
     <Filter Include="Source\InfectedCity\01.Utility\Animation\Instance">
       <UniqueIdentifier>{eb7c84a9-d33b-42c0-9e83-b494da4292ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie">
+      <UniqueIdentifier>{ac35e609-b1f9-40a8-8d0d-931d410da362}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -352,6 +355,24 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\InfectedCity\Public\MyUserWidget.h">
       <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GN_Character.h">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GN_AIController.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GN_AIController.h">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GN_AnimInstance.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GN_AnimInstance.h">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GN_Character.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
