@@ -171,14 +171,12 @@ void AInfectedCityCharacter::StopAiming()
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		PlayerController->bShowMouseCursor = false;  //    콺 Ŀ        
+		PlayerController->bShowMouseCursor = false;    
 	}
 
-	//    ο  ī ޶󿡼       ī ޶     ȯ
 	SecondFollowCamera->Deactivate();
 	FollowCamera->Activate();
-
-	// ī ޶       ȸ           ״        ϰ ,    ̸   ⺻           
+      
 	FRotator CurrentBoomRotation = CameraBoom->GetComponentRotation();
 	CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, DefaultArmLength, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed);
 	CameraBoom->SetWorldRotation(CurrentBoomRotation);
@@ -186,7 +184,6 @@ void AInfectedCityCharacter::StopAiming()
 
 void AInfectedCityCharacter::StartShoot()
 {
-	//    콺                      ߻ 
 	bIsFiring = true;
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
@@ -194,22 +191,16 @@ void AInfectedCityCharacter::StartShoot()
 		PlayerController->bShowMouseCursor = true;
 		RotateCharacterToMouseCursor();
 	}
-
-	//    콺                      ߻ 
 	if (bIsFiring && CurrentWeapon)
-	{
-		//  ð    FireRate  ̻     Ǿ        ߻ 
+	{   
 		if (GetWorld()->GetTimeSeconds() - LastFireTime >= FireRate)
 		{
 			FireBullet();
-
-			//    Ⱑ AWeaponBase      Fire()  Լ  ȣ  
 			if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
 			{
-				Weapon->Fire();  //  ߻   Լ  ȣ  
-			}
-
-			//         ߻   ð      
+				Weapon->Fire();
+				UpdateAmmoBar();
+			}   
 			LastFireTime = GetWorld()->GetTimeSeconds();
 		}
 	}
@@ -218,10 +209,10 @@ void AInfectedCityCharacter::StopShoot()
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		PlayerController->bShowMouseCursor = false;  //    콺 Ŀ        
+		PlayerController->bShowMouseCursor = false;  
 	}
-	bIsFiring = false;  //  ߻      
-
+	bIsFiring = false;  
+	UpdateAmmoBar();
 }
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 {
@@ -254,17 +245,16 @@ void AInfectedCityCharacter::Look(const FInputActionValue& Value)
 bool AInfectedCityCharacter::BHASRifle() const
 {
 
-	return CurrentWeapon != nullptr && CurrentWeapon->IsA(AWeaponBase::StaticClass());  // ARifleWeapon        Ŭ         Ÿ   ٰ      
+	return CurrentWeapon != nullptr && CurrentWeapon->IsA(AWeaponBase::StaticClass());
 }
 void AInfectedCityCharacter::StartRunning()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // Increase walk speed for running
+	GetCharacterMovement()->MaxWalkSpeed = 1000.f;
 }
 
 void AInfectedCityCharacter::StopRunning()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 500.f; // Reset walk speed to normal
-
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 }
 
 void AInfectedCityCharacter::StartCrouching()
@@ -301,20 +291,19 @@ void AInfectedCityCharacter::StopCrouching()
 
 void AInfectedCityCharacter::Reload()
 {
-	//         Ⱑ  ִٸ 
+
 	if (CurrentWeapon)
 	{
 		if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
 		{
-			Weapon->Reloading(); //        Reload  Լ  ȣ  
+			Weapon->Reloading();
 		}
 	}
-
-	//         ִϸ  ̼         Ѵٸ 
 	if (ReloadAnimMontage)
 	{
 		PlayAnimMontage(ReloadAnimMontage);
 	}
+	UpdateAmmoBar();
 }
 void AInfectedCityCharacter::PickupWeapon()
 {
@@ -322,24 +311,16 @@ void AInfectedCityCharacter::PickupWeapon()
 	if (NearestWeapon)
 	{
 		CurrentWeapon = NearestWeapon;
-
-		//            Ʈ        ɴϴ .
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); //  浹   Ȱ  ȭ
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
-
-		//    ⸦ ȭ 鿡    ̰      
 		NearestWeapon->SetActorHiddenInGame(false);
-
-		// 'AKGun'    Ͽ           
+      
 		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
-
-
-
-		//       ̸   α     
+  
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
 	else
@@ -380,25 +361,15 @@ void AInfectedCityCharacter::RotateCharacterToMouseCursor()
 
 	FVector WorldLocation, WorldDirection;
 
-	//    콺   ġ          ǥ     ȯ
 	if (PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
 	{
-		//    콺            ġ    ٶ󺸴            
-		FVector LookAtTarget = WorldLocation + (WorldDirection * 5000.f);  // ū  Ÿ                     (            )
-
-		// ĳ   Ϳ     콺   ġ                 (Z                )
+		FVector LookAtTarget = WorldLocation + (WorldDirection * 5000.f);
 		FVector CharacterLocation = GetActorLocation();
 		FVector Direction = LookAtTarget - CharacterLocation;
-		Direction.Z = 0; //      ȸ        (Y   ȸ      ϵ        )
-
-		//    ο  ȸ         
-		FRotator NewRotation = Direction.Rotation();
-
-		// ĳ     ȸ       
+		Direction.Z = 0;       
+		FRotator NewRotation = Direction.Rotation();    
 		SetActorRotation(NewRotation);
 	}
-
-	//            (     Ʈ   ̽  Ȯ ο  -  ׽ Ʈ     )
 	//DrawDebugLine(GetWorld(), WorldLocation, WorldLocation + WorldDirection * 5000.f, FColor::Red, false, 1.0f, 0, 2.0f);
 }
 void AInfectedCityCharacter::FireBullet()
@@ -407,9 +378,7 @@ void AInfectedCityCharacter::FireBullet()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Bullet class or weapon is not valid!"));
 		return;
-	}
-
-	//      ź        ٸ   ߻          
+	}    
 	AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
 	if (Weapon && Weapon->IsOutOfAmmo())
 	{
@@ -421,7 +390,6 @@ void AInfectedCityCharacter::FireBullet()
 		UE_LOG(LogTemp, Warning, TEXT("Cannot fire while reloading!"));
 		return;
 	}
-	//  ߻  ó  
 	FVector MouseWorldLocation, MouseWorldDirection;
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController && PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection))
@@ -434,12 +402,24 @@ void AInfectedCityCharacter::FireBullet()
 		{
 			NewBullet->Fire(ShootDirection, BulletSpeed);
 
-		}
-
-		//  ߻   ִϸ  ̼      
+		} 
 		if (ShootAnimMontage)
 		{
 			PlayAnimMontage(ShootAnimMontage);
+		}
+	}
+}
+
+
+void AInfectedCityCharacter::UpdateAmmoBar()
+{
+	if (HUDWidget)
+	{
+		if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
+		{
+			// 무기의 Ammo 값을 가져와서 HUD에 전달
+			float AmmoRatio = Weapon->GetAmmoRatio();  // 0~1 사이의 비율로 Ammo를 표시한다고 가정
+			HUDWidget->UpdateAmmoProgress(AmmoRatio);
 		}
 	}
 }

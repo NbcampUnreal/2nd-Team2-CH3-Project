@@ -1,8 +1,12 @@
 #include "WeaponBase.h"
+#include "HUDWidget.h"
+#include "CustomHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/HUD.h"
+#include "InfectedCity/InfectedCityCharacter.h"
 
 AWeaponBase::AWeaponBase()
 {
@@ -38,6 +42,9 @@ void AWeaponBase::Fire()
 
         // 탄약 차감
         CurrentAmmo--;
+
+        UE_LOG(LogTemp, Log, TEXT("UpdateHUD() called!"));
+
         UE_LOG(LogTemp, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
         // 총구 소켓의 위치와 회전 값 얻기
         FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("Bullet"));  // 스태틱 메쉬에는 소켓이 없으므로, 이를 처리하려면 다른 방법을 찾아야 합니다.
@@ -69,6 +76,20 @@ void AWeaponBase::Reloading()
         bCanFire = false;
         bIsReloading = true;
 
+        APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+        if (PlayerController)
+        {
+            ACustomHUD* CustomHUD = Cast<ACustomHUD>(PlayerController->GetHUD());
+            if (CustomHUD && CustomHUD->GetHUDWidget())
+            {
+                UHUDWidget* HUDWidget = Cast<UHUDWidget>(CustomHUD->GetHUDWidget());
+                if (HUDWidget)
+                {
+                    HUDWidget->StartFlashingReloadText();
+                }
+            }
+        }
+
         FTimerHandle ReloadTimer;
         GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AWeaponBase::CompleteReload, ReloadTime, false);
     }
@@ -85,6 +106,20 @@ void AWeaponBase::CompleteReload()
     UE_LOG(LogTemp, Log, TEXT("Reload complete."));
     bIsReloading = false;
     bCanFire = true;
+
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+    if (PlayerController)
+    {
+        ACustomHUD* CustomHUD = Cast<ACustomHUD>(PlayerController->GetHUD());
+        if (CustomHUD && CustomHUD->GetHUDWidget())
+        {
+            UHUDWidget* HUDWidget = Cast<UHUDWidget>(CustomHUD->GetHUDWidget());
+            if (HUDWidget)
+            {
+                HUDWidget->StopFlashingReloadText();
+            }
+        }
+    }
 }
 
 // SetAmmo: 탄약 설정 함수
@@ -113,4 +148,14 @@ bool AWeaponBase::IsOutOfAmmo() const
 bool AWeaponBase::GetIsReloading() const
 {
     return bIsReloading;
+}
+
+
+float AWeaponBase::GetAmmoRatio() const
+{
+    if (MaxAmmo > 0)
+    {
+        return (float)CurrentAmmo / (float)MaxAmmo;
+    }
+    return 0.f;  // Ammo가 0일 경우 0 반환
 }

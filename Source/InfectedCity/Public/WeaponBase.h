@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Bullet.h" 
+#include "HUDWidget.h"
 #include "WeaponBase.generated.h"
 
 class UStaticMeshComponent;
@@ -76,4 +77,6 @@ public:
 
     // 재장전 완료 후 호출되는 함수
     void CompleteReload();
+
+    float GetAmmoRatio() const;
 };

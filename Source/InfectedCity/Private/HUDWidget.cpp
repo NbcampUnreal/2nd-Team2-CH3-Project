@@ -10,6 +10,18 @@ void UHUDWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
+    if (ReloadText)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ReloadText is valid"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ReloadText is not valid"));
+    }
+
+
+
+
     if (CrouchImage) CrouchImage->SetVisibility(ESlateVisibility::Hidden);
     if (StandImage) StandImage->SetVisibility(ESlateVisibility::Visible);
 
@@ -88,5 +100,64 @@ void UHUDWidget::SetCrouchState(bool bIsCrouching)
     {
         CrouchImage->SetVisibility(bIsCrouching ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
         StandImage->SetVisibility(bIsCrouching ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+    }
+}
+
+void UHUDWidget::UpdateAmmoProgress(float NewAmmoValue)
+{
+    if (AmmoProgressBar)
+    {
+        AmmoProgressBar->SetPercent(NewAmmoValue);
+    }
+}
+
+void UHUDWidget::StartFlashingReloadText()
+{
+    // 일정 시간 간격으로 ToggleReloadTextVisibility 호출
+    if (ReloadTextFlashTimer.IsValid())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ReloadText Flash Timer already active"));
+    }
+    if (GetWorld())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Starting Timer for ReloadText"));
+
+        GetWorld()->GetTimerManager().SetTimer(ReloadTextFlashTimer, this, &UHUDWidget::ToggleReloadTextVisibility, 0.5f, true);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("GetWorld() returned null"));
+    }
+}
+
+
+
+void UHUDWidget::StopFlashingReloadText()
+{
+    // 깜빡임 중지
+    GetWorld()->GetTimerManager().ClearTimer(ReloadTextFlashTimer);
+    if (ReloadText)
+    {
+        ReloadText->SetVisibility(ESlateVisibility::Hidden);
+    }
+}
+
+void UHUDWidget::ToggleReloadTextVisibility()
+{
+    if (ReloadText)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Toggling ReloadText Visibility"));
+
+        if (bIsReloadTextVisible)
+        {
+            ReloadText->SetVisibility(ESlateVisibility::Hidden);
+            UE_LOG(LogTemp, Warning, TEXT("ReloadText Hidden"));
+        }
+        else
+        {
+            ReloadText->SetVisibility(ESlateVisibility::Visible);
+            UE_LOG(LogTemp, Warning, TEXT("ReloadText Visible"));
+        }
+        bIsReloadTextVisible = !bIsReloadTextVisible;
     }
 }

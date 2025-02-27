@@ -101,6 +101,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void UpdateAmmoBar();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	AWeaponBase* EquippedWeapon;  // 장착된 무기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
