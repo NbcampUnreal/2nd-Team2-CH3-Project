@@ -53,8 +53,6 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	SecondFollowCamera->SetupAttachment(SecondCameraBoom, USpringArmComponent::SocketName);
 	SecondFollowCamera->bUsePawnControlRotation = false; // 카메라는 회전하지 않음
 	
-	bIsFiring = false;
-	FireRate = 0.755f;
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
 {
@@ -174,27 +172,18 @@ void AInfectedCityCharacter::StartShoot()
 		PlayerController->bShowMouseCursor = true;  // 마우스 커서 보이게 설정
 		RotateCharacterToMouseCursor();  // 마우스를 따라 캐릭터 회전
 	}
-	if (CurrentWeapon)
-	{
-		if (!bIsFiring && CurrentAmmo > 0)
-		{
-			CurrentWeapon->Fire();
-			bIsFiring = true;
-			GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AInfectedCityCharacter::FireWeapon, FireRate, true);
-			UE_LOG(LogTemp, Warning, TEXT("fire tick open !!"));
-		}
-	}
+		CurrentWeapon->Fire();
 }
+
 void AInfectedCityCharacter::StopShoot()
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		PlayerController->bShowMouseCursor = false;  // 마우스 커서 숨기기
-		bIsFiring = false;
-		GetWorldTimerManager().ClearTimer(FireTimerHandle);
 	}
-
 }
+
+
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -262,9 +251,6 @@ void AInfectedCityCharacter::StartCrouching()
 void AInfectedCityCharacter::StopCrouching()
 {
 	UnCrouch(); // Make the character stand up
-
-
-
 	if (HUDWidget)
 	{
 		HUDWidget->SetCrouchState(false);
@@ -354,28 +340,5 @@ void AInfectedCityCharacter::RotateCharacterToMouseCursor()
 
 		// 디버그 라인 (라인 트레이스 확인용)
 		//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
-	}
-}
-
-void AInfectedCityCharacter::FireWeapon()
-{
-	if (CurrentAmmo > 0)
-	{
-		CurrentAmmo--;
-		if (HUDWidget)
-		{
-			float AmmoPercentage = (float)CurrentAmmo / MaxAmmo;
-			HUDWidget->UpdateAmmoUI(AmmoPercentage);
-			UE_LOG(LogTemp, Warning, TEXT("fire ui update !! Ammo: %d, AmmoPercentage: %f"), CurrentAmmo, AmmoPercentage);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("HUDWidget is nullptr! UI update failed."));
-		}
-	}
-	else
-	{
-		StopShoot();
-		UE_LOG(LogTemp, Warning, TEXT("No Bullet!!!"));
 	}
 }

@@ -47,17 +47,6 @@ protected:
   
 protected:
 
-	FTimerHandle FireTimerHandle; // 타이머 핸들
-	float FireRate = 0.755f; // 연사 간격 (초 단위)
-
-	bool bIsFiring = false;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	int32 MaxAmmo = 30; // 최대 탄약 수
-
-	UPROPERTY(VisibleAnywhere, Category = "Weapon")
-	int32 CurrentAmmo = 30; // 현재 탄약 수
-
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
 
@@ -92,8 +81,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void FireWeapon();
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
 	TSubclassOf<UHUDWidget> HUDWidgetClass;
 

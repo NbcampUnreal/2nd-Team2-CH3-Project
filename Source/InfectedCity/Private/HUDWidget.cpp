@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "Components/InputComponent.h"
 
 void UHUDWidget::NativeConstruct()
 {
@@ -33,10 +34,6 @@ void UHUDWidget::NativeConstruct()
 
     UseProgress->SetVisibility(ESlateVisibility::Hidden);
 
-    if (AmmoProgressBar)
-    {
-        AmmoProgressBar->SetPercent(1.0f); // 시작 시 최대 탄약 상태로 설정
-    }
 
 }
 
@@ -91,31 +88,5 @@ void UHUDWidget::SetCrouchState(bool bIsCrouching)
     {
         CrouchImage->SetVisibility(bIsCrouching ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
         StandImage->SetVisibility(bIsCrouching ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
-    }
-}
-
-void UHUDWidget::UpdateAmmoUI(float AmmoPercentage)
-{
-    if (AmmoProgressBar)
-    {
-        AmmoProgressBar->SetPercent(AmmoPercentage);
-        UE_LOG(LogTemp, Warning, TEXT("Ammo UI updated: %f"), AmmoPercentage);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("AmmoProgressBar is nullptr!"));
-    }
-}
-
-
-void UHUDWidget::DecreaseAmmo()
-{
-    if (CurrentAmmo > 0)
-    {
-        CurrentAmmo--;
-        float AmmoPercentage = (float)CurrentAmmo / MaxAmmo;
-
-        // UI 업데이트
-        UpdateAmmoUI(AmmoPercentage);
     }
 }
