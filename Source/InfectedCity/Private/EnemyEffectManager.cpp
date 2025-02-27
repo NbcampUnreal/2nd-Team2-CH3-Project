@@ -24,14 +24,45 @@ void AEnemyEffectManager::BeginPlay()
 {
 	Super::BeginPlay();
     //SetupSceneCapture();
+
+    
+    if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+    {
+        bPreMouseCursor = PlayerController->bShowMouseCursor;
+    }
 }
 
 void AEnemyEffectManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    DetectActorAtMouseCursor();
-   // DetectActorAtCenter();
+    
+
+
+    if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+    {
+        /* Cursor Test Code */
+        if (PlayerController->IsInputKeyDown(EKeys::F1))
+        {
+            UE_LOG(LogTemp, Log, TEXT("Shift + F1 Down"));
+            PlayerController->bShowMouseCursor = !PlayerController->bShowMouseCursor;
+        }
+
+        if (bPreMouseCursor != PlayerController->bShowMouseCursor)
+        {
+            if (EnemyCharacter)
+            {
+                EnemyCharacter->EnableOutline(false);
+                EnemyCharacter = nullptr;
+            }
+
+            bPreMouseCursor = PlayerController->bShowMouseCursor;
+        }
+
+        PlayerController->bShowMouseCursor == true ? DetectActorAtMouseCursor(PlayerController) : DetectActorAtCenter(PlayerController);
+    }
+    
+    //DetectActorAtCenter();
 
     //if (SceneCapture && DepthRenderTarget)
     //{
@@ -90,9 +121,8 @@ void AEnemyEffectManager::SetupSceneCapture()
     //}
 }
 
-void AEnemyEffectManager::DetectActorAtMouseCursor()
+void AEnemyEffectManager::DetectActorAtMouseCursor(APlayerController* PlayerController)
 {
-    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
     if (PlayerController)
     {
         FVector2D MousePosition;
@@ -127,7 +157,7 @@ void AEnemyEffectManager::DetectActorAtMouseCursor()
                 if (!EnemyCharacter)
                 {
                     EnemyCharacter = Cast<AEnemyCharacter>(HitActor);
-                    EnemyCharacter->SetOutline(true);
+                    EnemyCharacter->EnableOutline(true);
                 }
 
             }
@@ -136,16 +166,15 @@ void AEnemyEffectManager::DetectActorAtMouseCursor()
         {
             if (EnemyCharacter)
             {
-                EnemyCharacter->SetOutline(false);
+                EnemyCharacter->EnableOutline(false);
             }
             EnemyCharacter = nullptr;
         }
     }
 }
 
-void AEnemyEffectManager::DetectActorAtCenter()
+void AEnemyEffectManager::DetectActorAtCenter(APlayerController* PlayerController)
 {
-    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
     if (PlayerController)
     {
         FVector2D ViewportSize;
@@ -164,27 +193,34 @@ void AEnemyEffectManager::DetectActorAtCenter()
         FVector End = WorldLocation + (WorldDirection * 10000.0f);
 
         FHitResult HitResult;
-        bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, TraceParams);
+        bool bHit = GetWorld()->LineTraceSingleByObjectType(
+            HitResult,
+            Start,
+            End,
+            ECC_GameTraceChannel1,
+            TraceParams
+        );
 
         if (bHit)
         {
             AActor* HitActor = HitResult.GetActor();
             if (HitActor)
             {
-                UE_LOG(LogTemp, Warning, TEXT("Actor Cursor hit: %s"), *HitActor->GetName());
+                UE_LOG(LogTemp, Warning, TEXT("Actor Center hit: %s"), *HitActor->GetName());
 
                 if (!EnemyCharacter)
                 {
                     EnemyCharacter = Cast<AEnemyCharacter>(HitActor);
-                    EnemyCharacter->SetOutline(true);
+                    EnemyCharacter->EnableOutline(true);
                 }
+
             }
         }
         else
         {
             if (EnemyCharacter)
             {
-                EnemyCharacter->SetOutline(true);
+                EnemyCharacter->EnableOutline(false);
             }
             EnemyCharacter = nullptr;
         }

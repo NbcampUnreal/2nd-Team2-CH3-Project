@@ -12,11 +12,23 @@
 #include "HUDWidget.h"
 #include "InteractManager/InteractManager.h"
 #include "Blueprint/UserWidget.h"
+#include "Bullet.h"
+
 
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
-	
+	static ConstructorHelpers::FClassFinder<ABullet> BulletClassFinder(TEXT("/Game/Blueprints/bullet/BP_Bullet"));
+	if (BulletClassFinder.Succeeded())
+	{
+		BulletClass = BulletClassFinder.Class;
+		UE_LOG(LogTemp, Log, TEXT("Bullet class loaded successfully"));
+	}
+	else
+	{
+		BulletClass = nullptr;
+		UE_LOG(LogTemp, Error, TEXT("Failed to load Bullet class"));
+	}
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -59,7 +71,6 @@ void AInfectedCityCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	
 	
 }
 
@@ -117,12 +128,14 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Pickup Weapon (F key)
 		EnhancedInputComponent->BindAction(PickupWeaponAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::PickupWeapon);
-
+		// Pickup Weapon (Mouse Left key)
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartAiming);
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopAiming);
-
+		// Pickup Weapon (Mouse Right key)
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StartShoot);
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StopShoot);
+
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::Reload);
 	}
 	
 }
@@ -141,41 +154,64 @@ void AInfectedCityCharacter::StartAiming()
 	FollowCamera->Deactivate();
 	SecondFollowCamera->Activate();
 
-	// 새로운 카메라로 줌 인
-	SecondFollowCamera->SetFieldOfView(FMath::FInterpTo(SecondFollowCamera->FieldOfView, ZoomedFOV, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed));
-
+	
 	// 마우스를 따라 회전
 	RotateCharacterToMouseCursor();
+
+
+	// 카메라 붐의 길이만 조정 (회전은 유지)
+	SecondCameraBoom->TargetArmLength = FMath::FInterpTo(SecondCameraBoom->TargetArmLength, ZoomedArmLength, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed);
+
+	
 }
 
 void AInfectedCityCharacter::StopAiming()
 {
 	bIsAiming = false;
 
-	// 새로운 카메라에서 기존 카메라로 전환
-	SecondFollowCamera->Deactivate();
-	FollowCamera->Activate();
-
-	// 기존 카메라로 줌 아웃
-	FollowCamera->SetFieldOfView(FMath::FInterpTo(FollowCamera->FieldOfView, DefaultFOV, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed));
-
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		PlayerController->bShowMouseCursor = false;  // 마우스 커서 숨기기
 	}
+
+	// 새로운 카메라에서 기존 카메라로 전환
+	SecondFollowCamera->Deactivate();
+	FollowCamera->Activate();
+
+	// 카메라 붐의 회전 각도를 그대로 유지하고, 길이만 기본값으로 설정
+	FRotator CurrentBoomRotation = CameraBoom->GetComponentRotation();
+	CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, DefaultArmLength, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed);
+	CameraBoom->SetWorldRotation(CurrentBoomRotation);
 }
 
 void AInfectedCityCharacter::StartShoot()
 {
+	// 마우스를 누르고 있으면 계속 발사
+	bIsFiring = true;
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		PlayerController->bShowMouseCursor = true;  // 마우스 커서 보이게 설정
-		RotateCharacterToMouseCursor();  // 마우스를 따라 캐릭터 회전
+		PlayerController->bShowMouseCursor = true; 
+		RotateCharacterToMouseCursor(); 
 	}
-	if (CurrentWeapon)
+
+	// 마우스를 누르고 있으면 계속 발사
+	if (bIsFiring && CurrentWeapon)
 	{
-		CurrentWeapon->Fire();
+		// 시간이 FireRate 이상이 되었을 때 발사
+		if (GetWorld()->GetTimeSeconds() - LastFireTime >= FireRate)
+		{
+			FireBullet();
+
+			// 무기가 AWeaponBase일 때 Fire() 함수 호출
+			if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
+			{
+				Weapon->Fire();  // 발사 함수 호출
+			}
+
+			// 마지막 발사 시간 갱신
+			LastFireTime = GetWorld()->GetTimeSeconds();
+		}
 	}
 }
 void AInfectedCityCharacter::StopShoot()
@@ -184,6 +220,7 @@ void AInfectedCityCharacter::StopShoot()
 	{
 		PlayerController->bShowMouseCursor = false;  // 마우스 커서 숨기기
 	}
+	bIsFiring = false;  // 발사 중지
 
 }
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
@@ -261,32 +298,47 @@ void AInfectedCityCharacter::StopCrouching()
 		HUDWidget->SetCrouchState(false);
 	}
 }
+void AInfectedCityCharacter::Reload()
+{
+	// 현재 무기가 있다면
+	if (CurrentWeapon)
+	{
+		if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
+		{
+			Weapon->Reloading(); // 무기의 Reload 함수 호출
+		}
+	}
 
+	// 재장전 애니메이션을 실행한다면
+	if (ReloadAnimMontage)
+	{
+		PlayAnimMontage(ReloadAnimMontage);
+	}
+}
 void AInfectedCityCharacter::PickupWeapon()
 {
 	AWeaponBase* NearestWeapon = FindNearestWeapon();
 	if (NearestWeapon)
 	{
-		
 		CurrentWeapon = NearestWeapon;
 
-		
+		// 무기 컴포넌트를 가져옵니다.
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌 비활성화
 		}
 
-	
+		// 무기를 화면에 보이게 설정
 		NearestWeapon->SetActorHiddenInGame(false);
 
-		
-		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true); 
-		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));  
+		// 'AKGun' 소켓에 무기 부착
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
+		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
 
 		
-		
+
+		// 무기 이름 로그 출력
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
 	else
@@ -325,29 +377,67 @@ void AInfectedCityCharacter::RotateCharacterToMouseCursor()
 	if (!PlayerController) return;
 
 	FVector WorldLocation, WorldDirection;
+
+	// 마우스 위치를 월드 좌표로 변환
 	if (PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
 	{
-		// 라인 트레이스를 수행하여 마우스가 가리키는 곳을 찾음
-		FHitResult HitResult;
-		FVector TraceStart = WorldLocation;
-		FVector TraceEnd = TraceStart + (WorldDirection * 5000.f); // 5000 유닛 거리까지 검사
+		// 마우스 포인터의 위치로 바라보는 방향을 계산
+		FVector LookAtTarget = WorldLocation + (WorldDirection * 5000.f);  // 큰 거리까지 가는 점을 설정 (직선으로 계산)
 
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(this); // 자기 자신은 무시
+		// 캐릭터와 마우스 위치의 방향 벡터 계산 (Z축을 제외한 방향)
+		FVector CharacterLocation = GetActorLocation();
+		FVector Direction = LookAtTarget - CharacterLocation;
+		Direction.Z = 0; // 상하 회전 방지 (Y축 회전만 하도록 설정)
 
-		// 라인 트레이스 수행
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+		// 새로운 회전 값 계산
+		FRotator NewRotation = Direction.Rotation();
+
+		// 캐릭터 회전 적용
+		SetActorRotation(NewRotation);
+	}
+
+	// 디버그 라인 (라인 트레이스 확인용 - 테스트 목적)
+	//DrawDebugLine(GetWorld(), WorldLocation, WorldLocation + WorldDirection * 5000.f, FColor::Red, false, 1.0f, 0, 2.0f);
+}
+void AInfectedCityCharacter::FireBullet()
+{
+	if (!BulletClass || !CurrentWeapon)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Bullet class or weapon is not valid!"));
+		return;
+	}
+
+	// 현재 탄약이 없다면 발사하지 않음
+	AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
+	if (Weapon && Weapon->IsOutOfAmmo())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Out of ammo!"));
+		return;
+	}
+	if (Weapon && Weapon->bIsReloading)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot fire while reloading!"));
+		return;
+	}
+	// 발사 처리
+	FVector MouseWorldLocation, MouseWorldDirection;
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController && PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection))
+	{
+		FVector ShootDirection = MouseWorldDirection.GetSafeNormal();
+		FVector SpawnLocation = GetMesh()->GetSocketLocation("Bullet");
+		FRotator SpawnRotation = ShootDirection.Rotation();
+
+		if (ABullet* NewBullet = GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocation, SpawnRotation))
 		{
-			FVector LookAtTarget = HitResult.ImpactPoint;
-			FVector CharacterLocation = GetActorLocation();
-			FVector Direction = LookAtTarget - CharacterLocation;
-			Direction.Z = 0; // 상하 회전 방지
-
-			FRotator NewRotation = Direction.Rotation();
-			SetActorRotation(NewRotation);
+			NewBullet->Fire(ShootDirection, BulletSpeed);
+			
 		}
 
-		// 디버그 라인 (라인 트레이스 확인용)
-		//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
+		// 발사 애니메이션 실행
+		if (ShootAnimMontage)
+		{
+			PlayAnimMontage(ShootAnimMontage);
+		}
 	}
 }
