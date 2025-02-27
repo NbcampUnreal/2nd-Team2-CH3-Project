@@ -8,7 +8,7 @@ AWeaponBase::AWeaponBase()
 {
     // 기본 값 설정
     WeaponMesh1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-    RootComponent = WeaponMesh1; 
+    RootComponent = WeaponMesh; 
     WeaponCollision = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponCollision"));
 
     MaxAmmo = 30;  // 예시로 기본 탄약 수를 30으로 설정
@@ -16,7 +16,7 @@ AWeaponBase::AWeaponBase()
     ReloadTime = 4.5f;  
 
     
-    WeaponCollision->SetupAttachment(WeaponMesh1);
+    WeaponCollision->SetupAttachment(WeaponMesh);
 
     Damage = 10.0f; // 기본 데미지
 
@@ -40,7 +40,7 @@ void AWeaponBase::Fire()
         CurrentAmmo--;
         UE_LOG(LogTemp, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
         // 총구 소켓의 위치와 회전 값 얻기
-        FVector MuzzleLocation = WeaponMesh1->GetSocketLocation(TEXT("Bullet"));  // 스태틱 메쉬에는 소켓이 없으므로, 이를 처리하려면 다른 방법을 찾아야 합니다.
+        FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("Bullet"));  // 스태틱 메쉬에는 소켓이 없으므로, 이를 처리하려면 다른 방법을 찾아야 합니다.
         FRotator MuzzleRotation = WeaponMesh->GetSocketRotation(TEXT("Bullet"));  // 마찬가지로 소켓이 없으면 다른 방법으로 처리해야 합니다.
 
         // 발사 사운드 재생
