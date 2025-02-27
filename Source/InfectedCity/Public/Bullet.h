@@ -8,15 +8,24 @@
 UCLASS()
 class INFECTEDCITY_API ABullet : public AActor
 {
+<<<<<<< HEAD
 	GENERATED_BODY()
 	
+=======
+    GENERATED_BODY()
+
+>>>>>>> dev
 
 public:
     // 생성자
     ABullet();
 
 
+<<<<<<< HEAD
    
+=======
+
+>>>>>>> dev
 
 public:
     // Tick 함수, 매 프레임마다 호출됨
@@ -52,6 +61,7 @@ private:
     // 충돌 컴포넌트
     UPROPERTY(VisibleAnywhere)
     USphereComponent* CollisionComponent;
+<<<<<<< HEAD
 
     // 총알 메시 컴포넌트
     UPROPERTY(VisibleAnywhere)
@@ -59,4 +69,13 @@ private:
 
   
     
+=======
+
+    // 총알 메시 컴포넌트
+    UPROPERTY(VisibleAnywhere)
+    UStaticMeshComponent* MeshComponent;
+
+
+
+>>>>>>> dev
 };

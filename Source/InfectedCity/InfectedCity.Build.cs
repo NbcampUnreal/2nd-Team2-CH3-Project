@@ -23,7 +23,7 @@ public class InfectedCity : ModuleRules
             "InputCore",
             "EnhancedInput",
             "Niagara",
-            "NavigationSystem"w
+            "NavigationSystem"
         });
     }
 }

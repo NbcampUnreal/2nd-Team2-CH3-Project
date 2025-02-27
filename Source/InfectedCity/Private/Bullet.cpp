@@ -25,7 +25,11 @@ ABullet::ABullet()
     MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
     MeshComponent->SetupAttachment(RootComponent);
 
+<<<<<<< HEAD
    
+=======
+
+>>>>>>> dev
     Damage = 10.f;
 
     // 충돌 시 이벤트 등록
