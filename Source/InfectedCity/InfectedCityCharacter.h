@@ -11,12 +11,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class AWeaponBase;
-<<<<<<< HEAD
-
-
-=======
 class ABullet;
->>>>>>> dev
 
 
 UCLASS(config = Game)
@@ -60,12 +55,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
-<<<<<<< HEAD
-  
-
-	
-=======
->>>>>>> dev
 
 
 
@@ -85,13 +74,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* CrouchAction;
-<<<<<<< HEAD
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* ReloadAction;
-=======
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* ReloadAction;
->>>>>>> dev
 
 
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -110,43 +94,13 @@ protected:
 	float ZoomInterpSpeed = 10.0f;
 	bool bIsAiming = false;
 	bool bIsFiring;
-<<<<<<< HEAD
-	
-=======
 
->>>>>>> dev
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
 	virtual void BeginPlay() override;
 
 public:
-<<<<<<< HEAD
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
-	AWeaponBase* EquippedWeapon;  // 장착된 무기
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
-	UAnimMontage* ShootAnimMontage;
-	// 장착된 무기 반환 함수
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AWeaponBase* GetEquippedWeapon() const { return EquippedWeapon; }  // 장착된 무기를 반환하는 함수
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<ABullet> BulletClass;  // 총알 클래스
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
-	UAnimMontage* ReloadAnimMontage;  // 재장전 애니메이션 몽타주 변수 추가
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	float BulletSpeed = 10000.f;  // 총알 속도
-	void FireBullet(); 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
-	TSubclassOf<UHUDWidget> HUDWidgetClass;
-
-	// Zoomed view와 기본 Zoom 거리
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float DefaultArmLength = 600.0f;  // 기본 스프링암 길이 (예: 400)
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float ZoomedArmLength = 600.0f;  // 줌인 시 스프링암 길이 (예: 600)
-=======
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	AWeaponBase* EquippedWeapon;  // 장착된 무기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
@@ -174,11 +128,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	void Reload();
->>>>>>> dev
 
-	virtual void Tick(float DeltaTime) override;
-	void Reload();
-	
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -196,7 +146,6 @@ public:
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
-	
 
 
 	// 臾닿린 二쇱슱 ?뚯쓽 ?숈옉
@@ -222,12 +171,7 @@ public:
 
 	void RotateCharacterToMouseCursor();
 
-<<<<<<< HEAD
 private:
 	float LastFireTime = 0.0f;  // 마지막 발사 시간
-=======
-private:
-	float LastFireTime = 0.0f;  // 마지막 발사 시간
->>>>>>> dev
 	float FireRate = 0.1f;      // 발사 속도 (초 단위)
 };

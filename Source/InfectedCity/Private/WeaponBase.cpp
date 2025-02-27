@@ -7,36 +7,21 @@
 AWeaponBase::AWeaponBase()
 {
     // 기본 값 설정
-<<<<<<< HEAD
-    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-    RootComponent = WeaponMesh; 
-=======
     WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
     RootComponent = WeaponMesh;
->>>>>>> dev
     WeaponCollision = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponCollision"));
 
     MaxAmmo = 30;  // 예시로 기본 탄약 수를 30으로 설정
     CurrentAmmo = MaxAmmo;  // 초기 탄약은 MaxAmmo로 설정
-<<<<<<< HEAD
-    ReloadTime = 4.5f;  
-
-    
-=======
     ReloadTime = 4.5f;
 
 
->>>>>>> dev
     WeaponCollision->SetupAttachment(WeaponMesh);
 
     Damage = 10.0f; // 기본 데미지
 
     bCanFire = true;  // 초기에는 발사가 가능하도록 설정
-<<<<<<< HEAD
-   
-=======
 
->>>>>>> dev
 }
 
 void AWeaponBase::Fire()
@@ -83,11 +68,7 @@ void AWeaponBase::Reloading()
         UE_LOG(LogTemp, Log, TEXT("Reloading..."));
         bCanFire = false;
         bIsReloading = true;
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> dev
         FTimerHandle ReloadTimer;
         GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AWeaponBase::CompleteReload, ReloadTime, false);
     }
@@ -114,11 +95,7 @@ void AWeaponBase::SetAmmo(int32 AmmoAmount)
     {
         CurrentAmmo = MaxAmmo; // 최대 탄약 수를 넘지 않도록 설정
     }
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> dev
 }
 
 // GetCurrentAmmo: 현재 탄약 반환 함수
@@ -131,13 +108,9 @@ int32 AWeaponBase::GetCurrentAmmo() const
 bool AWeaponBase::IsOutOfAmmo() const
 {
     return CurrentAmmo <= 0;
-<<<<<<< HEAD
-}
-=======
 }
 
 bool AWeaponBase::GetIsReloading() const
 {
     return bIsReloading;
 }
->>>>>>> dev

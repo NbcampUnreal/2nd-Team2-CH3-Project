@@ -33,13 +33,6 @@ public:
 
     // 탄약이 부족한지 확인하는 함수
     bool IsOutOfAmmo() const;
-<<<<<<< HEAD
-    // 리로딩 중 여부
-    bool bIsReloading;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-    UStaticMeshComponent* WeaponMesh; 
-=======
 
     UFUNCTION(BlueprintCallable)
     bool GetIsReloading() const;
@@ -50,7 +43,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
     USkeletalMeshComponent* WeaponMesh;
->>>>>>> dev
     // 충돌 컴포넌트
     UPROPERTY(VisibleAnywhere)
     USphereComponent* WeaponCollision;
