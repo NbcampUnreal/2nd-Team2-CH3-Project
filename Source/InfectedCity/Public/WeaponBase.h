@@ -1,9 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#pragma once
-
-#include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Bullet.h" 
 #include "WeaponBase.generated.h"
@@ -16,56 +13,67 @@ class UParticleSystem;
 UCLASS()
 class INFECTEDCITY_API AWeaponBase : public AActor
 {
-	GENERATED_BODY()
-	
+    GENERATED_BODY()
+
 
 public:
-    // 생성자
     AWeaponBase();
 
-    
-
-    // 무기 발사 함수
+    // 발사 함수
     void Fire();
 
-    // 발사 후 타이머가 끝나면 발사 가능 상태로 되돌리는 함수
-    void ResetFire();
+    // 재장전 함수
+    void Reloading();
 
- 
+    // 탄약 설정 함수
+    void SetAmmo(int32 AmmoAmount);
 
- 
-protected:
-    // 무기 메시
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-    UStaticMeshComponent* WeaponMesh;
+    // 현재 탄약 반환 함수
+    int32 GetCurrentAmmo() const;
 
-    // 무기 충돌
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+    // 탄약이 부족한지 확인하는 함수
+    bool IsOutOfAmmo() const;
+
+    UFUNCTION(BlueprintCallable)
+    bool GetIsReloading() const;
+
+    // 리로딩 중 여부
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reload")
+    bool bIsReloading;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+    USkeletalMeshComponent* WeaponMesh;
+    // 충돌 컴포넌트
+    UPROPERTY(VisibleAnywhere)
     USphereComponent* WeaponCollision;
 
-    // 무기 데미지
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    float Damage;
+    // 최대 탄약 수
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    int32 MaxAmmo;
 
-    // 발사 속도 (초당 발사 횟수)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    float FireRate;
+    // 현재 탄약 수
+    int32 CurrentAmmo;
+
+    // 재장전 시간
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    float ReloadTime;
+
+    // 데미지
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    float Damage;
 
     // 발사 가능 여부
     bool bCanFire;
-
-    // 발사 간격을 위한 타이머 핸들
-    FTimerHandle FireRateTimerHandle;
-
-    // 총알 클래스
-    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-    TSubclassOf<ABullet> BulletClass;  // ABullet을 사용
-
+    UPROPERTY(EditAnywhere, Category = "Animation")
+    UAnimMontage* ReloadAnimation; // 재장전 애니메이션
     // 발사 사운드
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+    UPROPERTY(EditAnywhere, Category = "Weapon")
     USoundBase* FireSound;
 
     // 발사 이펙트
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+    UPROPERTY(EditAnywhere, Category = "Weapon")
     UParticleSystem* FireEffect;
+
+    // 재장전 완료 후 호출되는 함수
+    void CompleteReload();
 };

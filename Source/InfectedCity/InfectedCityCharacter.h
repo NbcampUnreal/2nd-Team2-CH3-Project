@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "WeaponBase.h"
 #include "InfectedCityCharacter.generated.h"
 
 class UHUDWidget;
@@ -11,13 +10,16 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class AWeaponBase;
+class ABullet;
 
-UCLASS(config=Game)
+
+UCLASS(config = Game)
 class AInfectedCityCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	
+
 public:
 	// ê¸°ë³¸ ?ì„±??
 	AInfectedCityCharacter();
@@ -41,27 +43,21 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* SecondFollowCamera;
-	
 
 
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon")
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	AWeaponBase* CurrentWeapon;
-  
+
 	UPROPERTY(EditAnywhere, Category = "Input")
-
-
-
-
 	UInputAction* JumpAction; // ?í”„ ?¡ì…˜
-
-	// ë¬´ê¸°ë¥?ì£¼ìš¸ ???¬ìš©???…ë ¥ ?¡ì…˜
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
-  
-protected:
-	
+
+
+
 
 	// ìºë¦­?°ì˜ ?´ë™ ê´€???…ë ¥ ?¡ì…˜??
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -78,11 +74,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* CrouchAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* ReloadAction;
+
+
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AimingAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* ShootAction;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float ZoomedFOV = 45.0f;
 
@@ -93,20 +93,41 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float ZoomInterpSpeed = 10.0f;
 	bool bIsAiming = false;
+	bool bIsFiring;
 
-	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
 	virtual void BeginPlay() override;
 
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	AWeaponBase* EquippedWeapon;  // ÀåÂøµÈ ¹«±â
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage* ShootAnimMontage;
+	// ÀåÂøµÈ ¹«±â ¹İÈ¯ ÇÔ¼ö
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	AWeaponBase* GetEquippedWeapon() const { return EquippedWeapon; }  // ÀåÂøµÈ ¹«±â¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<ABullet> BulletClass;  // ÃÑ¾Ë Å¬·¡½º
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage* ReloadAnimMontage;  // ÀçÀåÀü ¾Ö´Ï¸ŞÀÌ¼Ç ¸ùÅ¸ÁÖ º¯¼ö Ãß°¡
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float BulletSpeed = 10000.f;  // ÃÑ¾Ë ¼Óµµ
+	void FireBullet();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
 	TSubclassOf<UHUDWidget> HUDWidgetClass;
 
+	// Zoomed view¿Í ±âº» Zoom °Å¸®
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float DefaultArmLength = 600.0f;  // ±âº» ½ºÇÁ¸µ¾Ï ±æÀÌ (¿¹: 400)
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float ZoomedArmLength = 600.0f;  // ÁÜÀÎ ½Ã ½ºÇÁ¸µ¾Ï ±æÀÌ (¿¹: 600)
+
 	virtual void Tick(float DeltaTime) override;
-	
+	void Reload();
 
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -126,18 +147,19 @@ public:
 	void StartCrouching();
 	void StopCrouching();
 
+
 	// ë¬´ê¸° ì£¼ìš¸ ?Œì˜ ?™ì‘
 	void PickupWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	bool BHASRifle() const;
-	
+
 
 	// Çã¸® ¼÷ÀÓ º¸°£À» À§ÇÑ º¯¼ö (0 = ¼­ ÀÖ´Â »óÅÂ, 1 = ¿ÏÀüÈ÷ ¼÷ÀÎ »óÅÂ)
 	float CrouchBlendFactor = 0.0f;
 
 
-	
+
 	// ê°€ê¹Œìš´ ë¬´ê¸°ë¥?ì°¾ëŠ” ?¨ìˆ˜
 	AWeaponBase* FindNearestWeapon();
 
@@ -148,4 +170,8 @@ public:
 	void StopShoot();
 
 	void RotateCharacterToMouseCursor();
+
+private:
+	float LastFireTime = 0.0f;  // ¸¶Áö¸· ¹ß»ç ½Ã°£
+	float FireRate = 0.1f;      // ¹ß»ç ¼Óµµ (ÃÊ ´ÜÀ§)
 };
