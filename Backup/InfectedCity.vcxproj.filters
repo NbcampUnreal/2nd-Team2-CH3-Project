@@ -187,6 +187,18 @@
     <Filter Include="Source\InfectedCity\01.Utility\Effects\Outline\Shader">
       <UniqueIdentifier>{0950e8fd-debd-4839-9260-fdffdbd372ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Weapon\Bullet">
+      <UniqueIdentifier>{ca45d9e5-cf4e-41f1-b70e-1bd8bfb911fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\Animation">
+      <UniqueIdentifier>{250d6069-d913-4dd7-89f9-b0fea82ac9c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\Animation\Instance">
+      <UniqueIdentifier>{eb7c84a9-d33b-42c0-9e83-b494da4292ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie">
+      <UniqueIdentifier>{ac35e609-b1f9-40a8-8d0d-931d410da362}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -311,7 +323,6 @@
     <ClCompile Include="..\..\Source\InfectedCity\Private\HUDWidget.cpp">
       <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\InfectedCity\Public\HUDWidget.h" />
     <ClCompile Include="..\..\Source\InfectedCity\Public\EffectManager.h">
       <Filter>Source\InfectedCity\01.Utility\Effects\Manager</Filter>
     </ClCompile>
@@ -329,6 +340,39 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\InfectedCity\Private\OutlinePostProcessShader.cpp">
       <Filter>Source\InfectedCity\01.Utility\Effects\Outline\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\HUDWidget.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\Bullet.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Weapon\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\Bullet.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Weapon\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MyUserWidget.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\MyUserWidget.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GN_Character.h">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GN_AIController.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GN_AIController.h">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GN_AnimInstance.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GN_AnimInstance.h">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GN_Character.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

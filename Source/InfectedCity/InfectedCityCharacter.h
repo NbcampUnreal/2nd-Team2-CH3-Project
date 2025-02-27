@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "WeaponBase.h"
 #include "InfectedCityCharacter.generated.h"
 
 class UHUDWidget;
@@ -11,8 +10,9 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class UHUDWidget;
 class AWeaponBase;
+
+
 
 UCLASS(config=Game)
 class AInfectedCityCharacter : public ACharacter

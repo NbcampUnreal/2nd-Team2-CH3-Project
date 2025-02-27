@@ -298,6 +298,7 @@ void AInfectedCityCharacter::StopCrouching()
 		HUDWidget->SetCrouchState(false);
 	}
 }
+
 void AInfectedCityCharacter::Reload()
 {
 	// 현재 무기가 있다면
@@ -345,6 +346,7 @@ void AInfectedCityCharacter::PickupWeapon()
 	{
 		UE_LOG(LogTemp, Log, TEXT("There are no weapons nearby"));
 	}
+
 }
 
 AWeaponBase* AInfectedCityCharacter::FindNearestWeapon()
