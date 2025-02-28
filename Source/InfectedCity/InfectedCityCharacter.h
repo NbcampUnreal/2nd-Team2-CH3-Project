@@ -56,18 +56,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
 
-
-
-
-	// ìºë¦­?°ì˜ ?´ë™ ê´€???…ë ¥ ?¡ì…˜??
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
 
-	// ìºë¦­?°ì˜ ?œì  ì¡°ì • ?…ë ¥ ?¡ì…˜
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
-
-	// ?¬ë¦¬ê¸?ë°??‰ê¸° ê´€???¡ì…˜
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RunAction;
@@ -134,23 +127,16 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ???¸ì¶œ?˜ëŠ” ?¨ìˆ˜
 	virtual void NotifyControllerChanged() override;
 
-	// ìºë¦­?°ì˜ ?´ë™ ì²˜ë¦¬ ?¨ìˆ˜
 	void Move(const FInputActionValue& Value);
 
-	// ìºë¦­?°ì˜ ?œì  ì¡°ì • ì²˜ë¦¬ ?¨ìˆ˜
 	void Look(const FInputActionValue& Value);
 
-	// ?¬ë¦¬ê¸? ?‰ê¸° ê¸°ëŠ¥
 	void StartRunning();
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
-
-
-	// ë¬´ê¸° ì£¼ìš¸ ?Œì˜ ?™ì‘
 	void PickupWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -160,9 +146,6 @@ public:
 	// Çã¸® ¼÷ÀÓ º¸°£À» À§ÇÑ º¯¼ö (0 = ¼­ ÀÖ´Â »óÅÂ, 1 = ¿ÏÀüÈ÷ ¼÷ÀÎ »óÅÂ)
 	float CrouchBlendFactor = 0.0f;
 
-
-
-	// ê°€ê¹Œìš´ ë¬´ê¸°ë¥?ì°¾ëŠ” ?¨ìˆ˜
 	AWeaponBase* FindNearestWeapon();
 
 	// **ÁÜÀÎ ¹× ÃÑ ¹ß»ç ±â´É**
@@ -172,6 +155,10 @@ public:
 	void StopShoot();
 
 	void RotateCharacterToMouseCursor();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateReloadText(bool bIsReloading);
+
 
 private:
 	float LastFireTime = 0.0f;  // ¸¶Áö¸· ¹ß»ç ½Ã°£

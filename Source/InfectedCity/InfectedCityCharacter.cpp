@@ -212,7 +212,6 @@ void AInfectedCityCharacter::StopShoot()
 		PlayerController->bShowMouseCursor = false;  
 	}
 	bIsFiring = false;  
-	UpdateAmmoBar();
 }
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 {
@@ -297,13 +296,13 @@ void AInfectedCityCharacter::Reload()
 		if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
 		{
 			Weapon->Reloading();
+			UpdateAmmoBar();
 		}
 	}
 	if (ReloadAnimMontage)
 	{
 		PlayAnimMontage(ReloadAnimMontage);
 	}
-	UpdateAmmoBar();
 }
 void AInfectedCityCharacter::PickupWeapon()
 {
@@ -311,6 +310,7 @@ void AInfectedCityCharacter::PickupWeapon()
 	if (NearestWeapon)
 	{
 		CurrentWeapon = NearestWeapon;
+		CurrentWeapon->SetOwner(this);
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
@@ -320,7 +320,7 @@ void AInfectedCityCharacter::PickupWeapon()
       
 		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
-  
+		UpdateAmmoBar();
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
 	else
@@ -410,7 +410,6 @@ void AInfectedCityCharacter::FireBullet()
 	}
 }
 
-
 void AInfectedCityCharacter::UpdateAmmoBar()
 {
 	if (HUDWidget)
@@ -420,6 +419,19 @@ void AInfectedCityCharacter::UpdateAmmoBar()
 			// 무기의 Ammo 값을 가져와서 HUD에 전달
 			float AmmoRatio = Weapon->GetAmmoRatio();  // 0~1 사이의 비율로 Ammo를 표시한다고 가정
 			HUDWidget->UpdateAmmoProgress(AmmoRatio);
+		}
+	}
+}
+
+void AInfectedCityCharacter::UpdateReloadText(bool bIsReloading)
+{
+	if (HUDWidget)
+	{
+		HUDWidget->SetReloadTextVisibility(bIsReloading);
+
+		if (bIsReloading)
+		{
+			HUDWidget->PlayReloadAnimation();
 		}
 	}
 }

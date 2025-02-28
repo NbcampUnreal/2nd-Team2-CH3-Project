@@ -2,12 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/TextBlock.h"
+#include "Components/Border.h"
 #include "Blueprint/UserWidget.h"
 #include "HUDWidget.generated.h"
 
-
 class UImage;
 class UProgressBar;
+class TextBlock;
 
 UCLASS()
 class INFECTEDCITY_API UHUDWidget : public UUserWidget
@@ -16,18 +17,6 @@ class INFECTEDCITY_API UHUDWidget : public UUserWidget
 
 public:
     virtual void NativeConstruct() override;
-
-    UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-    class UTextBlock* ReloadText;
-
-    // Reload Text ±ôºýÀÌ°Ô ÇÏ´Â ÇÔ¼ö
-    void StartFlashingReloadText();
-    void StopFlashingReloadText();
-    void ToggleReloadTextVisibility();
-
-    FTimerHandle ReloadTextFlashTimer;
-    bool bIsReloadTextVisible = true;
-
 
     UFUNCTION(BlueprintCallable, Category = "HUD")
     void SetCrouchState(bool bIsCrouching);
@@ -77,4 +66,39 @@ public:
 
     float ElapsedTime = 0.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    FLinearColor Color1 = FLinearColor::White;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    FLinearColor Color2 = FLinearColor::Red;
+
+    UPROPERTY(meta = (BindWidget))
+    UBorder* Border;
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateBorderColor();
+
+    void ToggleBorderColor();
+
+    UFUNCTION(BlueprintCallable)
+    void StopBorderColorBlink();
+
+    UFUNCTION(BlueprintCallable)
+    void SetReloadTextVisibility(bool bIsVisible);
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* ReloadText;
+
+    UFUNCTION(BlueprintCallable)
+    void PlayReloadAnimation();
+
+protected:
+    FTimerHandle BorderColorTimerHandle;
+
+    int32 BlinkCount = 0;
+
+    bool bToggle = false;
+
+    UPROPERTY(meta = (BindWidgetAnim), Transient)
+    UWidgetAnimation* ReloadingText;
 };

@@ -75,21 +75,11 @@ void AWeaponBase::Reloading()
         UE_LOG(LogTemp, Log, TEXT("Reloading..."));
         bCanFire = false;
         bIsReloading = true;
-
-        APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-        if (PlayerController)
+        AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(GetOwner());
+        if (Player)
         {
-            ACustomHUD* CustomHUD = Cast<ACustomHUD>(PlayerController->GetHUD());
-            if (CustomHUD && CustomHUD->GetHUDWidget())
-            {
-                UHUDWidget* HUDWidget = Cast<UHUDWidget>(CustomHUD->GetHUDWidget());
-                if (HUDWidget)
-                {
-                    HUDWidget->StartFlashingReloadText();
-                }
-            }
+            Player->UpdateReloadText(true);
         }
-
         FTimerHandle ReloadTimer;
         GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AWeaponBase::CompleteReload, ReloadTime, false);
     }
@@ -107,18 +97,13 @@ void AWeaponBase::CompleteReload()
     bIsReloading = false;
     bCanFire = true;
 
-    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-    if (PlayerController)
+
+    AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(GetOwner());
+    if (Player)
     {
-        ACustomHUD* CustomHUD = Cast<ACustomHUD>(PlayerController->GetHUD());
-        if (CustomHUD && CustomHUD->GetHUDWidget())
-        {
-            UHUDWidget* HUDWidget = Cast<UHUDWidget>(CustomHUD->GetHUDWidget());
-            if (HUDWidget)
-            {
-                HUDWidget->StopFlashingReloadText();
-            }
-        }
+        UE_LOG(LogTemp, Log, TEXT("Reload ui update."));
+        Player->UpdateAmmoBar();  // 탄약 UI 업데이트
+        Player->UpdateReloadText(false);
     }
 }
 

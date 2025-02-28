@@ -10,18 +10,6 @@ void UHUDWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    if (ReloadText)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ReloadText is valid"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ReloadText is not valid"));
-    }
-
-
-
-
     if (CrouchImage) CrouchImage->SetVisibility(ESlateVisibility::Hidden);
     if (StandImage) StandImage->SetVisibility(ESlateVisibility::Visible);
 
@@ -102,62 +90,67 @@ void UHUDWidget::SetCrouchState(bool bIsCrouching)
         StandImage->SetVisibility(bIsCrouching ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
     }
 }
-
 void UHUDWidget::UpdateAmmoProgress(float NewAmmoValue)
 {
     if (AmmoProgressBar)
     {
         AmmoProgressBar->SetPercent(NewAmmoValue);
+
+        // Ammo가 0이면 Border 색상 변경 시작
+        if (NewAmmoValue <= 0.0f)
+        {
+            UpdateBorderColor();
+        }
     }
 }
 
-void UHUDWidget::StartFlashingReloadText()
+void UHUDWidget::UpdateBorderColor()
 {
-    // 일정 시간 간격으로 ToggleReloadTextVisibility 호출
-    if (ReloadTextFlashTimer.IsValid())
+    if (Border)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ReloadText Flash Timer already active"));
-    }
-    if (GetWorld())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Starting Timer for ReloadText"));
-
-        GetWorld()->GetTimerManager().SetTimer(ReloadTextFlashTimer, this, &UHUDWidget::ToggleReloadTextVisibility, 0.5f, true);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("GetWorld() returned null"));
+        BlinkCount = 0; // 깜빡임 횟수 초기화
+        GetWorld()->GetTimerManager().SetTimer(BorderColorTimerHandle, this, &UHUDWidget::ToggleBorderColor, 0.25f, true);
     }
 }
 
-
-
-void UHUDWidget::StopFlashingReloadText()
+void UHUDWidget::ToggleBorderColor()
 {
-    // 깜빡임 중지
-    GetWorld()->GetTimerManager().ClearTimer(ReloadTextFlashTimer);
+    if (Border)
+    {
+        bToggle = !bToggle; // 토글 상태 변경
+        FLinearColor NewColor = bToggle ? Color2 : Color1;
+        Border->SetBrushColor(NewColor);
+
+        BlinkCount++;
+        if (BlinkCount >= 10)
+        {
+            StopBorderColorBlink();
+        }
+    }
+}
+
+void UHUDWidget::StopBorderColorBlink()
+{
+    GetWorld()->GetTimerManager().ClearTimer(BorderColorTimerHandle);
+
+    if (Border)
+    {
+        Border->SetBrushColor(Color1);
+    }
+}
+
+void UHUDWidget::SetReloadTextVisibility(bool bIsVisible)
+{
     if (ReloadText)
     {
-        ReloadText->SetVisibility(ESlateVisibility::Hidden);
+        ReloadText->SetVisibility(bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
     }
 }
 
-void UHUDWidget::ToggleReloadTextVisibility()
+void UHUDWidget::PlayReloadAnimation()
 {
-    if (ReloadText)
+    if (ReloadingText)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Toggling ReloadText Visibility"));
-
-        if (bIsReloadTextVisible)
-        {
-            ReloadText->SetVisibility(ESlateVisibility::Hidden);
-            UE_LOG(LogTemp, Warning, TEXT("ReloadText Hidden"));
-        }
-        else
-        {
-            ReloadText->SetVisibility(ESlateVisibility::Visible);
-            UE_LOG(LogTemp, Warning, TEXT("ReloadText Visible"));
-        }
-        bIsReloadTextVisible = !bIsReloadTextVisible;
+        PlayAnimation(ReloadingText);
     }
 }
