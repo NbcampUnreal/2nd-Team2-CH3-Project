@@ -146,20 +146,15 @@ void AInfectedCityCharacter::StartAiming()
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		PlayerController->bShowMouseCursor = true;  //    콺 Ŀ      ̰      
-		RotateCharacterToMouseCursor();  //    콺        ĳ     ȸ  
+		PlayerController->bShowMouseCursor = true;
+		RotateCharacterToMouseCursor();
 	}
 
-	//      ī ޶󿡼     ο  ī ޶     ȯ
 	FollowCamera->Deactivate();
 	SecondFollowCamera->Activate();
 
-
-	//    콺        ȸ  
 	RotateCharacterToMouseCursor();
 
-
-	// ī ޶          ̸       (ȸ         )
 	SecondCameraBoom->TargetArmLength = FMath::FInterpTo(SecondCameraBoom->TargetArmLength, ZoomedArmLength, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed);
 
 
