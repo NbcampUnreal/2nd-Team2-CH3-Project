@@ -91,6 +91,8 @@ void UOutlineComponent::DisableOutline()
 			MeshComp->SetRenderCustomDepth(false);
 			MeshComp->SetOverlayMaterial(nullptr);
 		}
+
+
 	}
 }
 

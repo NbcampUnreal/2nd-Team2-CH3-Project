@@ -41,6 +41,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetMaterialParam(float Thickness, FLinearColor Color);
 
+	UPROPERTY(VisibleAnywhere, Category = "Outline")
+	bool bEnable;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Outline")
 	int32 StencilValue{ 0 };

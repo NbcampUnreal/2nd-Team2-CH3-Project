@@ -199,6 +199,12 @@
     <Filter Include="Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie">
       <UniqueIdentifier>{ac35e609-b1f9-40a8-8d0d-931d410da362}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\PCG">
+      <UniqueIdentifier>{4cd869c5-3f6f-424f-a6a6-45cc9d561bfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\PCG\Spline">
+      <UniqueIdentifier>{3eee07b1-e2f9-48c3-80d7-cee0d3ad1019}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -373,6 +379,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\InfectedCity\Private\GN_Character.cpp">
       <Filter>Source\InfectedCity\00.GameObjects\EnemyCharacter\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\CustomSpline.h">
+      <Filter>Source\InfectedCity\01.Utility\PCG\Spline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\CustomSpline.cpp">
+      <Filter>Source\InfectedCity\01.Utility\PCG\Spline</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
