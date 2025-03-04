@@ -81,7 +81,6 @@ public:
     // 재장전 완료 후 호출되는 함수
     void CompleteReload();
 
-<<<<<<< HEAD
     // 스포트라이트 두 개
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flashlight")
     UPointLightComponent* Flashlight1;
@@ -98,11 +97,4 @@ public:
     // 플래시라이트 상태 반환
     bool AreFlashlightsOn() const;
     
-=======
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    USpotLightComponent* Flashlight;  // 플래시라이트 컴포넌트 추가
-    virtual void Tick(float DeltaTime) override;
-    // 기존 함수들...
-    void ToggleFlashlight();  // 플래시라이트 토글 함수
->>>>>>> origin/dev
 };

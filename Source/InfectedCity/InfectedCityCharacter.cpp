@@ -78,7 +78,26 @@ void AInfectedCityCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+<<<<<<< HEAD
 	
+=======
+	// 스포트라이트가 켜져있는지 확인하기 위해 로그 추가
+	if (CurrentWeapon)
+	{
+		AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
+		if (Weapon && Weapon->Flashlight)
+		{
+			if (Weapon->Flashlight->IsVisible())
+			{
+				UE_LOG(LogTemp, Log, TEXT("Spotlight is ON"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Spotlight is OFF"));
+			}
+		}
+	}
+>>>>>>> origin/dev
 }
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
@@ -336,16 +355,34 @@ void AInfectedCityCharacter::Reload()
 
 		
 		
+<<<<<<< HEAD
+=======
 	}
 }
 
 void AInfectedCityCharacter::ToggleFlashlight()
 {
-	
-	
-	
+	// CurrentWeapon이 유효한지 확인
+	if (CurrentWeapon)
+	{
+		// CurrentWeapon의 플래시라이트를 토글
+		CurrentWeapon->ToggleFlashlight();
+>>>>>>> origin/dev
+	}
 }
-void AInfectedCityCharacter::PickupWeapon()
+
+void AInfectedCityCharacter::ToggleFlashlight()
+{
+	if (CurrentWeapon)
+	{
+		AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
+		if (Weapon)
+		{
+			bool bIsFlashlightOn = Weapon->AreFlashlightsOn();
+			Weapon->ToggleFlashlights(!bIsFlashlightOn); // 현재 상태 반대로 토글
+		}
+	}
+}void AInfectedCityCharacter::PickupWeapon()
 {
 	AWeaponBase* NearestWeapon = FindNearestWeapon();
 	if (NearestWeapon)
