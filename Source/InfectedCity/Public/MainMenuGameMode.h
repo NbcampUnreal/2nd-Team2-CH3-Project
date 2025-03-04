@@ -19,9 +19,14 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Audio")
     class USoundBase* BackgroundMusic;
 
+    void SetBGMVolume(float Volume);
+
 private:
     UUserWidget* MenuWidget;
 
+    UPROPERTY(EditAnywhere, Category = "Audio")
+    class USoundBase* BGM_Sound;
+
     UPROPERTY()
-    class UAudioComponent* AudioComponent;
+    class UAudioComponent* BGM_AudioComponent;
 };

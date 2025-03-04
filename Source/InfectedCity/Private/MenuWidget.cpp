@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundClass.h"
 #include "Sound/SoundMix.h"
+#include "MainMenuGameMode.h"
 
 bool UMenuWidget::Initialize()
 {
@@ -49,14 +50,11 @@ void UMenuWidget::OnExitClicked()
 
 void UMenuWidget::OnVolumeChanged(float Value)
 {
-    // BGM_SoundClass의 볼륨을 조절
-    UGameplayStatics::SetSoundMixClassOverride(
-        this,
-        nullptr,                    // 사운드 믹스 (기본값 null)
-        BGM_SoundClass,             // 우리가 조절할 Sound Class
-        Value,                      // 슬라이더에서 받은 볼륨 값
-        1.0f,                       // 피치
-        0.0f,                       // 페이드 시간 (즉시 변경)
-        true                        // 즉시 적용
-    );
+    AGameModeBase* GameMode = UGameplayStatics::GetGameMode(this);
+    AMainMenuGameMode* MainMenuGM = Cast<AMainMenuGameMode>(GameMode);
+
+    if (MainMenuGM)
+    {
+        MainMenuGM->SetBGMVolume(Value);
+    }
 }

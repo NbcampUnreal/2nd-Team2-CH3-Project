@@ -58,12 +58,12 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	//new camera
 	SecondCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SecondCameraBoom"));
 	SecondCameraBoom->SetupAttachment(RootComponent);
-	SecondCameraBoom->TargetArmLength = 600.0f;  //    ī ޶       ̸          ٸ        
+	SecondCameraBoom->TargetArmLength = 600.0f;      
 	SecondCameraBoom->bUsePawnControlRotation = true;
 
 	SecondFollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("SecondFollowCamera"));
 	SecondFollowCamera->SetupAttachment(SecondCameraBoom, USpringArmComponent::SocketName);
-	SecondFollowCamera->bUsePawnControlRotation = false; // ī ޶   ȸ           
+	SecondFollowCamera->bUsePawnControlRotation = false;          
 
 
 }
@@ -91,6 +91,8 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 void AInfectedCityCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Stamina = MaxStamina;  // 스테미나 초기화
 
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController && HUDWidgetClass)
@@ -243,13 +245,20 @@ bool AInfectedCityCharacter::BHASRifle() const
 }
 void AInfectedCityCharacter::StartRunning()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+	if (bCanRun && Stamina > 0)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+		GetWorldTimerManager().SetTimer(StaminaTimerHandle, this, &AInfectedCityCharacter::DrainStamina, 0.1f, true);
+	}
 }
 
 void AInfectedCityCharacter::StopRunning()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetWorldTimerManager().ClearTimer(StaminaTimerHandle);
+	GetWorldTimerManager().SetTimer(StaminaTimerHandle, this, &AInfectedCityCharacter::RecoverStamina, 0.1f, true);
 }
+
 
 void AInfectedCityCharacter::StartCrouching()
 {
@@ -427,6 +436,79 @@ void AInfectedCityCharacter::UpdateReloadText(bool bIsReloading)
 		if (bIsReloading)
 		{
 			HUDWidget->PlayReloadAnimation();
+		}
+	}
+}
+
+void AInfectedCityCharacter::AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount)
+{
+	if (!ItemClass) return;
+
+	// 기존 개수 확인 후 추가
+	if (Inventory.Contains(ItemClass))
+	{
+		Inventory[ItemClass] += Amount;
+	}
+	else
+	{
+		Inventory.Add(ItemClass, Amount);
+	}
+}
+
+void AInfectedCityCharacter::UseItem(TSubclassOf<UItemBase> ItemClass)
+{
+	if (!ItemClass || !Inventory.Contains(ItemClass) || Inventory[ItemClass] <= 0)
+		return;
+
+	// 아이템 사용
+	IItemBase* Item = Cast<IItemBase>(ItemClass->GetDefaultObject());
+	if (Item)
+	{
+		Item->Execute_UseItem(ItemClass->GetDefaultObject(), this);
+		Inventory[ItemClass]--;
+
+		// 개수가 0이면 삭제
+		if (Inventory[ItemClass] <= 0)
+		{
+			Inventory.Remove(ItemClass);
+		}
+	}
+}
+
+void AInfectedCityCharacter::DrainStamina()
+{
+	if (Stamina > 0)
+	{
+		Stamina -= StaminaDrainRate * 0.1f; // 0.1초마다 2씩 감소
+		if (HUDWidget)
+		{
+			HUDWidget->UpdateStaminaBar(Stamina / MaxStamina);
+		}
+
+		if (Stamina <= 0)
+		{
+			Stamina = 0;
+			StopRunning();
+			bCanRun = false; // 스테미나 0이면 못 달림
+		}
+	}
+}
+
+void AInfectedCityCharacter::RecoverStamina()
+{
+	if (Stamina < MaxStamina)
+	{
+		Stamina += StaminaRecoveryRate * 0.1f; // 0.1초마다 1씩 회복
+		if (HUDWidget)
+		{
+			HUDWidget->UpdateStaminaBar(Stamina / MaxStamina);
+		}
+
+		if (Stamina >= MaxStamina)
+		{
+			Stamina = MaxStamina;
+			GetWorldTimerManager().ClearTimer(StaminaTimerHandle);
+			bCanRun = true; // 다시 달릴 수 있음
 		}
 	}
 }

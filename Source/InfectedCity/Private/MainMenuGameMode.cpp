@@ -9,11 +9,14 @@ void AMainMenuGameMode::BeginPlay()
     Super::BeginPlay();
 
 
-    if (BackgroundMusic)
+    if (BGM_Sound)
     {
-        AudioComponent = UGameplayStatics::SpawnSound2D(this, BackgroundMusic);
+        BGM_AudioComponent = UGameplayStatics::SpawnSound2D(this, BGM_Sound);
+        if (BGM_AudioComponent)
+        {
+            BGM_AudioComponent->SetVolumeMultiplier(1.0f); // 초기 볼륨 설정 (1.0)
+        }
     }
-
 
     if (MenuWidgetClass)
     {
@@ -30,5 +33,13 @@ void AMainMenuGameMode::BeginPlay()
                 PC->SetInputMode(FInputModeUIOnly());
             }
         }
+    }
+}
+
+void AMainMenuGameMode::SetBGMVolume(float Volume)
+{
+    if (BGM_AudioComponent)
+    {
+        BGM_AudioComponent->SetVolumeMultiplier(Volume);
     }
 }

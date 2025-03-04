@@ -4,6 +4,9 @@
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "InfectedCity/InfectedCityCharacter.h"
+#include "Bandage.h"
+#include "Pill.h"
 #include "Components/InputComponent.h"
 
 void UHUDWidget::NativeConstruct()
@@ -34,7 +37,15 @@ void UHUDWidget::NativeConstruct()
 
     UseProgress->SetVisibility(ESlateVisibility::Hidden);
 
+    if (BandageNum)
+    {
+        BandageNum->SetText(FText::FromString("0"));
+    }
 
+    if (StaminaProgressBar)
+    {
+        StaminaProgressBar->SetPercent(1.0f);
+    }
 }
 
 void UHUDWidget::UpdateImageOpacity(int32 SelectedKey)
@@ -79,8 +90,38 @@ void UHUDWidget::StartProgressBar(int32 Key, float Duration)
     }
 }
 
-void UHUDWidget::OnKey4Pressed() { StartProgressBar(4, 5.0f); }
-void UHUDWidget::OnKey5Pressed() { StartProgressBar(5, 10.0f); }
+void UHUDWidget::OnKey4Pressed()
+{
+    AInfectedCityCharacter* Player = GetPlayerCharacter();
+    if (!Player) return;
+
+    int32* BandageCount = Player->Inventory.Find(ABandage::StaticClass());
+    if (BandageCount && *BandageCount > 0)
+    {
+        StartProgressBar(4, 5.0f);
+        Player->UseItem(ABandage::StaticClass());
+        UpdateBandageCount(*BandageCount - 1);
+    }
+}
+
+void UHUDWidget::OnKey5Pressed()
+{
+    AInfectedCityCharacter* Player = GetPlayerCharacter();
+    if (!Player) return;
+
+    int32* PillCount = Player->Inventory.Find(APill::StaticClass());
+    if (PillCount && *PillCount > 0)
+    {
+        // 진행 바 시작
+        StartProgressBar(5, 10.0f);
+
+        // Pill 아이템 사용
+        Player->UseItem(APill::StaticClass());
+
+        // Pill 아이템 수 감소
+        UpdatePillCount(*PillCount - 1);
+    }
+}
 
 void UHUDWidget::SetCrouchState(bool bIsCrouching)
 {
@@ -152,5 +193,119 @@ void UHUDWidget::PlayReloadAnimation()
     if (ReloadingText)
     {
         PlayAnimation(ReloadingText);
+    }
+}
+
+AInfectedCityCharacter* UHUDWidget::GetPlayerCharacter()
+{
+    return Cast<AInfectedCityCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+}
+
+void UHUDWidget::StartBandageIndicator()
+{
+    if (BandageIndicator)
+    {
+        BandageIndicator->SetVisibility(ESlateVisibility::Visible);
+        GetWorld()->GetTimerManager().SetTimer(RotationTimerHandle, this, &UHUDWidget::RotateBandageIndicator, 0.05f, true);
+    }
+}
+
+void UHUDWidget::StopBandageIndicator()
+{
+    if (BandageIndicator)
+    {
+        BandageIndicator->SetVisibility(ESlateVisibility::Hidden);
+    }
+    GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
+}
+
+void UHUDWidget::RotateBandageIndicator()
+{
+    if (BandageIndicator)
+    {
+        RotationAngle += 5.0f;
+        if (RotationAngle >= 360.0f)
+        {
+            RotationAngle = 0.0f;
+        }
+        FWidgetTransform NewTransform;
+        NewTransform.Angle = RotationAngle;
+        BandageIndicator->SetRenderTransform(NewTransform);
+    }
+}
+
+
+void UHUDWidget::UpdateBandageCount(int32 Count)
+{
+    if (BandageNum)
+    {
+        BandageNum->SetText(FText::AsNumber(Count));
+    }
+
+    if (Count > 0)
+    {
+        StartBandageIndicator();
+    }
+    else
+    {
+        StopBandageIndicator();
+    }
+}
+
+void UHUDWidget::UpdatePillCount(int32 Count)
+{
+    if (PillNum)
+    {
+        PillNum->SetText(FText::AsNumber(Count));
+    }
+
+    if (Count > 0)
+    {
+        StartPillIndicator();
+    }
+    else
+    {
+        StopPillIndicator();
+    }
+}
+
+void UHUDWidget::UpdateStaminaBar(float StaminaRatio)
+{
+    if (StaminaProgressBar) 
+    {
+        StaminaProgressBar->SetPercent(StaminaRatio);
+    }
+}
+
+void UHUDWidget::StartPillIndicator()
+{
+    if (PillIndicator)
+    {
+        PillIndicator->SetVisibility(ESlateVisibility::Visible);
+        GetWorld()->GetTimerManager().SetTimer(PillRotationTimerHandle, this, &UHUDWidget::RotatePillIndicator, 0.05f, true);
+    }
+}
+
+void UHUDWidget::StopPillIndicator()
+{
+    if (PillIndicator)
+    {
+        PillIndicator->SetVisibility(ESlateVisibility::Hidden);
+    }
+    GetWorld()->GetTimerManager().ClearTimer(PillRotationTimerHandle);
+}
+
+void UHUDWidget::RotatePillIndicator()
+{
+    if (PillIndicator)
+    {
+        PillRotationAngle += 5.0f;
+        if (PillRotationAngle >= 360.0f)
+        {
+            PillRotationAngle = 0.0f;
+        }
+        FWidgetTransform NewTransform;
+        NewTransform.Angle = PillRotationAngle;
+        PillIndicator->SetRenderTransform(NewTransform);
     }
 }

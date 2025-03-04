@@ -9,6 +9,7 @@
 class UImage;
 class UProgressBar;
 class TextBlock;
+class AInfectedCityCharacter;
 
 UCLASS()
 class INFECTEDCITY_API UHUDWidget : public UUserWidget
@@ -92,6 +93,36 @@ public:
     UFUNCTION(BlueprintCallable)
     void PlayReloadAnimation();
 
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* BandageNum;
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* PillNum;
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateBandageCount(int32 Count);
+
+    UFUNCTION(BlueprintCallable)
+    void UpdatePillCount(int32 Count);
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateStaminaBar(float StaminaRatio);
+
+    UFUNCTION(BlueprintCallable)
+    void StartPillIndicator();
+
+    UFUNCTION(BlueprintCallable)
+    void StopPillIndicator();
+
+    UFUNCTION(BlueprintCallable)
+    void RotatePillIndicator();
+
+    UPROPERTY(meta = (BindWidget))
+    UImage* PillIndicator;
+
+    FTimerHandle PillRotationTimerHandle;
+    float PillRotationAngle = 0.0f;
+
 protected:
     FTimerHandle BorderColorTimerHandle;
 
@@ -101,4 +132,20 @@ protected:
 
     UPROPERTY(meta = (BindWidgetAnim), Transient)
     UWidgetAnimation* ReloadingText;
+
+    UPROPERTY(meta = (BindWidget))
+        class UProgressBar* StaminaProgressBar;
+
+private:
+    AInfectedCityCharacter* GetPlayerCharacter();
+
+    UPROPERTY(meta = (BindWidget))
+    UImage* BandageIndicator;
+
+    FTimerHandle RotationTimerHandle;
+    float RotationAngle = 0.0f;
+
+    void StartBandageIndicator();
+    void StopBandageIndicator();
+    void RotateBandageIndicator();
 };

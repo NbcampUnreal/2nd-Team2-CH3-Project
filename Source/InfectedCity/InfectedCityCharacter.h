@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "ItemBase.h"
 #include "InfectedCityCharacter.generated.h"
 
 class UHUDWidget;
@@ -21,37 +22,26 @@ class AInfectedCityCharacter : public ACharacter
 
 
 public:
-	// 湲곕낯 ?앹꽦??
+
 	AInfectedCityCharacter();
 
-protected:
-
+	void DrainStamina();
+	void RecoverStamina();
 
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
-	// 移대찓??遺?(罹먮┃???ㅼ뿉 移대찓???꾩튂 議곗젙)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
-
-	// 罹먮┃???ㅼ뿉 ?곕씪?ㅻ뒗 移대찓??
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SecondCameraBoom;
-
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* SecondFollowCamera;
-
-
-
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	AWeaponBase* CurrentWeapon;
-
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* JumpAction; // ?먰봽 ?≪뀡
+	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
@@ -69,7 +59,6 @@ protected:
 	UInputAction* CrouchAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* ReloadAction;
-
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AimingAction;
@@ -159,8 +148,37 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateReloadText(bool bIsReloading);
 
+	// 캐릭터가 가지고 있는 아이템 목록 (아이템 클래스와 개수 저장)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TMap<TSubclassOf<UItemBase>, int32> Inventory;
+
+	// 아이템 추가 함수
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount);
+
+	// 아이템 사용 함수
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void UseItem(TSubclassOf<UItemBase> ItemClass);
+
+	// 플레이어 체력
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	int32 CurrentHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	int32 MaxHP;
+
+	float Stamina;
+	const float MaxStamina = 100.0f;
+
 
 private:
 	float LastFireTime = 0.0f;  // 마지막 발사 시간
 	float FireRate = 0.1f;      // 발사 속도 (초 단위)
+
+	const float StaminaDrainRate = 20.0f;  // 초당 감소량
+	const float StaminaRecoveryRate = 10.0f; // 초당 회복량
+	bool bCanRun = true;
+
+	FTimerHandle StaminaTimerHandle;
+
 };
