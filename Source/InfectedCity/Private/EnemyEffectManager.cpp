@@ -9,8 +9,8 @@
 #include <Camera/CameraComponent.h>
 #include <Kismet/KismetRenderingLibrary.h>
 #include "GN_Character.h"
-#include "ItemBase.h"
-
+#include "BaseItem.h"
+#include "InfectedCity/InfectedCityCharacter.h"
 
 AEnemyEffectManager::AEnemyEffectManager()
 {
@@ -25,6 +25,7 @@ void AEnemyEffectManager::BeginPlay()
 	Super::BeginPlay();
     //SetupSceneCapture();
 
+    Cast<AInfectedCityCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))->EnemyEffectManager = this;
     
     if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
     {
@@ -251,7 +252,7 @@ void AEnemyEffectManager::CheckPlayerRaytrace()
 
             if (!CurrentItem)
             {
-                CurrentItem = Cast<AItemBase>(HitActor);
+                CurrentItem = Cast<ABaseItem>(HitActor);
                 CurrentItem->OnItem();
             }
 

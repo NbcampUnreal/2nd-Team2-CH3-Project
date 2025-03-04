@@ -13,13 +13,6 @@ AWeaponBase::AWeaponBase()
     WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
     RootComponent = WeaponMesh;
     // �⺻ �� ����
-    Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
-    Flashlight->SetupAttachment(WeaponMesh);  // ���� �޽��� �÷��ö���Ʈ�� ����
-    Flashlight->SetVisibility(true);
-    Flashlight->SetMobility(EComponentMobility::Movable);
-    Flashlight->SetRelativeLocation(FVector(0.f, 0.f, 10.f));  // ���� �޽��� ������� ��ġ�� ����
-    Flashlight->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));  // ȸ�� ���� �߰�  
-    UE_LOG(LogTemp, Log, TEXT("Flashlight attached to: %s"), *Flashlight->GetAttachParent()->GetName());
     WeaponCollision = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponCollision"));
 
     MaxAmmo = 30;  // ���÷� �⺻ ź�� ���� 30���� ����

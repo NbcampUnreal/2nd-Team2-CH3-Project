@@ -604,6 +604,8 @@ void AInfectedCityCharacter::PickupItem()
 	
 	if (ABaseItem* CurrentItem = EnemyEffectManager->GetCurrentItem())
 	{
+		CurrentItem->UseItem_Implementation(this);
+
 		if (CurrentItem->ItemType == "Bandage")
 		{
 			BandageCount++;

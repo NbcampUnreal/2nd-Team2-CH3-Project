@@ -1,13 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemBase.h"
+#include "BaseItem.h"
 #include "Pill.generated.h"
 
 class AInfectedCityCharacter;
 
 UCLASS()
-class INFECTEDCITY_API APill : public AActor, public IItemBase
+class INFECTEDCITY_API APill : public ABaseItem
 {
     GENERATED_BODY()
 

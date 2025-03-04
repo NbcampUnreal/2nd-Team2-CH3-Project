@@ -67,7 +67,8 @@ public:
     float RecoilAmount = 5.0f;  // �⺻ �ݵ� ũ��
     // �߻� ���� ����
     bool bCanFire;
-
+    UPROPERTY(EditAnywhere, Category = "Animation")
+    UAnimMontage* ReloadAnimation; // ������ �ִϸ��̼�
     // �߻� ����
     UPROPERTY(EditAnywhere, Category = "Weapon")
     USoundBase* FireSound;

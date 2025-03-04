@@ -6,6 +6,8 @@
 APill::APill()
 {
     PrimaryActorTick.bCanEverTick = false;
+
+    ItemType = "Pill";
 }
 
 void APill::UseItem_Implementation(AActor* User)

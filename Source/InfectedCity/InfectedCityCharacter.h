@@ -14,7 +14,7 @@ struct FInputActionValue;
 class AWeaponBase;
 class ABullet;
 class UPointLightComponent;
-
+class AEnemyEffectManager;
 
 UCLASS(config = Game)
 class AInfectedCityCharacter : public ACharacter
@@ -28,6 +28,10 @@ public:
 
 	void DrainStamina();
 	void RecoverStamina();
+	void PickupItem();
+	AEnemyEffectManager* EnemyEffectManager{ nullptr };
+	int32 BandageCount{ 0 };
+	int32 PillCount{ 0 };
 
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
@@ -65,6 +69,9 @@ public:
 	UInputAction* AimingAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* ShootAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* PickupItemAction;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float ZoomedFOV = 45.0f;
@@ -119,9 +126,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* FlashlightAction;
 
-	// �÷��ö���Ʈ ������Ʈ
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flashlight")
-	class UPointLightComponent* Flashlight;
 
 	// �÷��ö���Ʈ ��� �Լ�
 	void ToggleFlashlight();
@@ -144,8 +148,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	bool BHASRifle() const;
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	bool BHASPistol() const;
+
 
 	// �㸮 ���� ������ ���� ���� (0 = �� �ִ� ����, 1 = ������ ���� ����)
 	float CrouchBlendFactor = 0.0f;

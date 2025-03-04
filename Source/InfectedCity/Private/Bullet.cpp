@@ -94,11 +94,15 @@ void ABullet::MoveBullet(float DeltaTime)
         if (bEnemyHit)
         {
             AGN_Character* Enemy = Cast<AGN_Character>(HitResult.GetActor());
-            Enemy->CurrentHealth -= 100;
-
-            if (Enemy->CurrentHealth <= 0)
+            
+            if (Enemy)
             {
-                Enemy->Die();
+                Enemy->CurrentHealth -= 100;
+
+                if (Enemy->CurrentHealth <= 0)
+                {
+                    Enemy->Die();
+                }
             }
         }
     }
