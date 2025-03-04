@@ -98,12 +98,20 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
                 5.f  // 데칼의 지속 시간 (초 단위)
             );
         }
-
+        if (HitEffect)  // 파티클 시스템이 설정되어 있다면
+        {
+            UGameplayStatics::SpawnEmitterAtLocation(
+                GetWorld(),
+                HitEffect,  // 사용할 파티클 시스템
+                Hit.ImpactPoint,  // 파티클의 시작 위치 (충돌 지점)
+                Hit.ImpactNormal.Rotation()  // 파티클의 회전값 (충돌 표면 방향)
+            );
+        }
         // 데미지 처리
         UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigatorController(), this, UDamageType::StaticClass());
 
         // 디버깅: 충돌 지점에 빨간색 구체 표시
-        DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 10.0f, 12, FColor::Red, false, 2.0f);
+        //DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 10.0f, 12, FColor::Red, false, 2.0f); 
 
 
         bIsHit = true;  // 충돌이 일어난 후, 더 이상 이동하지 않도록 플래그 설정

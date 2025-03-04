@@ -57,6 +57,7 @@ private:
     UPROPERTY(VisibleAnywhere)
     UStaticMeshComponent* MeshComponent;
 
-
+    UPROPERTY(EditAnywhere, Category = "Effects")
+    UParticleSystem* HitEffect;
 
 };
