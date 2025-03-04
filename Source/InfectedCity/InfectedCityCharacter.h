@@ -12,6 +12,7 @@ class UInputAction;
 struct FInputActionValue;
 class AWeaponBase;
 class ABullet;
+class UPointLightComponent;
 
 
 UCLASS(config = Game)
@@ -100,6 +101,8 @@ protected:
 	UInputMappingContext* DefaultMappingContext;
 	virtual void BeginPlay() override;
 
+
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	AWeaponBase* EquippedWeapon;  // ÀåÂøµÈ ¹«±â
@@ -129,7 +132,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void Reload();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* FlashlightAction;
 
+	// ÇÃ·¡½Ã¶óÀÌÆ® ÄÄÆ÷³ÍÆ®
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flashlight")
+	class UPointLightComponent* Flashlight;
+
+	// ÇÃ·¡½Ã¶óÀÌÆ® Åä±Û ÇÔ¼ö
+	void ToggleFlashlight();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ???¸ì¶œ?˜ëŠ” ?¨ìˆ˜
@@ -147,13 +158,14 @@ public:
 	void StartCrouching();
 	void StopCrouching();
 
-
+	
 	// ë¬´ê¸° ì£¼ìš¸ ?Œì˜ ?™ì‘
 	void PickupWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	bool BHASRifle() const;
-
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool BHASPistol() const;
 
 	// Çã¸® ¼÷ÀÓ º¸°£À» À§ÇÑ º¯¼ö (0 = ¼­ ÀÖ´Â »óÅÂ, 1 = ¿ÏÀüÈ÷ ¼÷ÀÎ »óÅÂ)
 	float CrouchBlendFactor = 0.0f;
@@ -170,8 +182,26 @@ public:
 	void StopShoot();
 
 	void RotateCharacterToMouseCursor();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+	float RecoilAmount = 10000.0f;  // ±âº» ¹İµ¿ Å©±â
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Recoil")
+	float RecoilRotationAmount = 2.0f;  // ±âº»°ª: 2µµ Á¤µµÀÇ ¹İµ¿
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+	float RecoilSpeed = 10.0f;  // ¹İµ¿ ¼Óµµ
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+	float RecoilRecoverySpeed = 5.0f;  // ¹İµ¿ È¸º¹ ¼Óµµ
+	
+	FVector CameraRecoil; // Ä«¸Ş¶ó ¹İµ¿
+	FRotator CameraRecoilRotation;  // Ä«¸Ş¶ó ¹İµ¿ ¼Óµµ
+	void RecoverCameraRecoil();
+	FVector OriginalCameraLocation;
+	FRotator OriginalCameraRotation;
 
 private:
 	float LastFireTime = 0.0f;  // ¸¶Áö¸· ¹ß»ç ½Ã°£
 	float FireRate = 0.1f;      // ¹ß»ç ¼Óµµ (ÃÊ ´ÜÀ§)
+	
+	
 };

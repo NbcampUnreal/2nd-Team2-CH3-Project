@@ -1,39 +1,36 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "WeaponBase.h"
 #include "AkWeapon.generated.h"
 
+class UParticleSystem;
+class USoundCue;
+class UStaticMesh;  // Static Mesh 클래스 추가
 
 UCLASS()
 class INFECTEDCITY_API AAkWeapon : public AWeaponBase
 {
+
 	GENERATED_BODY()
 
 
 public:
-    // 생성자
-    AAkWeapon();
+	// 기본 생성자
+	AAkWeapon();
 
 protected:
-    // 탄창 크기
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    int32 MagazineSize;
+	// 총 발사 시 파티클
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystem* FireParticleEffect;
 
-    // 발사 모드 (자동/반자동)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    bool bIsAutomatic;
+	// 총 발사 시 소리
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	USoundCue* FireSoundEffect;
+
 
 public:
+	
+	
 
-
-    // AK 무기의 발사 모드 설정
-    void SetFireMode(bool bIsAuto);
-
-    // 탄창 크기 설정
-    void SetMagazineSize(int32 NewSize);
-
-  
 };

@@ -14,6 +14,9 @@
 #include "Blueprint/UserWidget.h"
 #include "Bullet.h"
 #include "WeaponBase.h"
+#include "AkWeapon.h"
+#include "PistolWeapon.h"
+#include "Components/PointLightComponent.h"
 
 
 AInfectedCityCharacter::AInfectedCityCharacter()
@@ -58,12 +61,16 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	//new camera
 	SecondCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SecondCameraBoom"));
 	SecondCameraBoom->SetupAttachment(RootComponent);
-	SecondCameraBoom->TargetArmLength = 600.0f;  //    ī ޶       ̸          ٸ        
+	SecondCameraBoom->TargetArmLength = 600.0f;  //       
 	SecondCameraBoom->bUsePawnControlRotation = true;
 
 	SecondFollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("SecondFollowCamera"));
 	SecondFollowCamera->SetupAttachment(SecondCameraBoom, USpringArmComponent::SocketName);
-	SecondFollowCamera->bUsePawnControlRotation = false; // ī ޶   ȸ           
+	SecondFollowCamera->bUsePawnControlRotation = false; //           
+
+
+
+
 
 
 }
@@ -71,9 +78,8 @@ void AInfectedCityCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
+	
 }
-
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
@@ -91,6 +97,7 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 void AInfectedCityCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
 
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController && HUDWidgetClass)
@@ -128,14 +135,16 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Pickup Weapon (F key)
 		EnhancedInputComponent->BindAction(PickupWeaponAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::PickupWeapon);
-		// Pickup Weapon (Mouse Left key)
+		// Pickup Weapon (Mouse Right key)
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::StartAiming);
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AInfectedCityCharacter::StopAiming);
-		// Pickup Weapon (Mouse Right key)
+		// Pickup Weapon (Mouse Left key)
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StartShoot);
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AInfectedCityCharacter::StopShoot);
 
 		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::Reload);
+
+		EnhancedInputComponent->BindAction(FlashlightAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::ToggleFlashlight);
 	}
 
 }
@@ -146,20 +155,17 @@ void AInfectedCityCharacter::StartAiming()
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		PlayerController->bShowMouseCursor = true;  //    콺 Ŀ      ̰      
-		RotateCharacterToMouseCursor();  //    콺        ĳ     ȸ  
+		PlayerController->bShowMouseCursor = true;   
+		RotateCharacterToMouseCursor(); 
 	}
 
-	//      ī ޶󿡼     ο  ī ޶     ȯ
+	
 	FollowCamera->Deactivate();
 	SecondFollowCamera->Activate();
 
 
-	//    콺        ȸ  
 	RotateCharacterToMouseCursor();
 
-
-	// ī ޶          ̸       (ȸ         )
 	SecondCameraBoom->TargetArmLength = FMath::FInterpTo(SecondCameraBoom->TargetArmLength, ZoomedArmLength, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed);
 
 
@@ -171,14 +177,14 @@ void AInfectedCityCharacter::StopAiming()
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		PlayerController->bShowMouseCursor = false;  //    콺 Ŀ        
+		PlayerController->bShowMouseCursor = false;      
 	}
 
-	//    ο  ī ޶󿡼       ī ޶     ȯ
+
 	SecondFollowCamera->Deactivate();
 	FollowCamera->Activate();
 
-	// ī ޶       ȸ           ״        ϰ ,    ̸   ⺻           
+        
 	FRotator CurrentBoomRotation = CameraBoom->GetComponentRotation();
 	CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, DefaultArmLength, GetWorld()->GetDeltaSeconds(), ZoomInterpSpeed);
 	CameraBoom->SetWorldRotation(CurrentBoomRotation);
@@ -186,33 +192,35 @@ void AInfectedCityCharacter::StopAiming()
 
 void AInfectedCityCharacter::StartShoot()
 {
-	//    콺                      ߻ 
-	bIsFiring = true;
 
+	bIsFiring = true;
+	
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		PlayerController->bShowMouseCursor = true;
 		RotateCharacterToMouseCursor();
 	}
-
-	//    콺                      ߻ 
-	if (bIsFiring && CurrentWeapon)
+	if (bIsFiring && CurrentWeapon && !CurrentWeapon->IsOutOfAmmo() && !CurrentWeapon->bIsReloading)
 	{
-		//  ð    FireRate  ̻     Ǿ        ߻ 
+		
+		RecoverCameraRecoil();
 		if (GetWorld()->GetTimeSeconds() - LastFireTime >= FireRate)
 		{
 			FireBullet();
-
-			//    Ⱑ AWeaponBase      Fire()  Լ  ȣ  
+			
+			
 			if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
 			{
-				Weapon->Fire();  //  ߻   Լ  ȣ  
+				Weapon->Fire(); 
+				
 			}
 
-			//         ߻   ð      
+		     
 			LastFireTime = GetWorld()->GetTimeSeconds();
 		}
+		
 	}
+	
 }
 void AInfectedCityCharacter::StopShoot()
 {
@@ -220,7 +228,9 @@ void AInfectedCityCharacter::StopShoot()
 	{
 		PlayerController->bShowMouseCursor = false;  //    콺 Ŀ        
 	}
-	bIsFiring = false;  //  ߻      
+	bIsFiring = false;  
+	
+
 
 }
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
@@ -253,8 +263,11 @@ void AInfectedCityCharacter::Look(const FInputActionValue& Value)
 
 bool AInfectedCityCharacter::BHASRifle() const
 {
-
-	return CurrentWeapon != nullptr && CurrentWeapon->IsA(AWeaponBase::StaticClass());  // ARifleWeapon        Ŭ         Ÿ   ٰ      
+	return CurrentWeapon != nullptr && CurrentWeapon->IsA(AAkWeapon::StaticClass());
+}
+bool AInfectedCityCharacter::BHASPistol() const
+{
+	return CurrentWeapon != nullptr && CurrentWeapon->IsA(APistolWeapon::StaticClass());
 }
 void AInfectedCityCharacter::StartRunning()
 {
@@ -301,20 +314,36 @@ void AInfectedCityCharacter::StopCrouching()
 
 void AInfectedCityCharacter::Reload()
 {
-	//         Ⱑ  ִٸ 
+	
+	// 무기를 들고 있을 때만 리로드 실행
 	if (CurrentWeapon)
 	{
 		if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
 		{
-			Weapon->Reloading(); //        Reload  Լ  ȣ  
-		}
-	}
+			// 탄약이 부족할 때만 리로드 시작
+			if (Weapon->CurrentAmmo < Weapon->MaxAmmo)
+			{
+				if (ReloadAnimMontage)
+				{
 
-	//         ִϸ  ̼         Ѵٸ 
-	if (ReloadAnimMontage)
-	{
-		PlayAnimMontage(ReloadAnimMontage);
+				  PlayAnimMontage(ReloadAnimMontage);
+				  Weapon->Reloading();
+					
+				}
+				
+			}
+		}
+
+		
+		
 	}
+}
+
+void AInfectedCityCharacter::ToggleFlashlight()
+{
+	
+	
+	
 }
 void AInfectedCityCharacter::PickupWeapon()
 {
@@ -323,23 +352,23 @@ void AInfectedCityCharacter::PickupWeapon()
 	{
 		CurrentWeapon = NearestWeapon;
 
-		//            Ʈ        ɴϴ .
+	
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); //  浹   Ȱ  ȭ
+			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 		}
 
-		//    ⸦ ȭ 鿡    ̰      
+		     
 		NearestWeapon->SetActorHiddenInGame(false);
 
-		// 'AKGun'    Ͽ           
+	         
 		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
 
 
 
-		//       ̸   α     
+		  
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
 	else
@@ -356,13 +385,17 @@ AWeaponBase* AInfectedCityCharacter::FindNearestWeapon()
 
 	AWeaponBase* NearestWeapon = nullptr;
 	float NearestDistance = FLT_MAX;
+	float SearchRadius =100.0f;  // 플레이어가 무기를 찾을 범위 (예: 1000 유닛)
 
 	for (AActor* Actor : NearbyWeapons)
 	{
 		AWeaponBase* Weapon = Cast<AWeaponBase>(Actor);
+		if (Weapon)
 		{
 			float Distance = FVector::Dist(GetActorLocation(), Weapon->GetActorLocation());
-			if (Distance < NearestDistance)
+
+			// 지정된 범위 내에서만 무기를 검색
+			if (Distance < SearchRadius && Distance < NearestDistance)
 			{
 				NearestWeapon = Weapon;
 				NearestDistance = Distance;
@@ -380,25 +413,24 @@ void AInfectedCityCharacter::RotateCharacterToMouseCursor()
 
 	FVector WorldLocation, WorldDirection;
 
-	//    콺   ġ          ǥ     ȯ
-	if (PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
-	{
-		//    콺            ġ    ٶ󺸴            
-		FVector LookAtTarget = WorldLocation + (WorldDirection * 5000.f);  // ū  Ÿ                     (            )
 
-		// ĳ   Ϳ     콺   ġ                 (Z                )
+	if (PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+	{      
+		FVector LookAtTarget = WorldLocation + (WorldDirection * 5000.f); 
+
+		
 		FVector CharacterLocation = GetActorLocation();
 		FVector Direction = LookAtTarget - CharacterLocation;
-		Direction.Z = 0; //      ȸ        (Y   ȸ      ϵ        )
+		Direction.Z = 0; 
 
-		//    ο  ȸ         
+      
 		FRotator NewRotation = Direction.Rotation();
 
-		// ĳ     ȸ       
+  
 		SetActorRotation(NewRotation);
 	}
 
-	//            (     Ʈ   ̽  Ȯ ο  -  ׽ Ʈ     )
+
 	//DrawDebugLine(GetWorld(), WorldLocation, WorldLocation + WorldDirection * 5000.f, FColor::Red, false, 1.0f, 0, 2.0f);
 }
 void AInfectedCityCharacter::FireBullet()
@@ -409,7 +441,7 @@ void AInfectedCityCharacter::FireBullet()
 		return;
 	}
 
-	//      ź        ٸ   ߻          
+     
 	AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
 	if (Weapon && Weapon->IsOutOfAmmo())
 	{
@@ -421,7 +453,7 @@ void AInfectedCityCharacter::FireBullet()
 		UE_LOG(LogTemp, Warning, TEXT("Cannot fire while reloading!"));
 		return;
 	}
-	//  ߻  ó  
+
 	FVector MouseWorldLocation, MouseWorldDirection;
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController && PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection))
@@ -436,10 +468,54 @@ void AInfectedCityCharacter::FireBullet()
 
 		}
 
-		//  ߻   ִϸ  ̼      
+   
 		if (ShootAnimMontage)
 		{
 			PlayAnimMontage(ShootAnimMontage);
 		}
 	}
+}
+void AInfectedCityCharacter::RecoverCameraRecoil()
+{
+	if (!bIsFiring)
+	{
+		return;  // 총을 쏘지 않으면 함수 종료
+	}
+
+	// 카메라 회전 및 위치를 복구하는 함수
+	auto RecoverCamera = [this](UCameraComponent* Camera)  // 'this' 캡처
+		{
+			// 현재 카메라의 회전과 위치 가져오기
+			FRotator CurrentRotation = Camera->GetComponentRotation();
+			FVector CurrentLocation = Camera->GetComponentLocation();
+
+			// 반동으로 인한 임의의 회전 (X, Y 회전은 반동 효과 추가)
+			FRotator NewRotation = FRotator(
+				FMath::RandRange(-RecoilRotationAmount, RecoilRotationAmount), // 임의의 X 회전
+				FMath::RandRange(-RecoilRotationAmount, RecoilRotationAmount), // 임의의 Y 회전
+				0 // Z 회전은 고정
+			);
+
+			// 위치 회복 (부드럽게)
+			FVector NewLocation = FMath::VInterpTo(CurrentLocation, CurrentLocation + CameraRecoil, GetWorld()->GetDeltaSeconds(), RecoilRecoverySpeed);
+			Camera->SetWorldLocation(NewLocation);
+
+			// 회전 보정
+			FRotator RecoilCompensation = FRotator(
+				-NewRotation.Pitch, // 반동 회전값을 빼서 보정
+				-NewRotation.Yaw,   // 반동 회전값을 빼서 보정
+				0                   // Z 회전은 고정
+			);
+
+			// 회전 부드럽게 회복
+			FRotator TargetRotation = CurrentRotation + RecoilCompensation;
+			FRotator SmoothedRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RecoilRecoverySpeed);
+
+			// 회전 적용
+			Camera->SetWorldRotation(SmoothedRotation);
+		};
+
+	// FollowCamera와 SecondFollowCamera에 대해 회복 적용
+	RecoverCamera(FollowCamera);
+	RecoverCamera(SecondFollowCamera);
 }

@@ -6,6 +6,7 @@
 
 class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
+class AItemBase;
 
 UCLASS()
 class INFECTEDCITY_API AEnemyEffectManager : public AActor
@@ -35,8 +36,9 @@ private:
 	void SetupSceneCapture();
 	void DetectActorAtMouseCursor(APlayerController* PlayerController);
 	void DetectActorAtCenter(APlayerController* PlayerController);
+	void CheckPlayerRaytrace();
 
 	class AEnemyCharacter* EnemyCharacter{ nullptr };
-
+	AItemBase* CurrentItem{ nullptr };
 	bool bPreMouseCursor{ false };
 };

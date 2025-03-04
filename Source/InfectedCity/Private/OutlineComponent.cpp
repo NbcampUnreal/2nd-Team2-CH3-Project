@@ -4,6 +4,7 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
+#include "ItemBase.h"
 
 UOutlineComponent::UOutlineComponent()
 {
@@ -67,17 +68,15 @@ void UOutlineComponent::EnableOutline()
 	{
 		if (MeshComp)
 		{
-			switch (EOutlineType)
+			if (EOutlineType == EOutlineType::OUTLINE_ENEMY)
 			{
-			case EOutlineType::OUTLINE_ENEMY:
 				MeshComp->SetRenderCustomDepth(true);
 				MeshComp->SetCustomDepthStencilValue(StencilValue);
-				break;
-			case EOutlineType::OUTLINE_ITEM:
-				MeshComp->SetOverlayMaterial(OutlineMaterial);
-				break;
 			}
-			
+			else
+			{
+				MeshComp->SetOverlayMaterial(OutlineMaterial);
+			}
 		}
 	}
 }
@@ -122,6 +121,5 @@ void UOutlineComponent::SetMaterialParam(float Thickness, FLinearColor Color)
 void UOutlineComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	
 	bIsItemOutline = (EOutlineType == EOutlineType::OUTLINE_ITEM);
 }
