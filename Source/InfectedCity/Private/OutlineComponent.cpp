@@ -121,6 +121,5 @@ void UOutlineComponent::SetMaterialParam(float Thickness, FLinearColor Color)
 void UOutlineComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	
 	bIsItemOutline = (EOutlineType == EOutlineType::OUTLINE_ITEM);
 }
