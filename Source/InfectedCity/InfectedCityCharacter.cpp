@@ -68,11 +68,9 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	SecondFollowCamera->SetupAttachment(SecondCameraBoom, USpringArmComponent::SocketName);
 	SecondFollowCamera->bUsePawnControlRotation = false; //           
 
-
-
-
-
-
+	CameraBoom->ProbeChannel = ECC_Visibility;
+	CameraBoom->bDoCollisionTest = true;
+	
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
 {

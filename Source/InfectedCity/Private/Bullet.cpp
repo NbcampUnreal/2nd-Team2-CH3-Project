@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Actor.h"
 #include "DrawDebugHelpers.h"  // 디버깅용
+#include <GN_Character.h>
 
 ABullet::ABullet()
 {
@@ -77,6 +78,31 @@ void ABullet::MoveBullet(float DeltaTime)
     {
         SetActorLocation(NewLocation);  // 충돌이 없으면 새로운 위치로 설정
     }
+
+    if (!bHit)
+    {
+        bool bEnemyHit = GetWorld()->SweepSingleByChannel(
+            HitResult,
+            CurrentLocation,
+            NewLocation,
+            FQuat::Identity,  // 회전값 (회전이 없다면 FQuat::Identity)
+            ECC_GameTraceChannel1,   // 충돌 채널
+            FCollisionShape::MakeSphere(CollisionComponent->GetScaledSphereRadius()),  // 충돌 형태: 구체
+            CollisionParams
+        );
+        
+        if (bEnemyHit)
+        {
+            AGN_Character* Enemy = Cast<AGN_Character>(HitResult.GetActor());
+            Enemy->CurrentHealth -= 100;
+
+            if (Enemy->CurrentHealth <= 0)
+            {
+                Enemy->Die();
+            }
+        }
+    }
+
 }
 void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {

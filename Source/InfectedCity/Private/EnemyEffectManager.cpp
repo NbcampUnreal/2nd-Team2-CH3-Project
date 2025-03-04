@@ -8,6 +8,7 @@
 #include "EngineUtils.h"
 #include <Camera/CameraComponent.h>
 #include <Kismet/KismetRenderingLibrary.h>
+#include "GN_Character.h"
 #include "ItemBase.h"
 
 
@@ -150,7 +151,7 @@ void AEnemyEffectManager::DetectActorAtMouseCursor(APlayerController* PlayerCont
 
                 if (!EnemyCharacter)
                 {
-                    EnemyCharacter = Cast<AEnemyCharacter>(HitActor);
+                    EnemyCharacter = Cast<AGN_Character>(HitActor);
                     EnemyCharacter->EnableOutline(true);
                 }
 
@@ -204,7 +205,7 @@ void AEnemyEffectManager::DetectActorAtCenter(APlayerController* PlayerControlle
 
                 if (!EnemyCharacter)
                 {
-                    EnemyCharacter = Cast<AEnemyCharacter>(HitActor);
+                    EnemyCharacter = Cast<AGN_Character>(HitActor);
                     EnemyCharacter->EnableOutline(true);
                 }
 

@@ -38,7 +38,7 @@ private:
 	void DetectActorAtCenter(APlayerController* PlayerController);
 	void CheckPlayerRaytrace();
 
-	class AEnemyCharacter* EnemyCharacter{ nullptr };
+	class AGN_Character* EnemyCharacter{ nullptr };
 	AItemBase* CurrentItem{ nullptr };
 	bool bPreMouseCursor{ false };
 };

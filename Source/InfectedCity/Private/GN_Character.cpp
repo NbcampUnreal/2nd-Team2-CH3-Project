@@ -3,16 +3,23 @@
 #include "Perception/PawnSensingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/CapsuleComponent.h"
 #include "GN_AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "OutlineComponent.h"
 
 AGN_Character::AGN_Character()
 {
     PrimaryActorTick.bCanEverTick = true;
 
+    GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel1);
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+
+    OutlineComponent = CreateDefaultSubobject<UOutlineComponent>(TEXT("OutlineComponent"));
+
     PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
     PawnSensingComp->OnSeePawn.AddDynamic(this, &AGN_Character::OnSeePawn);
-
+    
     // 감지 반경 및 시야각 설정
     PawnSensingComp->SightRadius = 1500.0f;  // 플레이어 감지 거리 (기존보다 넓힘)
     PawnSensingComp->SetPeripheralVisionAngle(100.0f);  // 시야각 설정 (기존보다 넓힘)
@@ -43,22 +50,44 @@ void AGN_Character::Tick(float DeltaTime)
 
     float Speed = GetVelocity().Size();
 
-    if (Speed == 0)
+    if (CurrentState != EEnemyState::Dead && CurrentState != EEnemyState::Attacking)
     {
-        PreAnimation = IdleAnimation;
-    }
-    else if (Speed > 0 && Speed < 400)
-    {
-        PreAnimation = WalkAnimation;
-    }
-    else if (Speed >= 400)
-    {
-        PreAnimation = RunAnimation;
+        if (Speed == 0)
+        {
+            PreAnimation = IdleAnimation;
+        }
+        else if (Speed > 0 && Speed < 400)
+        {
+            PreAnimation = WalkAnimation;
+        }
+        else if (Speed >= 400)
+        {
+            PreAnimation = RunAnimation;
+        }
     }
 
     if (CurAnimation != PreAnimation)
     {
-        GetMesh()->PlayAnimation(PreAnimation, true);
+        if (PreAnimation == DeathAnimation)
+        {
+            float AnimDuration = PreAnimation->GetPlayLength();
+
+            GetMesh()->PlayAnimation(PreAnimation, false);
+            
+            GetWorldTimerManager().SetTimer(DeadAnimTimerHandle, this, &AGN_Character::Dead, AnimDuration, false);
+        }
+        else if (PreAnimation == AttackAnimation)
+        {
+            float AnimDuration = PreAnimation->GetPlayLength();
+
+            GetMesh()->PlayAnimation(PreAnimation, false);
+
+            GetWorldTimerManager().SetTimer(DeadAnimTimerHandle, this, &AGN_Character::AttackEnd, AnimDuration, false);
+        }
+        else
+        {
+            GetMesh()->PlayAnimation(PreAnimation, true);
+        }
         CurAnimation = PreAnimation;
     }
 
@@ -111,7 +140,7 @@ void AGN_Character::OnSeePawn(APawn* Pawn)
         return;
     }
 
-    if (CurrentState == EEnemyState::Chasing)
+    if (CurrentState == EEnemyState::Chasing || CurrentState == EEnemyState::Attacking)
     {
         UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - AI가 이미 플레이어를 쫓고 있음. 감지 무시."));
         return;
@@ -134,9 +163,17 @@ void AGN_Character::OnSeePawn(APawn* Pawn)
     }
 }
 
+void AGN_Character::EnableOutline(bool bEnable)
+{
+    bEnable == true ? OutlineComponent->EnableOutline() : OutlineComponent->DisableOutline();
+}
+
 
 void AGN_Character::SetEnemyState(EEnemyState NewState)
 {
+    if (CurrentState == EEnemyState::Dead)
+        return;
+
     if (CurrentState == NewState)
     {
         UE_LOG(LogTemp, Warning, TEXT("SetEnemyState() - 이미 상태가 %d 입니다. 변경하지 않음."), (int)NewState);
@@ -203,22 +240,40 @@ void AGN_Character::Attack()
 
     UE_LOG(LogTemp, Warning, TEXT("Attack() - 공격 시작!"));
 
-    SetEnemyState(EEnemyState::Attacking);
-    PlayAttackAnimation();
+    //SetEnemyState(EEnemyState::Attacking);
+    //PlayAttackAnimation();
 
-    GetWorld()->GetTimerManager().SetTimer(
-        PatrolTimerHandle,
-        this,
-        &AGN_Character::StartChase,  // 1.5초 후 다시 추격 시작
-        1.5f,
-        false
-    );
+
+    PreAnimation = AttackAnimation;
+    CurrentState = EEnemyState::Attacking;
+    AIController->RemovePatrolling();
+
+    GetWorld()->GetTimerManager().ClearTimer(PatrolTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(ScreamTimerHandle);
+    //AttackAnimation
+
+    //GetWorld()->GetTimerManager().SetTimer(
+    //    PatrolTimerHandle,
+    //    this,
+    //    &AGN_Character::StartChase,  // 1.5초 후 다시 추격 시작
+    //    1.5f,
+    //    false
+    //);
 }
 
 void AGN_Character::Die()
 {
-    SetEnemyState(EEnemyState::Dead);
-    PlayDeathAnimation();
+    //SetEnemyState(EEnemyState::Dead);
+    //PlayDeathAnimation();
+    
+    PreAnimation = DeathAnimation;
+    CurrentState = EEnemyState::Dead;
+
+    GetWorld()->GetTimerManager().ClearTimer(PatrolTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(ScreamTimerHandle);
+    
+    PawnSensingComp->OnSeePawn.RemoveDynamic(this, &AGN_Character::OnSeePawn);
+    AIController->RemovePatrolling();
 }
 
 void AGN_Character::PlayAttackAnimation()
@@ -279,4 +334,15 @@ void AGN_Character::CheckIfPlayerLost()
         UE_LOG(LogTemp, Warning, TEXT("플레이어가 아직 감지됨. 추적 유지."));
         AIController->MoveToActor(Player);
     }
+}
+
+void AGN_Character::Dead()
+{
+    GetWorldTimerManager().ClearTimer(DeadAnimTimerHandle);
+    Destroy();
+}
+
+void AGN_Character::AttackEnd()
+{
+    CurrentState = EEnemyState::Chasing;
 }
