@@ -7,7 +7,7 @@
 #include "GN_AIController.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class INFECTEDCITY_API AGN_AIController : public AAIController
@@ -23,7 +23,10 @@ public:
 	void StartPatrolling();
 	void MoveToRandomLocation();
 	void MoveToActor(AActor* Target);
+	void FollowTarget();
 
 private:
 	FTimerHandle PatrolTimerHandle;
+
+	AActor* CurTarget;
 };
