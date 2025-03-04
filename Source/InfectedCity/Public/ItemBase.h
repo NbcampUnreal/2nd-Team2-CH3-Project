@@ -1,28 +1,27 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "UObject/Interface.h"
 #include "ItemBase.generated.h"
 
 class USphereComponent;
 class UOutlineComponent;
 class UWidgetComponent;
 
-UCLASS()
-class INFECTEDCITY_API AItemBase : public AActor
+UINTERFACE(MinimalAPI, Blueprintable)
+class UItemBase : public UInterface
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AItemBase();
+    GENERATED_BODY()
+};
+
+class INFECTEDCITY_API IItemBase
+{
+    GENERATED_BODY()
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FName ItemType;
-
+protected: /*ktw*/
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
     USceneComponent* Scene;
 
@@ -43,7 +42,7 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
     USoundBase* PickupSound;
 
-public:
+public: /*ktw*/
     virtual void OnItem();
     virtual void OnItemEnd();
     virtual void ActivateItem();
@@ -52,4 +51,8 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     void DestroyItem();
+public:
+    // ������ ��� �Լ� (��ӹ��� Ŭ�������� ����)
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
+    void UseItem(AActor* User);
 };

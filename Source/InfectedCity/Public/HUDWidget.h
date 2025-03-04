@@ -1,28 +1,151 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TextBlock.h"
+#include "Components/Border.h"
 #include "Blueprint/UserWidget.h"
 #include "HUDWidget.generated.h"
+
+class UImage;
+class UProgressBar;
+class TextBlock;
+class AInfectedCityCharacter;
 
 UCLASS()
 class INFECTEDCITY_API UHUDWidget : public UUserWidget
 {
     GENERATED_BODY()
 
-
 public:
     virtual void NativeConstruct() override;
 
-    /* Crouch 상태에 따라 UI 변경 */
-        UFUNCTION(BlueprintCallable, Category = "HUD")
+    UFUNCTION(BlueprintCallable, Category = "HUD")
     void SetCrouchState(bool bIsCrouching);
 
-protected:
-    /* Crouch 이미지 */
-        UPROPERTY(meta = (BindWidget))
-    class UImage* CrouchImage;
+    UPROPERTY(meta = (BindWidget)) UImage* MaingunImage;
+    UPROPERTY(meta = (BindWidget)) UImage* SubgunImage;
+    UPROPERTY(meta = (BindWidget)) UImage* MeleeImage;
+    UPROPERTY(meta = (BindWidget)) UProgressBar* UseProgress;
+    UPROPERTY(meta = (BindWidget)) UImage* CrouchImage;
+    UPROPERTY(meta = (BindWidget)) UImage* StandImage;
 
-    /* Stand 이미지 */
+    UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+    class UProgressBar* AmmoProgressBar;
+
+    UFUNCTION(BlueprintCallable, Category = "Ammo")
+    void UpdateAmmoProgress(float NewAmmoValue);
+
+
+    UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+    int32 CurrentAmmo = 0.0f;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+    int32 MaxAmmo;
+
+    void OnKey1Pressed();
+    void OnKey2Pressed();
+    void OnKey3Pressed();
+    void OnKey4Pressed();
+    void OnKey5Pressed();
+
+    void UpdateImageOpacity(int32 SelectedKey);
+
+    void StartProgressBar(int32 Key, float Duration);
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UUserWidget> HUDWidgetClass;
+
+    UPROPERTY()
+    UHUDWidget* HUDWidget;
+
+    bool bIsUsingProgress = false;
+    FTimerHandle ProgressBarTimerHandle;
+    FTimerHandle ProgressBarUpdateHandle;
+
+    TMap<int32, UImage*> ImageMap;
+    TMap<int32, UProgressBar*> ProgressBarMap;
+
+    float ElapsedTime = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    FLinearColor Color1 = FLinearColor::White;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    FLinearColor Color2 = FLinearColor::Red;
+
     UPROPERTY(meta = (BindWidget))
-    class UImage* StandImage;
+    UBorder* Border;
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateBorderColor();
+
+    void ToggleBorderColor();
+
+    UFUNCTION(BlueprintCallable)
+    void StopBorderColorBlink();
+
+    UFUNCTION(BlueprintCallable)
+    void SetReloadTextVisibility(bool bIsVisible);
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* ReloadText;
+
+    UFUNCTION(BlueprintCallable)
+    void PlayReloadAnimation();
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* BandageNum;
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* PillNum;
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateBandageCount(int32 Count);
+
+    UFUNCTION(BlueprintCallable)
+    void UpdatePillCount(int32 Count);
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateStaminaBar(float StaminaRatio);
+
+    UFUNCTION(BlueprintCallable)
+    void StartPillIndicator();
+
+    UFUNCTION(BlueprintCallable)
+    void StopPillIndicator();
+
+    UFUNCTION(BlueprintCallable)
+    void RotatePillIndicator();
+
+    UPROPERTY(meta = (BindWidget))
+    UImage* PillIndicator;
+
+    FTimerHandle PillRotationTimerHandle;
+    float PillRotationAngle = 0.0f;
+
+protected:
+    FTimerHandle BorderColorTimerHandle;
+
+    int32 BlinkCount = 0;
+
+    bool bToggle = false;
+
+    UPROPERTY(meta = (BindWidgetAnim), Transient)
+    UWidgetAnimation* ReloadingText;
+
+    UPROPERTY(meta = (BindWidget))
+        class UProgressBar* StaminaProgressBar;
+
+private:
+    AInfectedCityCharacter* GetPlayerCharacter();
+
+    UPROPERTY(meta = (BindWidget))
+    UImage* BandageIndicator;
+
+    FTimerHandle RotationTimerHandle;
+    float RotationAngle = 0.0f;
+
+    void StartBandageIndicator();
+    void StopBandageIndicator();
+    void RotateBandageIndicator();
 };

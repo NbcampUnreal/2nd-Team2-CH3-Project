@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Bullet.h" 
-#include "Components/SpotLightComponent.h"
+#include "HUDWidget.h"
 #include "WeaponBase.generated.h"
 
 class UStaticMeshComponent;
@@ -21,69 +21,65 @@ class INFECTEDCITY_API AWeaponBase : public AActor
 public:
     AWeaponBase();
 
-    // ¹ß»ç ÇÔ¼ö
+    // ï¿½ß»ï¿½ ï¿½Ô¼ï¿½
     void Fire();
 
-    // ÀçÀåÀü ÇÔ¼ö
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
     void Reloading();
 
-    // Åº¾à ¼³Á¤ ÇÔ¼ö
+    // Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
     void SetAmmo(int32 AmmoAmount);
 
-    // ÇöÀç Åº¾à ¹ÝÈ¯ ÇÔ¼ö
+    // ï¿½ï¿½ï¿½ï¿½ Åºï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Ô¼ï¿½
     int32 GetCurrentAmmo() const;
 
-    // Åº¾àÀÌ ºÎÁ·ÇÑÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+    // Åºï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
     bool IsOutOfAmmo() const;
 
     UFUNCTION(BlueprintCallable)
     bool GetIsReloading() const;
 
-    // ¸®·Îµù Áß ¿©ºÎ
+    // ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reload")
     bool bIsReloading;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
     USkeletalMeshComponent* WeaponMesh;
-    // Ãæµ¹ ÄÄÆ÷³ÍÆ®
+    // ï¿½æµ¹ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     UPROPERTY(VisibleAnywhere)
     USphereComponent* WeaponCollision;
 
-    // ÃÖ´ë Åº¾à ¼ö
+    // ï¿½Ö´ï¿½ Åºï¿½ï¿½ ï¿½ï¿½
     UPROPERTY(EditDefaultsOnly, Category = "Weapon")
     int32 MaxAmmo;
 
-    // ÇöÀç Åº¾à ¼ö
+    // ï¿½ï¿½ï¿½ï¿½ Åºï¿½ï¿½ ï¿½ï¿½
     int32 CurrentAmmo;
 
-    // ÀçÀåÀü ½Ã°£
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½
     UPROPERTY(EditDefaultsOnly, Category = "Weapon")
     float ReloadTime;
 
-    // µ¥¹ÌÁö
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditDefaultsOnly, Category = "Weapon")
     float Damage;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
-    float RecoilAmount = 5.0f;  // ±âº» ¹Ýµ¿ Å©±â
-    // ¹ß»ç °¡´É ¿©ºÎ
+    float RecoilAmount = 5.0f;  // ï¿½âº» ï¿½Ýµï¿½ Å©ï¿½ï¿½
+    // ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     bool bCanFire;
     UPROPERTY(EditAnywhere, Category = "Animation")
-    UAnimMontage* ReloadAnimation; // ÀçÀåÀü ¾Ö´Ï¸ÞÀÌ¼Ç
-    // ¹ß»ç »ç¿îµå
+    UAnimMontage* ReloadAnimation; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½
+    // ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Weapon")
     USoundBase* FireSound;
     UPROPERTY(EditDefaultsOnly, Category = "Weapon|Reload")
-    UAnimMontage* ReloadAnim;  // ÀçÀåÀü ¾Ö´Ï¸ÞÀÌ¼Ç º¯¼ö
-    // ¹ß»ç ÀÌÆåÆ®
+    UAnimMontage* ReloadAnim;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
     UPROPERTY(EditAnywhere, Category = "Weapon")
     UParticleSystem* FireEffect;
 
-    // ÀçÀåÀü ¿Ï·á ÈÄ È£ÃâµÇ´Â ÇÔ¼ö
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ ï¿½ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½
     void CompleteReload();
 
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    USpotLightComponent* Flashlight;  // ÇÃ·¡½Ã¶óÀÌÆ® ÄÄÆ÷³ÍÆ® Ãß°¡
-    virtual void Tick(float DeltaTime) override;
-    // ±âÁ¸ ÇÔ¼öµé...
-    void ToggleFlashlight();  // ÇÃ·¡½Ã¶óÀÌÆ® Åä±Û ÇÔ¼ö
+    float GetAmmoRatio() const;
 };

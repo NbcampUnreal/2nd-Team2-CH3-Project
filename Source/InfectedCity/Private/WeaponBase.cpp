@@ -1,34 +1,37 @@
 #include "WeaponBase.h"
+#include "HUDWidget.h"
+#include "CustomHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Engine/World.h"
-#include "Infectedcity/InfectedCityCharacter.h"
+#include "GameFramework/HUD.h"
+#include "InfectedCity/InfectedCityCharacter.h"
 
 AWeaponBase::AWeaponBase()
 {
     WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
     RootComponent = WeaponMesh;
-    // ±âº» °ª ¼³Á¤
+    // ï¿½âº» ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
-    Flashlight->SetupAttachment(WeaponMesh);  // ¹«±â ¸Þ½¬¿¡ ÇÃ·¡½Ã¶óÀÌÆ®¸¦ ºÎÂø
+    Flashlight->SetupAttachment(WeaponMesh);  // ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ã¶ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     Flashlight->SetVisibility(true);
     Flashlight->SetMobility(EComponentMobility::Movable);
-    Flashlight->SetRelativeLocation(FVector(0.f, 0.f, 10.f));  // ¹«±â ¸Þ½¬¿¡ »ó´ëÀûÀÎ À§Ä¡·Î ¼³Á¤
-    Flashlight->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));  // È¸Àü ¼³Á¤ Ãß°¡  
+    Flashlight->SetRelativeLocation(FVector(0.f, 0.f, 10.f));  // ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    Flashlight->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));  // È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½  
     UE_LOG(LogTemp, Log, TEXT("Flashlight attached to: %s"), *Flashlight->GetAttachParent()->GetName());
     WeaponCollision = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponCollision"));
 
-    MaxAmmo = 30;  // ¿¹½Ã·Î ±âº» Åº¾à ¼ö¸¦ 30À¸·Î ¼³Á¤
-    CurrentAmmo = MaxAmmo;  // ÃÊ±â Åº¾àÀº MaxAmmo·Î ¼³Á¤
+    MaxAmmo = 30;  // ï¿½ï¿½ï¿½Ã·ï¿½ ï¿½âº» Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 30ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    CurrentAmmo = MaxAmmo;  // ï¿½Ê±ï¿½ Åºï¿½ï¿½ï¿½ï¿½ MaxAmmoï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     ReloadTime = 4.5f;
 
 
     WeaponCollision->SetupAttachment(WeaponMesh);
 
-    Damage = 10.0f; // ±âº» µ¥¹ÌÁö
+    Damage = 10.0f; // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-    bCanFire = true;  // ÃÊ±â¿¡´Â ¹ß»ç°¡ °¡´ÉÇÏµµ·Ï ¼³Á¤
+    bCanFire = true;  // ï¿½Ê±â¿¡ï¿½ï¿½ ï¿½ß»ç°¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -37,39 +40,42 @@ void AWeaponBase::Fire()
     if (!bCanFire)
     {
         UE_LOG(LogTemp, Warning, TEXT("Cannot fire while reloading!"));
-        return; // ¸®·Îµù Áß¿¡´Â ¹ß»çÇÏÁö ¾ÊÀ½
+        return; // ï¿½ï¿½ï¿½Îµï¿½ ï¿½ß¿ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
 
     if (CurrentAmmo > 0)
     {
         UE_LOG(LogTemp, Log, TEXT("Firing weapon"));
 
-        // Åº¾à Â÷°¨
+        // Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         CurrentAmmo--;
+
+        UE_LOG(LogTemp, Log, TEXT("UpdateHUD() called!"));
+
         UE_LOG(LogTemp, Log, TEXT("Current Ammo: %d"), CurrentAmmo);
 
-        // ÃÑ±¸ ¼ÒÄÏÀÇ À§Ä¡¿Í È¸Àü °ª ¾ò±â
+        // ï¿½Ñ±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ È¸ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
         FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("Bullet"));
         FRotator MuzzleRotation = WeaponMesh->GetSocketRotation(TEXT("Bullet"));
 
-        // ¹ß»ç »ç¿îµå Àç»ý
+        // ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         if (FireSound)
         {
             UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
         }
 
-        // ¹ß»ç ÀÌÆåÆ® »ý¼º
+        // ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
         if (FireEffect)
         {
             UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireEffect, MuzzleLocation, MuzzleRotation, true);
         }
 
-        // ¹ß»ç ÈÄ ¹Ýµ¿ Àû¿ë (ÀÌ°÷¿¡¼­ ¹«±â ¹Ýµ¿À» Ã³¸®)
+        // ï¿½ß»ï¿½ ï¿½ï¿½ ï¿½Ýµï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ì°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ýµï¿½ï¿½ï¿½ Ã³ï¿½ï¿½)
         AInfectedCityCharacter* Character = Cast<AInfectedCityCharacter>(GetOwner());
         if (Character)
         {
-            // ¹«±â ¹Ýµ¿ (Ä«¸Þ¶ó¿¡ ¹Ýµ¿ Àû¿ë)
-            Character->CameraRecoil += FVector(0, 0, RecoilAmount);  // ¿¹½Ã·Î ZÃà ¹Ýµ¿À» Ãß°¡
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ýµï¿½ (Ä«ï¿½Þ¶ï¿½ ï¿½Ýµï¿½ ï¿½ï¿½ï¿½ï¿½)
+            Character->CameraRecoil += FVector(0, 0, RecoilAmount);  // ï¿½ï¿½ï¿½Ã·ï¿½ Zï¿½ï¿½ ï¿½Ýµï¿½ï¿½ï¿½ ï¿½ß°ï¿½
         }
     }
     else
@@ -90,6 +96,11 @@ void AWeaponBase::Reloading()
             WeaponMesh->PlayAnimation(ReloadAnim, false);
         }
 
+        AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(GetOwner());
+        if (Player)
+        {
+            Player->UpdateReloadText(true);
+        }
         FTimerHandle ReloadTimer;
         GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AWeaponBase::CompleteReload, ReloadTime, false);
     }
@@ -99,33 +110,42 @@ void AWeaponBase::Reloading()
     }
 }
 
-// ÀçÀåÀü ¿Ï·á
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½
 void AWeaponBase::CompleteReload()
 {
     CurrentAmmo = MaxAmmo;
     UE_LOG(LogTemp, Log, TEXT("Reload complete."));
     bIsReloading = false;
     bCanFire = true;
+
+
+    AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(GetOwner());
+    if (Player)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Reload ui update."));
+        Player->UpdateAmmoBar();  // Åºï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+        Player->UpdateReloadText(false);
+    }
 }
 
-// SetAmmo: Åº¾à ¼³Á¤ ÇÔ¼ö
+// SetAmmo: Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 void AWeaponBase::SetAmmo(int32 AmmoAmount)
 {
     CurrentAmmo = AmmoAmount;
     if (CurrentAmmo > MaxAmmo)
     {
-        CurrentAmmo = MaxAmmo; // ÃÖ´ë Åº¾à ¼ö¸¦ ³ÑÁö ¾Êµµ·Ï ¼³Á¤
+        CurrentAmmo = MaxAmmo; // ï¿½Ö´ï¿½ Åºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Êµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
 
 }
 
-// GetCurrentAmmo: ÇöÀç Åº¾à ¹ÝÈ¯ ÇÔ¼ö
+// GetCurrentAmmo: ï¿½ï¿½ï¿½ï¿½ Åºï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Ô¼ï¿½
 int32 AWeaponBase::GetCurrentAmmo() const
 {
     return CurrentAmmo;
 }
 
-// IsOutOfAmmo: Åº¾àÀÌ ¾ø´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+// IsOutOfAmmo: Åºï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 bool AWeaponBase::IsOutOfAmmo() const
 {
     return CurrentAmmo <= 0;
@@ -135,33 +155,13 @@ bool AWeaponBase::GetIsReloading() const
 {
     return bIsReloading;
 }
-void AWeaponBase::ToggleFlashlight()
+
+
+float AWeaponBase::GetAmmoRatio() const
 {
-    if (Flashlight)
+    if (MaxAmmo > 0)
     {
-        bool bIsVisible = Flashlight->IsVisible();
-        Flashlight->SetVisibility(!bIsVisible);  // ÇöÀç »óÅÂ¸¦ ¹ÝÀü½ÃÄÑ¼­ ÇÃ·¡½Ã¶óÀÌÆ® ÄÑ°í ²ô±â
-
-        // ·Î±× Ãâ·Â
-        if (Flashlight->IsVisible())
-        {
-            UE_LOG(LogTemp, Log, TEXT("Flashlight is now ON"));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Log, TEXT("Flashlight is now OFF"));
-        }
+        return (float)CurrentAmmo / (float)MaxAmmo;
     }
-}
-
-void AWeaponBase::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-
-    // WeaponMeshÀÇ À§Ä¡¿¡ Flashlight À§Ä¡ ¸ÂÃß±â
-    if (Flashlight)
-    {
-        FVector NewFlashlightLocation = FVector(0.f, 0.f, 10.f); // ¿ÀÇÁ¼Â Á¶Á¤ (ZÃàÀ» ±âÁØÀ¸·Î ¼³Á¤)
-        Flashlight->SetRelativeLocation(NewFlashlightLocation);
-    }
+    return 0.f;  // Ammoï¿½ï¿½ 0ï¿½ï¿½ ï¿½ï¿½ï¿½ 0 ï¿½ï¿½È¯
 }

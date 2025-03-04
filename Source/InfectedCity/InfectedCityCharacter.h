@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "ItemBase.h"
 #include "InfectedCityCharacter.generated.h"
 
 class UHUDWidget;
@@ -22,53 +23,35 @@ class AInfectedCityCharacter : public ACharacter
 
 
 public:
-	// ê¸°ë³¸ ?ì„±??
+
 	AInfectedCityCharacter();
 
-protected:
-
+	void DrainStamina();
+	void RecoverStamina();
 
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
-	// ì¹´ë©”??ë¶?(ìºë¦­???¤ì— ì¹´ë©”???„ì¹˜ ì¡°ì •)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
-
-	// ìºë¦­???¤ì— ?°ë¼?¤ëŠ” ì¹´ë©”??
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SecondCameraBoom;
-
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* SecondFollowCamera;
-
-
-
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	AWeaponBase* CurrentWeapon;
-
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* JumpAction; // ?í”„ ?¡ì…˜
+	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
 
-
-
-
-	// ìºë¦­?°ì˜ ?´ë™ ê´€???…ë ¥ ?¡ì…˜??
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
 
-	// ìºë¦­?°ì˜ ?œì  ì¡°ì • ?…ë ¥ ?¡ì…˜
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
-
-	// ?¬ë¦¬ê¸?ë°??‰ê¸° ê´€???¡ì…˜
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RunAction;
@@ -77,7 +60,6 @@ protected:
 	UInputAction* CrouchAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* ReloadAction;
-
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AimingAction;
@@ -104,30 +86,32 @@ protected:
 
 
 public:
+	void UpdateAmmoBar();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
-	AWeaponBase* EquippedWeapon;  // ÀåÂøµÈ ¹«±â
+	AWeaponBase* EquippedWeapon;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage* ShootAnimMontage;
-	// ÀåÂøµÈ ¹«±â ¹İÈ¯ ÇÔ¼ö
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Ô¼ï¿½
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AWeaponBase* GetEquippedWeapon() const { return EquippedWeapon; }  // ÀåÂøµÈ ¹«±â¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+	AWeaponBase* GetEquippedWeapon() const { return EquippedWeapon; }  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¸¦ ï¿½ï¿½È¯ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<ABullet> BulletClass;  // ÃÑ¾Ë Å¬·¡½º
+	TSubclassOf<ABullet> BulletClass;  // ï¿½Ñ¾ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
-	UAnimMontage* ReloadAnimMontage;  // ÀçÀåÀü ¾Ö´Ï¸ŞÀÌ¼Ç ¸ùÅ¸ÁÖ º¯¼ö Ãß°¡
+	UAnimMontage* ReloadAnimMontage;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	float BulletSpeed = 10000.f;  // ÃÑ¾Ë ¼Óµµ
+	float BulletSpeed = 10000.f;  // ï¿½Ñ¾ï¿½ ï¿½Óµï¿½
 	void FireBullet();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
 	TSubclassOf<UHUDWidget> HUDWidgetClass;
 
-	// Zoomed view¿Í ±âº» Zoom °Å¸®
+	// Zoomed viewï¿½ï¿½ ï¿½âº» Zoom ï¿½Å¸ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float DefaultArmLength = 600.0f;  // ±âº» ½ºÇÁ¸µ¾Ï ±æÀÌ (¿¹: 400)
+	float DefaultArmLength = 600.0f;  // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: 400)
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float ZoomedArmLength = 600.0f;  // ÁÜÀÎ ½Ã ½ºÇÁ¸µ¾Ï ±æÀÌ (¿¹: 600)
+	float ZoomedArmLength = 600.0f;  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: 600)
 
 	virtual void Tick(float DeltaTime) override;
 	void Reload();
@@ -135,31 +119,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* FlashlightAction;
 
-	// ÇÃ·¡½Ã¶óÀÌÆ® ÄÄÆ÷³ÍÆ®
+	// ï¿½Ã·ï¿½ï¿½Ã¶ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flashlight")
 	class UPointLightComponent* Flashlight;
 
-	// ÇÃ·¡½Ã¶óÀÌÆ® Åä±Û ÇÔ¼ö
+	// ï¿½Ã·ï¿½ï¿½Ã¶ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	void ToggleFlashlight();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// ì»¨íŠ¸ë¡¤ëŸ¬ê°€ ë³€ê²½ë  ???¸ì¶œ?˜ëŠ” ?¨ìˆ˜
 	virtual void NotifyControllerChanged() override;
 
-	// ìºë¦­?°ì˜ ?´ë™ ì²˜ë¦¬ ?¨ìˆ˜
 	void Move(const FInputActionValue& Value);
 
-	// ìºë¦­?°ì˜ ?œì  ì¡°ì • ì²˜ë¦¬ ?¨ìˆ˜
 	void Look(const FInputActionValue& Value);
 
-	// ?¬ë¦¬ê¸? ?‰ê¸° ê¸°ëŠ¥
 	void StartRunning();
 	void StopRunning();
 	void StartCrouching();
 	void StopCrouching();
 
 	
-	// ë¬´ê¸° ì£¼ìš¸ ?Œì˜ ?™ì‘
+	// ë¬´ê¸° ì£¼ìš¸ ?ï¿½ì˜ ?ï¿½ì‘
 	void PickupWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -167,15 +147,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	bool BHASPistol() const;
 
-	// Çã¸® ¼÷ÀÓ º¸°£À» À§ÇÑ º¯¼ö (0 = ¼­ ÀÖ´Â »óÅÂ, 1 = ¿ÏÀüÈ÷ ¼÷ÀÎ »óÅÂ)
+	// ï¿½ã¸® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (0 = ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½, 1 = ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	float CrouchBlendFactor = 0.0f;
 
-
-
-	// ê°€ê¹Œìš´ ë¬´ê¸°ë¥?ì°¾ëŠ” ?¨ìˆ˜
 	AWeaponBase* FindNearestWeapon();
 
-	// **ÁÜÀÎ ¹× ÃÑ ¹ß»ç ±â´É**
+	// **ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ß»ï¿½ ï¿½ï¿½ï¿½**
 	void StartAiming();
 	void StopAiming();
 	void StartShoot();
@@ -183,25 +160,56 @@ public:
 
 	void RotateCharacterToMouseCursor();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
-	float RecoilAmount = 10000.0f;  // ±âº» ¹İµ¿ Å©±â
+	float RecoilAmount = 10000.0f;  // ï¿½âº» ï¿½İµï¿½ Å©ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Recoil")
-	float RecoilRotationAmount = 2.0f;  // ±âº»°ª: 2µµ Á¤µµÀÇ ¹İµ¿
+	float RecoilRotationAmount = 2.0f;  // ï¿½âº»ï¿½ï¿½: 2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½İµï¿½
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
-	float RecoilSpeed = 10.0f;  // ¹İµ¿ ¼Óµµ
+	float RecoilSpeed = 10.0f;  // ï¿½İµï¿½ ï¿½Óµï¿½
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
-	float RecoilRecoverySpeed = 5.0f;  // ¹İµ¿ È¸º¹ ¼Óµµ
+	float RecoilRecoverySpeed = 5.0f;  // ï¿½İµï¿½ È¸ï¿½ï¿½ ï¿½Óµï¿½
 	
-	FVector CameraRecoil; // Ä«¸Ş¶ó ¹İµ¿
-	FRotator CameraRecoilRotation;  // Ä«¸Ş¶ó ¹İµ¿ ¼Óµµ
+	FVector CameraRecoil; // Ä«ï¿½Ş¶ï¿½ ï¿½İµï¿½
+	FRotator CameraRecoilRotation;  // Ä«ï¿½Ş¶ï¿½ ï¿½İµï¿½ ï¿½Óµï¿½
 	void RecoverCameraRecoil();
 	FVector OriginalCameraLocation;
 	FRotator OriginalCameraRotation;
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateReloadText(bool bIsReloading);
+
+	// Ä³ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TMap<TSubclassOf<UItemBase>, int32> Inventory;
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ ï¿½Ô¼ï¿½
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount);
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void UseItem(TSubclassOf<UItemBase> ItemClass);
+
+	// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ Ã¼ï¿½ï¿½
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	int32 CurrentHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	int32 MaxHP;
+
+	float Stamina;
+	const float MaxStamina = 100.0f;
+
+
 private:
-	float LastFireTime = 0.0f;  // ¸¶Áö¸· ¹ß»ç ½Ã°£
-	float FireRate = 0.1f;      // ¹ß»ç ¼Óµµ (ÃÊ ´ÜÀ§)
-	
-	
+	float LastFireTime = 0.0f;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ ï¿½Ã°ï¿½
+	float FireRate = 0.1f;      // ï¿½ß»ï¿½ ï¿½Óµï¿½ (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+
+	const float StaminaDrainRate = 20.0f;  // ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½Ò·ï¿½
+	const float StaminaRecoveryRate = 10.0f; // ï¿½Ê´ï¿½ È¸ï¿½ï¿½ï¿½ï¿½
+	bool bCanRun = true;
+
+	FTimerHandle StaminaTimerHandle;
+
 };

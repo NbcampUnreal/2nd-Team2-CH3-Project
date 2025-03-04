@@ -96,3 +96,4 @@ void AItemBase::DestroyItem()
     UE_LOG(LogTemp, Warning, TEXT("Destroy %s"), *GetOwner()->GetName());
     Destroy();
 }
+

@@ -112,6 +112,8 @@ void AInfectedCityCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 
+	Stamina = MaxStamina;  // 스테미나 초기화
+
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController && HUDWidgetClass)
 	{
@@ -205,14 +207,14 @@ void AInfectedCityCharacter::StopAiming()
 
 void AInfectedCityCharacter::StartShoot()
 {
-
 	bIsFiring = true;
-	
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		PlayerController->bShowMouseCursor = true;
 		RotateCharacterToMouseCursor();
 	}
+
 	if (bIsFiring && CurrentWeapon && !CurrentWeapon->IsOutOfAmmo() && !CurrentWeapon->bIsReloading)
 	{
 		
@@ -225,26 +227,19 @@ void AInfectedCityCharacter::StartShoot()
 			if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
 			{
 				Weapon->Fire(); 
-				
+				UpdateAmmoBar();
 			}
-
-		     
 			LastFireTime = GetWorld()->GetTimeSeconds();
 		}
-		
-	}
-	
+	}     
 }
 void AInfectedCityCharacter::StopShoot()
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		PlayerController->bShowMouseCursor = false;  //    콺 Ŀ        
+		PlayerController->bShowMouseCursor = false;  
 	}
 	bIsFiring = false;  
-	
-
-
 }
 void AInfectedCityCharacter::Move(const FInputActionValue& Value)
 {
@@ -278,20 +273,23 @@ bool AInfectedCityCharacter::BHASRifle() const
 {
 	return CurrentWeapon != nullptr && CurrentWeapon->IsA(AAkWeapon::StaticClass());
 }
-bool AInfectedCityCharacter::BHASPistol() const
-{
-	return CurrentWeapon != nullptr && CurrentWeapon->IsA(APistolWeapon::StaticClass());
-}
+
 void AInfectedCityCharacter::StartRunning()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // Increase walk speed for running
+	if (bCanRun && Stamina > 0)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+		GetWorldTimerManager().SetTimer(StaminaTimerHandle, this, &AInfectedCityCharacter::DrainStamina, 0.1f, true);
+	}
 }
 
 void AInfectedCityCharacter::StopRunning()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 500.f; // Reset walk speed to normal
-
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetWorldTimerManager().ClearTimer(StaminaTimerHandle);
+	GetWorldTimerManager().SetTimer(StaminaTimerHandle, this, &AInfectedCityCharacter::RecoverStamina, 0.1f, true);
 }
+
 
 void AInfectedCityCharacter::StartCrouching()
 {
@@ -346,9 +344,6 @@ void AInfectedCityCharacter::Reload()
 				
 			}
 		}
-
-		
-		
 	}
 }
 
@@ -356,6 +351,11 @@ void AInfectedCityCharacter::ToggleFlashlight()
 {
 	// CurrentWeapon이 유효한지 확인
 	if (CurrentWeapon)
+	{
+			UpdateAmmoBar();
+	
+	}
+	if (ReloadAnimMontage)
 	{
 		// CurrentWeapon의 플래시라이트를 토글
 		CurrentWeapon->ToggleFlashlight();
@@ -368,23 +368,18 @@ void AInfectedCityCharacter::PickupWeapon()
 	{
 		CurrentWeapon = NearestWeapon;
 
-	
 		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
 		if (WeaponComponent)
 		{
 			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 		}
 
-		     
 		NearestWeapon->SetActorHiddenInGame(false);
-
-	         
 		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
 
+		UpdateAmmoBar();
 
-
-		  
 		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
 	}
 	else
@@ -429,24 +424,15 @@ void AInfectedCityCharacter::RotateCharacterToMouseCursor()
 
 	FVector WorldLocation, WorldDirection;
 
-
 	if (PlayerController->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
 	{      
 		FVector LookAtTarget = WorldLocation + (WorldDirection * 5000.f); 
-
-		
 		FVector CharacterLocation = GetActorLocation();
 		FVector Direction = LookAtTarget - CharacterLocation;
 		Direction.Z = 0; 
-
-      
 		FRotator NewRotation = Direction.Rotation();
-
-  
 		SetActorRotation(NewRotation);
 	}
-
-
 	//DrawDebugLine(GetWorld(), WorldLocation, WorldLocation + WorldDirection * 5000.f, FColor::Red, false, 1.0f, 0, 2.0f);
 }
 void AInfectedCityCharacter::FireBullet()
@@ -457,7 +443,6 @@ void AInfectedCityCharacter::FireBullet()
 		return;
 	}
 
-     
 	AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
 	if (Weapon && Weapon->IsOutOfAmmo())
 	{
@@ -469,7 +454,6 @@ void AInfectedCityCharacter::FireBullet()
 		UE_LOG(LogTemp, Warning, TEXT("Cannot fire while reloading!"));
 		return;
 	}
-
 	FVector MouseWorldLocation, MouseWorldDirection;
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController && PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection))
@@ -534,4 +518,103 @@ void AInfectedCityCharacter::RecoverCameraRecoil()
 	// FollowCamera와 SecondFollowCamera에 대해 회복 적용
 	RecoverCamera(FollowCamera);
 	RecoverCamera(SecondFollowCamera);
+}
+
+void AInfectedCityCharacter::UpdateAmmoBar()
+{
+	if (HUDWidget)
+	{
+		if (AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon))
+		{
+			// 무기의 Ammo 값을 가져와서 HUD에 전달
+			float AmmoRatio = Weapon->GetAmmoRatio();  // 0~1 사이의 비율로 Ammo를 표시한다고 가정
+			HUDWidget->UpdateAmmoProgress(AmmoRatio);
+		}
+	}
+}
+
+void AInfectedCityCharacter::UpdateReloadText(bool bIsReloading)
+{
+	if (HUDWidget)
+	{
+		HUDWidget->SetReloadTextVisibility(bIsReloading);
+
+		if (bIsReloading)
+		{
+			HUDWidget->PlayReloadAnimation();
+		}
+	}
+}
+
+void AInfectedCityCharacter::AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount)
+{
+	if (!ItemClass) return;
+
+	// 기존 개수 확인 후 추가
+	if (Inventory.Contains(ItemClass))
+	{
+		Inventory[ItemClass] += Amount;
+	}
+	else
+	{
+		Inventory.Add(ItemClass, Amount);
+	}
+}
+
+void AInfectedCityCharacter::UseItem(TSubclassOf<UItemBase> ItemClass)
+{
+	if (!ItemClass || !Inventory.Contains(ItemClass) || Inventory[ItemClass] <= 0)
+		return;
+
+	// 아이템 사용
+	IItemBase* Item = Cast<IItemBase>(ItemClass->GetDefaultObject());
+	if (Item)
+	{
+		Item->Execute_UseItem(ItemClass->GetDefaultObject(), this);
+		Inventory[ItemClass]--;
+
+		// 개수가 0이면 삭제
+		if (Inventory[ItemClass] <= 0)
+		{
+			Inventory.Remove(ItemClass);
+		}
+	}
+}
+
+void AInfectedCityCharacter::DrainStamina()
+{
+	if (Stamina > 0)
+	{
+		Stamina -= StaminaDrainRate * 0.1f; // 0.1초마다 2씩 감소
+		if (HUDWidget)
+		{
+			HUDWidget->UpdateStaminaBar(Stamina / MaxStamina);
+		}
+
+		if (Stamina <= 0)
+		{
+			Stamina = 0;
+			StopRunning();
+			bCanRun = false; // 스테미나 0이면 못 달림
+		}
+	}
+}
+
+void AInfectedCityCharacter::RecoverStamina()
+{
+	if (Stamina < MaxStamina)
+	{
+		Stamina += StaminaRecoveryRate * 0.1f; // 0.1초마다 1씩 회복
+		if (HUDWidget)
+		{
+			HUDWidget->UpdateStaminaBar(Stamina / MaxStamina);
+		}
+
+		if (Stamina >= MaxStamina)
+		{
+			Stamina = MaxStamina;
+			GetWorldTimerManager().ClearTimer(StaminaTimerHandle);
+			bCanRun = true; // 다시 달릴 수 있음
+		}
+	}
 }
