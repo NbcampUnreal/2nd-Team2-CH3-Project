@@ -8,9 +8,8 @@
 #include "EngineUtils.h"
 #include <Camera/CameraComponent.h>
 #include <Kismet/KismetRenderingLibrary.h>
+#include "ItemBase.h"
 
-#include "Kismet/GameplayStatics.h"
-#include "EnemyCharacter.h"
 
 AEnemyEffectManager::AEnemyEffectManager()
 {
@@ -61,13 +60,8 @@ void AEnemyEffectManager::Tick(float DeltaTime)
 
         PlayerController->bShowMouseCursor == true ? DetectActorAtMouseCursor(PlayerController) : DetectActorAtCenter(PlayerController);
     }
-    
-    //DetectActorAtCenter();
 
-    //if (SceneCapture && DepthRenderTarget)
-    //{
-    //    SceneCapture->CaptureScene();
-    //}
+    CheckPlayerRaytrace();
 }
 
 void AEnemyEffectManager::SetupSceneCapture()
@@ -224,5 +218,50 @@ void AEnemyEffectManager::DetectActorAtCenter(APlayerController* PlayerControlle
             }
             EnemyCharacter = nullptr;
         }
+    }
+}
+
+void AEnemyEffectManager::CheckPlayerRaytrace()
+{
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+    FVector2D MousePosition;
+    PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
+
+    FVector WorldLocation;
+    FVector WorldDirection;
+    PlayerController->DeprojectScreenPositionToWorld(MousePosition.X, MousePosition.Y, WorldLocation, WorldDirection);
+
+    FCollisionQueryParams TraceParams;
+    TraceParams.AddIgnoredActor(PlayerController->GetPawn());
+
+    FVector Start = WorldLocation;
+    FVector End = WorldLocation + (WorldDirection * 10000.0f);
+
+    FHitResult HitResult;
+    bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, Start, End, ECC_GameTraceChannel2, TraceParams);
+
+    if (bHit)
+    {
+        AActor* HitActor = HitResult.GetActor();
+        if (HitActor)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Actor Center hit: %s"), *HitActor->GetName());
+
+            if (!CurrentItem)
+            {
+                CurrentItem = Cast<AItemBase>(HitActor);
+                CurrentItem->OnItem();
+            }
+
+        }
+    }
+    else
+    {
+        if (CurrentItem)
+        {
+            CurrentItem->OnItemEnd();
+        }
+        CurrentItem = nullptr;
     }
 }

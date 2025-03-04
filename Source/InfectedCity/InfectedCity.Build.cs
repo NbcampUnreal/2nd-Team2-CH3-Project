@@ -22,8 +22,8 @@ public class InfectedCity : ModuleRules
             "Engine",
             "InputCore",
             "EnhancedInput",
-            "Niagara",
-            "NavigationSystem"
+            "NavigationSystem",
+            "PCG"
         });
     }
 }

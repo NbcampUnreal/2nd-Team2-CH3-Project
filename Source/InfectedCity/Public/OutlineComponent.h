@@ -9,6 +9,7 @@ enum class EOutlineType : uint8
 {
 	OUTLINE_ENEMY UMETA(DisplayName = "Enemy"),
 	OUTLINE_ITEM UMETA(DisplayName = "Item"),
+	OUTLINE_INTERACTION_ITEM UMETA(DisplayName = "InteractionItem"),
 	OUTLINE_END UMETA(DisplayName = "None")
 };
 
@@ -40,6 +41,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetMaterialParam(float Thickness, FLinearColor Color);
+
+	UPROPERTY(VisibleAnywhere, Category = "Outline")
+	bool bEnable;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Outline")
