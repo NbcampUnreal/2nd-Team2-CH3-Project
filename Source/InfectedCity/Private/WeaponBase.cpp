@@ -10,16 +10,11 @@ AWeaponBase::AWeaponBase()
     WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
     RootComponent = WeaponMesh;
     // 기본 값 설정
-    Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
-    Flashlight->SetupAttachment(WeaponMesh);  // 무기 메쉬에 플래시라이트를 부착
-    Flashlight->SetVisibility(true);
-    Flashlight->SetMobility(EComponentMobility::Movable);
-    Flashlight->SetRelativeLocation(FVector(0.f, 0.f, 10.f));  // 무기 메쉬에 상대적인 위치로 설정
-    Flashlight->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));  // 회전 설정 추가  
-    UE_LOG(LogTemp, Log, TEXT("Flashlight attached to: %s"), *Flashlight->GetAttachParent()->GetName());
+   
+    
     WeaponCollision = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponCollision"));
 
-    MaxAmmo = 30;  // 예시로 기본 탄약 수를 30으로 설정
+    MaxAmmo = 30;  // 예시로 기본 탄약 수를 30으로 설정6
     CurrentAmmo = MaxAmmo;  // 초기 탄약은 MaxAmmo로 설정
     ReloadTime = 4.5f;
 
@@ -134,34 +129,4 @@ bool AWeaponBase::IsOutOfAmmo() const
 bool AWeaponBase::GetIsReloading() const
 {
     return bIsReloading;
-}
-void AWeaponBase::ToggleFlashlight()
-{
-    if (Flashlight)
-    {
-        bool bIsVisible = Flashlight->IsVisible();
-        Flashlight->SetVisibility(!bIsVisible);  // 현재 상태를 반전시켜서 플래시라이트 켜고 끄기
-
-        // 로그 출력
-        if (Flashlight->IsVisible())
-        {
-            UE_LOG(LogTemp, Log, TEXT("Flashlight is now ON"));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Log, TEXT("Flashlight is now OFF"));
-        }
-    }
-}
-
-void AWeaponBase::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-
-    // WeaponMesh의 위치에 Flashlight 위치 맞추기
-    if (Flashlight)
-    {
-        FVector NewFlashlightLocation = FVector(0.f, 0.f, 10.f); // 오프셋 조정 (Z축을 기준으로 설정)
-        Flashlight->SetRelativeLocation(NewFlashlightLocation);
-    }
 }

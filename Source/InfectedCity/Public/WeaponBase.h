@@ -81,9 +81,6 @@ public:
     // 재장전 완료 후 호출되는 함수
     void CompleteReload();
 
-    UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    USpotLightComponent* Flashlight;  // 플래시라이트 컴포넌트 추가
-    virtual void Tick(float DeltaTime) override;
-    // 기존 함수들...
-    void ToggleFlashlight();  // 플래시라이트 토글 함수
+    
+    
 };
