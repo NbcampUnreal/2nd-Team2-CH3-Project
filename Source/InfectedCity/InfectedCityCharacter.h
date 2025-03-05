@@ -32,7 +32,9 @@ public:
 	AEnemyEffectManager* EnemyEffectManager{ nullptr };
 	int32 BandageCount{ 0 };
 	int32 PillCount{ 0 };
-	int32 GasCount{ 0 };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	int32 GasCount = 0;
 
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
@@ -214,6 +216,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RideSystem")
 	void OnRideAvailable();
 
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> EndWidgetClass;
+
+	UFUNCTION(BlueprintCallable, Category = "State")
+	void DeathEvent();
+
 private:
 	float LastFireTime = 0.0f;
 	float FireRate = 0.1f;
@@ -223,5 +231,7 @@ private:
 	bool bCanRun = true;
 
 	FTimerHandle StaminaTimerHandle;
+
+	UUserWidget* CurrentUIWidget;
 
 };

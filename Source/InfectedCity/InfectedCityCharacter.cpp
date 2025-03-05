@@ -650,3 +650,33 @@ void AInfectedCityCharacter::OnRideAvailable()
 {
 	HUDWidget->StartRideSequence();
 }
+
+void AInfectedCityCharacter::DeathEvent()
+{
+	// 기존 UI 제거
+	if (CurrentUIWidget)
+	{
+		CurrentUIWidget->RemoveFromParent();
+		CurrentUIWidget = nullptr;
+	}
+
+	// 사망 UI 표시
+	if (EndWidgetClass)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC)
+		{
+			CurrentUIWidget = CreateWidget<UUserWidget>(PC, EndWidgetClass);
+			if (CurrentUIWidget)
+			{
+				CurrentUIWidget->AddToViewport();
+			}
+
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.1f);
+
+			PC->bShowMouseCursor = true;
+			FInputModeUIOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+	}
+}

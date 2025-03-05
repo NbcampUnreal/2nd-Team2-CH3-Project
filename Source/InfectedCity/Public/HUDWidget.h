@@ -128,6 +128,7 @@ public:
     UPROPERTY(meta = (BindWidget))
     UImage* GasCanImg;
 
+    UFUNCTION(BlueprintCallable)
     void UpdateGasCount(int32 Count);
 
     UPROPERTY(meta = (BindWidget))
@@ -146,12 +147,12 @@ public:
     void HideStory01AndStartCountdown(); // story01을 숨기고 카운트다운 시작
     void UpdateCountdown();  // story02의 텍스트 업데이트
 
-    bool Canout = false;
-
 protected:
     FTimerHandle BorderColorTimerHandle;
 
     int32 BlinkCount = 0;
+
+    bool Canout = false;
 
     bool bToggle = false;
 
