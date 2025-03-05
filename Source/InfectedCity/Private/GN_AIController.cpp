@@ -90,3 +90,8 @@ void AGN_AIController::FollowTarget()
         MoveToActor(CurTarget);
     }
 }
+
+void AGN_AIController::RemovePatrolling()
+{
+    GetWorld()->GetTimerManager().ClearTimer(PatrolTimerHandle);
+}
