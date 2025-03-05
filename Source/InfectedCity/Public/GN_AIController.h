@@ -24,7 +24,7 @@ public:
 	void MoveToRandomLocation();
 	void MoveToActor(AActor* Target);
 	void FollowTarget();
-
+	void RemovePatrolling();
 private:
 	FTimerHandle PatrolTimerHandle;
 

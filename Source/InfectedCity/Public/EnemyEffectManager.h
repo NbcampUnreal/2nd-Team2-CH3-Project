@@ -6,7 +6,7 @@
 
 class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
-class AItemBase;
+class ABaseItem;
 
 UCLASS()
 class INFECTEDCITY_API AEnemyEffectManager : public AActor
@@ -22,6 +22,7 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	ABaseItem* GetCurrentItem() { return CurrentItem; }
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Rendering")
@@ -38,7 +39,10 @@ private:
 	void DetectActorAtCenter(APlayerController* PlayerController);
 	void CheckPlayerRaytrace();
 
-	class AEnemyCharacter* EnemyCharacter{ nullptr };
-	AItemBase* CurrentItem{ nullptr };
+
+	class AGN_Character* EnemyCharacter{ nullptr };
+	ABaseItem* CurrentItem{ nullptr };
 	bool bPreMouseCursor{ false };
+
+
 };

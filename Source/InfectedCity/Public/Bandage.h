@@ -1,23 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemBase.h"
+#include "BaseItem.h"
 #include "Bandage.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class INFECTEDCITY_API ABandage : public AItemBase
+class INFECTEDCITY_API ABandage : public ABaseItem
 {
-	GENERATED_BODY()
-	
-public:
+    GENERATED_BODY()
 
-	ABandage();
 public:
-	void Tick(float DeltaTime) override;
-
+    ABandage();
+   
+    virtual void UseItem_Implementation(AActor* User) override;
 };

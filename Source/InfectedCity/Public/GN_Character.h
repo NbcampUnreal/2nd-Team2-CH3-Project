@@ -6,6 +6,8 @@
 #include "Animation/AnimMontage.h"
 #include "GN_Character.generated.h"
 
+class UOutlineComponent;
+
 UENUM(BlueprintType)
 enum class EEnemyState : uint8 {
     Idle,
@@ -79,6 +81,8 @@ public:
     void StartChase();
     void CheckIfPlayerLost();
 
+    void Dead();
+    void AttackEnd();
     class AGN_AIController* AIController;
 
 private:
@@ -87,11 +91,15 @@ private:
 
     FTimerHandle ScreamTimerHandle;
     FTimerHandle PatrolTimerHandle;
-
+    FTimerHandle DeadAnimTimerHandle;
     float AttackRange = 150.0f;
 
     APawn* CurTarget{ nullptr };
     UFUNCTION()
     void OnSeePawn(APawn* Pawn);
-
+public:
+    void EnableOutline(bool bEnable);
+private:
+    UPROPERTY(VisibleAnywhere, Category = "Effects")
+    UOutlineComponent* OutlineComponent;
 };

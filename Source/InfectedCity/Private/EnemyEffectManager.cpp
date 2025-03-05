@@ -8,8 +8,9 @@
 #include "EngineUtils.h"
 #include <Camera/CameraComponent.h>
 #include <Kismet/KismetRenderingLibrary.h>
-#include "ItemBase.h"
-
+#include "GN_Character.h"
+#include "BaseItem.h"
+#include "InfectedCity/InfectedCityCharacter.h"
 
 AEnemyEffectManager::AEnemyEffectManager()
 {
@@ -24,6 +25,7 @@ void AEnemyEffectManager::BeginPlay()
 	Super::BeginPlay();
     //SetupSceneCapture();
 
+    Cast<AInfectedCityCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))->EnemyEffectManager = this;
     
     if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
     {
@@ -150,7 +152,7 @@ void AEnemyEffectManager::DetectActorAtMouseCursor(APlayerController* PlayerCont
 
                 if (!EnemyCharacter)
                 {
-                    EnemyCharacter = Cast<AEnemyCharacter>(HitActor);
+                    EnemyCharacter = Cast<AGN_Character>(HitActor);
                     EnemyCharacter->EnableOutline(true);
                 }
 
@@ -204,7 +206,7 @@ void AEnemyEffectManager::DetectActorAtCenter(APlayerController* PlayerControlle
 
                 if (!EnemyCharacter)
                 {
-                    EnemyCharacter = Cast<AEnemyCharacter>(HitActor);
+                    EnemyCharacter = Cast<AGN_Character>(HitActor);
                     EnemyCharacter->EnableOutline(true);
                 }
 
@@ -250,7 +252,7 @@ void AEnemyEffectManager::CheckPlayerRaytrace()
 
             if (!CurrentItem)
             {
-                CurrentItem = Cast<AItemBase>(HitActor);
+                CurrentItem = Cast<ABaseItem>(HitActor);
                 CurrentItem->OnItem();
             }
 
