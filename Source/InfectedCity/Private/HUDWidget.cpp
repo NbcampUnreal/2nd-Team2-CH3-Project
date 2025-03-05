@@ -46,6 +46,12 @@ void UHUDWidget::NativeConstruct()
     {
         StaminaProgressBar->SetPercent(1.0f);
     }
+
+    if (HPProgressBar)
+    {
+        HPProgressBar->SetPercent(1.0f);
+    }
+
 }
 
 void UHUDWidget::UpdateImageOpacity(int32 SelectedKey)
@@ -307,5 +313,13 @@ void UHUDWidget::RotatePillIndicator()
         FWidgetTransform NewTransform;
         NewTransform.Angle = PillRotationAngle;
         PillIndicator->SetRenderTransform(NewTransform);
+    }
+}
+
+void UHUDWidget::UpdateHPBar(float HPRatio)
+{
+    if (HPProgressBar)
+    {
+        HPProgressBar->SetPercent(HPRatio);
     }
 }

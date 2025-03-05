@@ -70,6 +70,9 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 
 	CameraBoom->ProbeChannel = ECC_Visibility;
 	CameraBoom->bDoCollisionTest = true;
+
+	MaxHP = 100.0f;
+	CurrentHP = MaxHP;
 	
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
@@ -95,7 +98,6 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 void AInfectedCityCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
 	Stamina = MaxStamina;  // 스테미나 초기화
 
@@ -109,6 +111,7 @@ void AInfectedCityCharacter::BeginPlay()
 		}
 	}
 }
+
 
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -619,3 +622,21 @@ void AInfectedCityCharacter::PickupItem()
 	}
 }
 
+void AInfectedCityCharacter::UpdateHP(float NewHP)
+{
+	CurrentHP = FMath::Clamp(NewHP, 0.0f, MaxHP);
+
+	if (HUDWidget)
+	{
+		HUDWidget->UpdateHPBar(CurrentHP / MaxHP);
+	}
+}
+
+
+float AInfectedCityCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float DamageApplied = FMath::Clamp(DamageAmount, 0.0f, CurrentHP);
+	UpdateHP(CurrentHP - DamageApplied);
+
+	return DamageApplied;
+}

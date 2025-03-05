@@ -182,35 +182,41 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateReloadText(bool bIsReloading);
 
-	// ĳ���Ͱ� ������ �ִ� ������ ��� (������ Ŭ������ ���� ����)
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TMap<TSubclassOf<UItemBase>, int32> Inventory;
 
-	// ������ �߰� �Լ�
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount);
 
-	// ������ ��� �Լ�
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UseItem(TSubclassOf<UItemBase> ItemClass);
 
-	// �÷��̾� ü��
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	int32 CurrentHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	int32 MaxHP;
+	float CurrentHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float MaxHP;
 
 	float Stamina;
 	const float MaxStamina = 100.0f;
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void UpdateHP(float NewHP);
+
+	/** 데미지 처리 함수 */
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 
 private:
-	float LastFireTime = 0.0f;  // ������ �߻� �ð�
-	float FireRate = 0.1f;      // �߻� �ӵ� (�� ����)
+	float LastFireTime = 0.0f;
+	float FireRate = 0.1f;
 
-	const float StaminaDrainRate = 20.0f;  // �ʴ� ���ҷ�
-	const float StaminaRecoveryRate = 10.0f; // �ʴ� ȸ����
+	const float StaminaDrainRate = 20.0f;
+	const float StaminaRecoveryRate = 10.0f;
 	bool bCanRun = true;
 
 	FTimerHandle StaminaTimerHandle;

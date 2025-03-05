@@ -123,6 +123,8 @@ public:
     FTimerHandle PillRotationTimerHandle;
     float PillRotationAngle = 0.0f;
 
+    void UpdateHPBar(float HPRatio);
+
 protected:
     FTimerHandle BorderColorTimerHandle;
 
@@ -135,6 +137,10 @@ protected:
 
     UPROPERTY(meta = (BindWidget))
         class UProgressBar* StaminaProgressBar;
+
+    UPROPERTY(meta = (BindWidget))
+    class UProgressBar* HPProgressBar;
+
 
 private:
     AInfectedCityCharacter* GetPlayerCharacter();
