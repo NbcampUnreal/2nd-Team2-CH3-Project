@@ -217,6 +217,21 @@
     <Filter Include="Source\InfectedCity\00.GameObjects\Item\Pill">
       <UniqueIdentifier>{e15eacf8-a1d6-46a7-aca6-93e0fd0a3fad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss">
+      <UniqueIdentifier>{348a37d6-943b-4924-98a5-3035166612d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\BossSphere">
+      <UniqueIdentifier>{1d0c0e87-7071-46bb-b0df-8aef9b4e5ba5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\Pattern">
+      <UniqueIdentifier>{a5f2de76-e092-475f-b5a0-76c33eaca89c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\EffectManager">
+      <UniqueIdentifier>{c44c7020-68e2-4279-a674-829e17250b2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\Interface">
+      <UniqueIdentifier>{14ab280e-0e51-48cb-8839-a0f6200466ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -463,6 +478,36 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\InfectedCity\Private\ProceduralGenerationCity.cpp">
       <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\Boss.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\Boss.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossSphere.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\BossSphere</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossSphere.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\BossSphere</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossPattern.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossPattern.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossEffectManager.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossEffectManager.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossObserverInterface.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossObserverInterface.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

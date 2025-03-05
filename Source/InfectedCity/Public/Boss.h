@@ -64,6 +64,9 @@ public:
     float AxisChangeTime;
     float CurrentAxisTime;
     
+    bool bChangePattern{ false };
+    int32 MoveDoneCount{ 0 };
+    FTimerHandle PatternTimerHandle;
 private:
     void IdleAnimation(float DeltaTime);
 };

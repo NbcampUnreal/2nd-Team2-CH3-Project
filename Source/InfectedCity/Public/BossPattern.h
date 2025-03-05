@@ -7,5 +7,6 @@ enum class EBossPattern : uint8
 {
     Idle UMETA(DisplayName = "Idle"),
     Orbit UMETA(DisplayName = "Orbit"),
-    Laser UMETA(DisplayName = "Laser")
+    Laser UMETA(DisplayName = "Laser"),
+    HeavyCrash UMETA(DisplayName = "Orbit"),
 };

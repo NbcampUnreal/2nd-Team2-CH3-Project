@@ -31,12 +31,34 @@ public:
 private:
     class ABoss*    Boss{ nullptr };
 
-    int32           UniquId{ 0 };
+    int32           UniqueId{ 0 };
 
     float           CurrentAngle{ 0.0f };
     float*          OrbitSpeed{ nullptr };
     float*          OrbitRadius{ nullptr };
 
     FTransform      LocalTransform;
-    FTransform      TestTransform;
+    FTransform      IdleWorldTransform;
+
+
+private: /* Parttern Member */
+
+    float           WarningAccTime{ 0.f };
+    float           WarningDuration{ 0.f };
+
+    float           PatternAccTime{ 0.f };
+    float           PatternDuration{ 0.f };
+
+    bool            bWarningFinished{ false };
+    FVector         OriginalLocation{};
+    void HeavyCrash(float DeltaTime);
+
+private: /* Move Member */
+    bool            bMoveToChange{ false };
+    float           AccMoveTime{ 0.f };
+    float           MoveInSecond{ 0.f };
+    FVector         TargetPoint;
+    FVector         MoveStartPoint;
+    void TargetToMove(float DeltaTime);
+    void InitializeAfterMoveDone();
 };

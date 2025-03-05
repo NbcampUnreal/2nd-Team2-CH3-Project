@@ -1,9 +1,12 @@
 #include "Boss.h"
-#include "BossSphere.h"
-#include "Engine/World.h"
-#include "TimerManager.h"
+
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"  
+#include "BossEffectDataAsset.h"
+#include "BossEffectManager.h"
+#include "TimerManager.h"
+#include "Engine/World.h"
+#include "BossSphere.h"
 
 ABoss::ABoss()
 {
@@ -17,6 +20,11 @@ ABoss::ABoss()
 void ABoss::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (UBossEffectDataAsset* EffectData = LoadObject<UBossEffectDataAsset>(nullptr, TEXT("/Game/Blueprints/Boss/BP_BossEffectData")))
+    {
+        UBossEffectManager::GetInstance()->Initialize(EffectData);
+    }
 
     RandomRotationAxis = FVector(FMath::FRandRange(-1.0f, 1.0f),
                                  FMath::FRandRange(-1.0f, 1.0f),
@@ -34,9 +42,6 @@ void ABoss::BeginPlay()
     }
 
     SpawnSpheres();
-
-    /* Àá½Ã */
-    //GetWorldTimerManager().SetTimerForNextTick(this, &ABoss::ChangePattern);
 }
 
 void ABoss::Tick(float DeltaTime)
@@ -96,26 +101,31 @@ void ABoss::NotifyObservers()
 
 void ABoss::ChangePattern()
 {
-    CurrentPattern = (CurrentPattern == EBossPattern::Orbit) ? EBossPattern::Laser : EBossPattern::Orbit;
+    CurrentPattern = EBossPattern::HeavyCrash;;
     NotifyObservers();
-    GetWorldTimerManager().SetTimerForNextTick(this, &ABoss::ChangePattern);
+
 }
 
 void ABoss::IdleAnimation(float DeltaTime)
 {
+    if (bChangePattern == false)
+    {
+        GetWorldTimerManager().SetTimer(PatternTimerHandle, this, &ABoss::ChangePattern, 3.f);
+        bChangePattern = true;
+    }
+
     CurrentAxisTime += DeltaTime;
     if (CurrentAxisTime >= AxisChangeTime)
     {
         FVector NewRandomAxis = FVector(FMath::FRandRange(-1.0f, 1.0f),
-            FMath::FRandRange(-1.0f, 1.0f),
-            FMath::FRandRange(-1.0f, 1.0f)).GetSafeNormal();
+                                        FMath::FRandRange(-1.0f, 1.0f),
+                                        FMath::FRandRange(-1.0f, 1.0f)).GetSafeNormal();
 
         RandomRotationAxis = FMath::VInterpTo(RandomRotationAxis, NewRandomAxis, DeltaTime, 1.0f);
 
-        OribitSpeed = FMath::FRandRange(50.f, 500.f);
+        OribitSpeed = FMath::FRandRange(50.f, 300.f);
         CurrentAxisTime = 0.0f;
     }
-
 
     float DeltaRotation = OribitSpeed * DeltaTime;
 
