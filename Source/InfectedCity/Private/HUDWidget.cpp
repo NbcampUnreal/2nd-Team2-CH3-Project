@@ -1,4 +1,4 @@
-#include "HUDWidget.h"
+ï»¿#include "HUDWidget.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "GameFramework/PlayerController.h"
@@ -68,7 +68,7 @@ void UHUDWidget::OnKey2Pressed() { UpdateImageOpacity(2); }
 void UHUDWidget::OnKey3Pressed() { UpdateImageOpacity(3); }
 void UHUDWidget::StartProgressBar(int32 Key, float Duration)
 {
-    if (bIsUsingProgress) return;  // ÀÌ¹Ì ÁøÇà ÁßÀÌ¸é ½ÇÇà ¾È ÇÔ
+    if (bIsUsingProgress) return;  // ì´ë¯¸ ì§„í–‰ ì¤‘ì´ë©´ ì‹¤í–‰ ì•ˆ í•¨
     bIsUsingProgress = true;
 
     if (UProgressBar* ProgressBar = ProgressBarMap[Key])
@@ -76,13 +76,13 @@ void UHUDWidget::StartProgressBar(int32 Key, float Duration)
         ProgressBar->SetVisibility(ESlateVisibility::Visible);
         ProgressBar->SetPercent(0.0f);
 
-        // ÁøÇà ½Ã°£ ÃÊ±âÈ­
+        // ì§„í–‰ ì‹œê°„ ì´ˆê¸°í™”
         ElapsedTime = 0.0f;
 
-        // 0.1ÃÊ¸¶´Ù ¾÷µ¥ÀÌÆ® (10¹ø = 1ÃÊ)
+        // 0.1ì´ˆë§ˆë‹¤ ì—…ë°ì´íŠ¸ (10ë²ˆ = 1ì´ˆ)
         GetWorld()->GetTimerManager().SetTimer(ProgressBarUpdateHandle, [this, ProgressBar, Duration]()
             {
-                ElapsedTime += 0.1f;  // ½Ã°£ Áõ°¡
+                ElapsedTime += 0.1f;  // ì‹œê°„ ì¦ê°€
                 float Percent = ElapsedTime / Duration;
                 ProgressBar->SetPercent(Percent);
 
@@ -118,13 +118,13 @@ void UHUDWidget::OnKey5Pressed()
     int32* PillCount = Player->Inventory.Find(APill::StaticClass());
     if (PillCount && *PillCount > 0)
     {
-        // ÁøÇà ¹Ù ½ÃÀÛ
+        // ì§„í–‰ ë°” ì‹œì‘
         StartProgressBar(5, 10.0f);
 
-        // Pill ¾ÆÀÌÅÛ »ç¿ë
+        // Pill ì•„ì´í…œ ì‚¬ìš©
         Player->UseItem(APill::StaticClass());
 
-        // Pill ¾ÆÀÌÅÛ ¼ö °¨¼Ò
+        // Pill ì•„ì´í…œ ìˆ˜ ê°ì†Œ
         UpdatePillCount(*PillCount - 1);
     }
 }
@@ -143,7 +143,7 @@ void UHUDWidget::UpdateAmmoProgress(float NewAmmoValue)
     {
         AmmoProgressBar->SetPercent(NewAmmoValue);
 
-        // Ammo°¡ 0ÀÌ¸é Border »ö»ó º¯°æ ½ÃÀÛ
+        // Ammoê°€ 0ì´ë©´ Border ìƒ‰ìƒ ë³€ê²½ ì‹œì‘
         if (NewAmmoValue <= 0.0f)
         {
             UpdateBorderColor();
@@ -155,7 +155,7 @@ void UHUDWidget::UpdateBorderColor()
 {
     if (Border)
     {
-        BlinkCount = 0; // ±ôºıÀÓ È½¼ö ÃÊ±âÈ­
+        BlinkCount = 0; // ê¹œë¹¡ì„ íšŸìˆ˜ ì´ˆê¸°í™”
         GetWorld()->GetTimerManager().SetTimer(BorderColorTimerHandle, this, &UHUDWidget::ToggleBorderColor, 0.25f, true);
     }
 }
@@ -164,7 +164,7 @@ void UHUDWidget::ToggleBorderColor()
 {
     if (Border)
     {
-        bToggle = !bToggle; // Åä±Û »óÅÂ º¯°æ
+        bToggle = !bToggle; // í† ê¸€ ìƒíƒœ ë³€ê²½
         FLinearColor NewColor = bToggle ? Color2 : Color1;
         Border->SetBrushColor(NewColor);
 
@@ -323,3 +323,59 @@ void UHUDWidget::UpdateHPBar(float HPRatio)
         HPProgressBar->SetPercent(HPRatio);
     }
 }
+
+void UHUDWidget::UpdateGasCount(int32 Count)
+{
+    if (GasCanImg)
+    {
+        GasCanImg->SetVisibility(Count > 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+    }
+}
+
+void UHUDWidget::StartRideSequence()
+{
+    if (Story01Text)
+    {
+        Story01Text->SetVisibility(ESlateVisibility::Visible);
+    }
+
+    // 5ì´ˆ í›„ story01ì„ ìˆ¨ê¸°ê³  ì¹´ìš´íŠ¸ë‹¤ìš´ ì‹œì‘
+    GetWorld()->GetTimerManager().SetTimer(StoryTimerHandle, this, &UHUDWidget::HideStory01AndStartCountdown, 5.0f, false);
+}
+
+void UHUDWidget::HideStory01AndStartCountdown()
+{
+    if (Story01Text)
+    {
+        Story01Text->SetVisibility(ESlateVisibility::Hidden);
+    }
+
+    if (Story02Text)
+    {
+        Story02Text->SetVisibility(ESlateVisibility::Visible);
+    }
+
+    UpdateCountdown();
+
+    GetWorld()->GetTimerManager().SetTimer(CountdownTimerHandle, this, &UHUDWidget::UpdateCountdown, 1.0f, true);
+}
+
+void UHUDWidget::UpdateCountdown()
+{
+    if (Story02Text)
+    {
+        Story02Text->SetText(FText::Format(FText::FromString(TEXT("ì¶œë°œ ê°€ëŠ¥ê¹Œì§€ ë‚¨ì€ ì‹œê°„: {0} ì´ˆ")), CountdownTime));
+    }
+
+    if (CountdownTime <= 0)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
+        Canout = true;  // 0ì´ˆê°€ ë˜ë©´ canoutì„ trueë¡œ ë³€ê²½
+        Story02Text->SetVisibility(ESlateVisibility::Hidden);
+        Story03Text->SetVisibility(ESlateVisibility::Visible);
+        return;
+    }
+
+    CountdownTime--;  // ì´ˆ ê°ì†Œ
+}
+

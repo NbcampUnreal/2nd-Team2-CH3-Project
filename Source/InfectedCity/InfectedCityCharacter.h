@@ -32,6 +32,7 @@ public:
 	AEnemyEffectManager* EnemyEffectManager{ nullptr };
 	int32 BandageCount{ 0 };
 	int32 PillCount{ 0 };
+	int32 GasCount{ 0 };
 
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
@@ -210,6 +211,8 @@ public:
 	/** 데미지 처리 함수 */
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintCallable, Category = "RideSystem")
+	void OnRideAvailable();
 
 private:
 	float LastFireTime = 0.0f;

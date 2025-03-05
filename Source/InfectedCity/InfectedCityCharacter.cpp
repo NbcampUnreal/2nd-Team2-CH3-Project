@@ -612,10 +612,15 @@ void AInfectedCityCharacter::PickupItem()
 			BandageCount++;
 			HUDWidget->UpdateBandageCount(BandageCount);
 		}
-		else
+		else if (CurrentItem->ItemType == "Pill")
 		{
 			PillCount++;
-			HUDWidget->UpdateBandageCount(PillCount);
+			HUDWidget->UpdatePillCount(PillCount);
+		}
+		else if (CurrentItem->ItemType == "GasDrum")
+		{
+			GasCount++;
+			HUDWidget->UpdateGasCount(GasCount);
 		}
 
 		CurrentItem->DestroyItem();
@@ -639,4 +644,9 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount, FDamageEvent const&
 	UpdateHP(CurrentHP - DamageApplied);
 
 	return DamageApplied;
+}
+
+void AInfectedCityCharacter::OnRideAvailable()
+{
+	HUDWidget->StartRideSequence();
 }
