@@ -205,6 +205,18 @@
     <Filter Include="Source\InfectedCity\01.Utility\PCG\Spline">
       <UniqueIdentifier>{3eee07b1-e2f9-48c3-80d7-cee0d3ad1019}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item">
+      <UniqueIdentifier>{c1a44ac1-a429-4f57-8931-2270771d6592}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item\Bandage">
+      <UniqueIdentifier>{a66dc5e6-ad2d-444f-b983-879f983c4920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item\Interface">
+      <UniqueIdentifier>{5d2211f7-4d7b-4bbb-80fa-1d350d9f42b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item\Pill">
+      <UniqueIdentifier>{e15eacf8-a1d6-46a7-aca6-93e0fd0a3fad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -386,6 +398,72 @@
     <ClCompile Include="..\..\Source\InfectedCity\Private\CustomSpline.cpp">
       <Filter>Source\InfectedCity\01.Utility\PCG\Spline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GameHUD.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GameHUD.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\CustomHUD.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\CustomHUD.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\Bandage.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Bandage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\Bandage.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Bandage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\ItemBase.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\ItemBase.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BaseItem.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BaseItem.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\Pill.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Pill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\Pill.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Pill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\MainMenuGameMode.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MainMenuGameMode.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\MenuWidget.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MenuWidget.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\State.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\State.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BaseMagazine.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BaseMagazine.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\ProceduralGenerationCity.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\ProceduralGenerationCity.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\InfectedCity.uproject" />
@@ -397,5 +475,7 @@
     <None Include="..\..\RestoreFilter.bat" />
     <None Include="..\..\shadertoolsconfig.json" />
     <None Include="..\..\Shaders\OutlineShader.usf" />
+    <None Include="..\..\UpgradeLog.htm" />
+    <None Include="..\..\Config\DefaultHoldoutComposite.ini" />
   </ItemGroup>
 </Project>

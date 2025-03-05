@@ -614,6 +614,7 @@ void AInfectedCityCharacter::PickupItem()
 			PillCount++;
 			HUDWidget->UpdateBandageCount(PillCount);
 		}
+		
 
 		CurrentItem->DestroyItem();
 	}

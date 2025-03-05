@@ -37,6 +37,9 @@ void AGN_Character::BeginPlay()
     Super::BeginPlay();
 
    /* AnimInstance = Cast<UAGN_AnimInstance>(GetMesh()->GetAnimInstance());*/
+
+    
+
     AIController = Cast<AGN_AIController>(GetController());
 
     PreAnimation = IdleAnimation;
