@@ -27,7 +27,7 @@ public:
     USkeletalMeshComponent* SkeletalMeshComponent;
 
     UPROPERTY(EditAnywhere, Category = "Boss")
-    UAnimationAsset* IdleAnimation;
+    UAnimationAsset* IdleAnimationAsset;
 
     UPROPERTY(EditAnywhere, Category = "Boss")
     TSubclassOf<class ABossSphere> BossSphereClass;
@@ -38,6 +38,9 @@ public:
     UPROPERTY(EditAnywhere, Category = "Boss")
     int32 NumSpheres{ 5 };
 
+    UPROPERTY(EditAnywhere, Category = "Boss")
+    FVector LocationOffset;
+
     EBossPattern CurrentPattern{ EBossPattern::Idle };
 
     void RegisterObserver(TScriptInterface<IBossObserverInterface> Observer);
@@ -45,4 +48,22 @@ public:
     void NotifyObservers();
     void SpawnSpheres();
     void ChangePattern();
+
+    FVector GetActorLocationToOffset() const { return GetActorLocation() + LocationOffset; }
+
+public:
+    UPROPERTY(EditAnywhere, Category = "Boss|Sphere")
+    float OribitSpeed{ 100 };
+
+    UPROPERTY(EditAnywhere, Category = "Boss|Sphere")
+    float OribitRadius{ 200 };
+
+    FTransform Transform;
+
+    FVector RandomRotationAxis;
+    float AxisChangeTime;
+    float CurrentAxisTime;
+    
+private:
+    void IdleAnimation(float DeltaTime);
 };

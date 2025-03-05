@@ -11,24 +11,42 @@ ABoss::ABoss()
 
     SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
     RootComponent = SkeletalMeshComponent;
+    LocationOffset = FVector(0.0f, 0.0f, 600.0f);
 }
 
 void ABoss::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (IdleAnimation)
+    RandomRotationAxis = FVector(FMath::FRandRange(-1.0f, 1.0f),
+                                 FMath::FRandRange(-1.0f, 1.0f),
+                                 FMath::FRandRange(-1.0f, 1.0f)).GetSafeNormal();
+
+    AxisChangeTime = 1.0f;
+    CurrentAxisTime = 0.0f;
+
+    Transform = GetActorTransform();
+    Transform.SetLocation(Transform.GetLocation() + LocationOffset);
+
+    if (IdleAnimationAsset)
     {
-        SkeletalMeshComponent->PlayAnimation(IdleAnimation, true);
+        SkeletalMeshComponent->PlayAnimation(IdleAnimationAsset, true);
     }
 
     SpawnSpheres();
+
+    /* Àá½Ã */
     //GetWorldTimerManager().SetTimerForNextTick(this, &ABoss::ChangePattern);
 }
 
 void ABoss::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (CurrentPattern == EBossPattern::Idle)
+    {
+        IdleAnimation(DeltaTime);
+    }
 }
 
 void ABoss::SpawnSpheres()
@@ -43,13 +61,13 @@ void ABoss::SpawnSpheres()
     {
         float Angle = FMath::DegreesToRadians(AngleStep * i);
         FVector Offset = FVector(FMath::Cos(Angle) * Radius, FMath::Sin(Angle) * Radius, 0);
-        FVector SpawnLocation = GetActorLocation() + Offset;
+        FVector SpawnLocation = FVector::ZeroVector;
         FRotator SpawnRotation = FRotator::ZeroRotator;
 
         ABossSphere* NewSphere = GetWorld()->SpawnActor<ABossSphere>(BossSphereClass, SpawnLocation, SpawnRotation);
         if (NewSphere)
         {
-            NewSphere->SetBoss(this);
+            NewSphere->SetBoss(this, i, AngleStep * i, &OribitSpeed, &OribitRadius);
             RegisterObserver(NewSphere);
         }
     }
@@ -81,4 +99,25 @@ void ABoss::ChangePattern()
     CurrentPattern = (CurrentPattern == EBossPattern::Orbit) ? EBossPattern::Laser : EBossPattern::Orbit;
     NotifyObservers();
     GetWorldTimerManager().SetTimerForNextTick(this, &ABoss::ChangePattern);
+}
+
+void ABoss::IdleAnimation(float DeltaTime)
+{
+    CurrentAxisTime += DeltaTime;
+    if (CurrentAxisTime >= AxisChangeTime)
+    {
+        FVector NewRandomAxis = FVector(FMath::FRandRange(-1.0f, 1.0f),
+            FMath::FRandRange(-1.0f, 1.0f),
+            FMath::FRandRange(-1.0f, 1.0f)).GetSafeNormal();
+
+        RandomRotationAxis = FMath::VInterpTo(RandomRotationAxis, NewRandomAxis, DeltaTime, 1.0f);
+
+        OribitSpeed = FMath::FRandRange(50.f, 500.f);
+        CurrentAxisTime = 0.0f;
+    }
+
+
+    float DeltaRotation = OribitSpeed * DeltaTime;
+
+    Transform.ConcatenateRotation(FQuat(RandomRotationAxis, FMath::DegreesToRadians(DeltaRotation)));
 }

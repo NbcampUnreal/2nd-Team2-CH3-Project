@@ -8,6 +8,8 @@ ABossSphere::ABossSphere()
 
     MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
     RootComponent = MeshComponent;
+
+    LocalTransform = FTransform::Identity;
 }
 
 void ABossSphere::BeginPlay()
@@ -20,14 +22,11 @@ void ABossSphere::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (Boss && Boss->CurrentPattern == EBossPattern::Idle)
-    {
-        CurrentAngle += OrbitSpeed * DeltaTime;
-        float AngleRad = FMath::DegreesToRadians(CurrentAngle);
+    if (Boss == nullptr) return;
 
-        float Radius = 100.0f;
-        FVector NewLocation = Boss->GetActorLocation() + FVector(FMath::Cos(AngleRad) * Radius, FMath::Sin(AngleRad) * Radius, 0);
-        SetActorLocation(NewLocation);
+    if (Boss->CurrentPattern == EBossPattern::Idle)
+    {
+        IdleAnimation(DeltaTime);
     }
 }
 
@@ -40,17 +39,27 @@ void ABossSphere::OnPatternChanged(EBossPattern NewPattern)
     //}
 }
 
-void ABossSphere::SetBoss(ABoss* InBoss)
+void ABossSphere::SetBoss(ABoss* InitialBoss, int32 InitialUniqueId ,float InitialAngle, float* InitialOrbitSpeed, float* InitialOrbitRadius)
 {
-    Boss = InBoss;
+    Boss            = InitialBoss;
+    UniquId         = InitialUniqueId;
+    CurrentAngle    = InitialAngle;
+    OrbitSpeed      = InitialOrbitSpeed;
+    OrbitRadius     = InitialOrbitRadius;
+
+    LocalTransform = GetTransform();
+
+    float AngleRad = FMath::DegreesToRadians(CurrentAngle);
+
+    FVector NewLocation = FVector(FMath::Cos(AngleRad) * (*OrbitRadius), FMath::Sin(AngleRad) * (*OrbitRadius), 0);
+
+    LocalTransform.SetLocation(NewLocation);
 }
 
-//if (BossActor)
-//{
-//    float Time = GetWorld()->GetTimeSeconds();
-//    float Radius = 300.0f;
-//    float Speed = 1.5f;
-//    FVector BossLocation = BossActor->GetActorLocation();
-//    FVector NewLocation = BossLocation + FVector(FMath::Cos(Time * Speed) * Radius, FMath::Sin(Time * Speed) * Radius, 50.0f);
-//    SetActorLocation(NewLocation);
-//}
+void ABossSphere::IdleAnimation(float DeltaTime)
+{
+    LocalTransform.SetLocation(FVector(LocalTransform.GetLocation().X + DeltaTime * 10.f, 0.f, 0.f));
+    SetActorTransform(LocalTransform * Boss->Transform);
+}
+
+

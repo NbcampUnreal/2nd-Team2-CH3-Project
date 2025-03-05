@@ -25,10 +25,18 @@ public:
 
     void OnPatternChanged(EBossPattern NewPattern) override;
 
-    void SetBoss(ABoss* InBoss);
+    void SetBoss(class ABoss* InitialBoss, int32 InitialUniqueId, float InitialAngle, float* InitialOrbitSpeed, float* InitialOrbitRadius);
 
+    void IdleAnimation(float DeltaTime);
 private:
-    class ABoss* Boss{ nullptr };
-    float OrbitSpeed = 50.0f;
-    float CurrentAngle = 0.0f;
+    class ABoss*    Boss{ nullptr };
+
+    int32           UniquId{ 0 };
+
+    float           CurrentAngle{ 0.0f };
+    float*          OrbitSpeed{ nullptr };
+    float*          OrbitRadius{ nullptr };
+
+    FTransform      LocalTransform;
+    FTransform      TestTransform;
 };
