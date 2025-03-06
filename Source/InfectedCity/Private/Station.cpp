@@ -85,6 +85,12 @@ void AStation::HandleInput()
             PlayerCharacter->GasCount--;
             StationCount++;
             TextComponent->SetText(FText::AsNumber(StationCount));
+            Drinkgas = true;
+            if (Drinkgas == true)
+            {
+                UE_LOG(LogTemp, Log, TEXT("¼ÒÈ¯Áß~!@~!@~!@!~@!~@~!"));
+            }
+
 
             if (StationCount >= 5)
             {

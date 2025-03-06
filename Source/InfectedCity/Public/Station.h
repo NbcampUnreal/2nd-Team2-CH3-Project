@@ -29,6 +29,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Station")
     bool CanOut = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Station")
+    bool Drinkgas = false;
+
 private:
     UPROPERTY(VisibleAnywhere, Category = "Components")
     USceneComponent* SceneRoot;
