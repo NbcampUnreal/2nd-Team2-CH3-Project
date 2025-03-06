@@ -126,7 +126,7 @@ void ABoss::NotifyObservers()
 
 void ABoss::ChangePattern()
 {
-    CurrentPattern = EBossPattern::Beam;
+    CurrentPattern = EBossPattern::HeavyCrash;
 
     /* 랜덤으로 패턴잡히면 초기 세팅해줘야됨 */
     if (CurrentPattern == EBossPattern::Beam)
