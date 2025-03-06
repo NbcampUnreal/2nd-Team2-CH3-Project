@@ -29,7 +29,7 @@ void AGN_ChaseMan::BeginPlay()
         TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Yaku_J_Ignite.Yaku_J_Ignite'"),
         TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Zombiegirl_W_Kurniawan.Zombiegirl_W_Kurniawan'")
     };
-
+             
     Random = FMath::RandRange(0, 6);
 
     USkeletalMesh* RandomMesh = LoadObject<USkeletalMesh>(nullptr, MeshPaths[Random]);
