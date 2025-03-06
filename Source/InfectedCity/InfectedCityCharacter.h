@@ -21,7 +21,6 @@ class AInfectedCityCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-
 public:
 
 	AInfectedCityCharacter();

@@ -328,7 +328,22 @@ void UHUDWidget::UpdateGasCount(int32 Count)
 {
     if (GasCanImg)
     {
-        GasCanImg->SetVisibility(Count > 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+        GasCanImg->SetVisibility(Count == 1 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+    }
+    if (WarningImg)
+    {
+        if (Count == 1) {
+            WarningImg->SetVisibility(ESlateVisibility::Visible);
+            GetWorld()->GetTimerManager().SetTimer(WarningImgTimerHandle, this, &UHUDWidget::HideWarningImg, 3.0f, false);
+        }
+    }
+}
+
+void UHUDWidget::HideWarningImg()
+{
+    if (WarningImg)
+    {
+        WarningImg->SetVisibility(ESlateVisibility::Hidden);
     }
 }
 

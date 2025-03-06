@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
+#include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
 #include "HUDWidget.generated.h"
 
@@ -128,6 +129,9 @@ public:
     UPROPERTY(meta = (BindWidget))
     UImage* GasCanImg;
 
+    UPROPERTY(meta = (BindWidget))
+    UImage* WarningImg;
+
     UFUNCTION(BlueprintCallable)
     void UpdateGasCount(int32 Count);
 
@@ -147,8 +151,13 @@ public:
     void HideStory01AndStartCountdown(); // story01을 숨기고 카운트다운 시작
     void UpdateCountdown();  // story02의 텍스트 업데이트
 
+    UFUNCTION()
+    void HideWarningImg();
+
 protected:
     FTimerHandle BorderColorTimerHandle;
+
+    FTimerHandle WarningImgTimerHandle;
 
     int32 BlinkCount = 0;
 
