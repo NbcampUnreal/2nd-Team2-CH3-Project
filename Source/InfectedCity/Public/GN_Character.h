@@ -58,7 +58,7 @@ public:
     UAnimationAsset* RunAnimation;
 
     UPROPERTY(EditAnywhere, Category = "Animations")
-    UAnimationAsset* ScreamAnimation;  // 비명 애니메이션 추가
+    UAnimationAsset* ScreamAnimation;
 
 
     //체력 변수
@@ -93,6 +93,10 @@ private:
     FTimerHandle PatrolTimerHandle;
     FTimerHandle DeadAnimTimerHandle;
     float AttackRange = 150.0f;
+
+    int32 Random;
+
+    USkeletalMeshComponent* MeshComp;
 
     APawn* CurTarget{ nullptr };
     UFUNCTION()

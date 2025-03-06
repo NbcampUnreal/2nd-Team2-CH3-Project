@@ -12,6 +12,16 @@ AGN_Character::AGN_Character()
 {
     PrimaryActorTick.bCanEverTick = true;
 
+    /*
+    * /Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Ch10_nonPBR.Ch10_nonPBR'
+    * /Script / Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Girlscout_T_Masuyama.Girlscout_T_Masuyama'
+    * /Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Parasite_L_Starkie.Parasite_L_Starkie'
+    * /Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Pumpkinhulk_L_Shaw.Pumpkinhulk_L_Shaw'
+    * /Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Warzombie_F_Pedroso.Warzombie_F_Pedroso'
+    * /Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Yaku_J_Ignite.Yaku_J_Ignite'
+    * /Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Zombiegirl_W_Kurniawan.Zombiegirl_W_Kurniawan'
+    */
+
     GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel1);
     GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 
@@ -35,6 +45,29 @@ AGN_Character::AGN_Character()
 void AGN_Character::BeginPlay()
 {
     Super::BeginPlay();
+
+    MeshComp = GetMesh();
+
+    if (!MeshComp) return;
+
+    const TCHAR* MeshPaths[] = {
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Ch10_nonPBR.Ch10_nonPBR'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Girlscout_T_Masuyama.Girlscout_T_Masuyama'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Parasite_L_Starkie.Parasite_L_Starkie'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Pumpkinhulk_L_Shaw.Pumpkinhulk_L_Shaw'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Warzombie_F_Pedroso.Warzombie_F_Pedroso'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Yaku_J_Ignite.Yaku_J_Ignite'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Zombiegirl_W_Kurniawan.Zombiegirl_W_Kurniawan'")
+    };
+
+    Random = FMath::RandRange(0, 6);
+
+    USkeletalMesh* RandomMesh = LoadObject<USkeletalMesh>(nullptr, MeshPaths[Random]);
+
+    if (RandomMesh)
+    {
+        MeshComp->SetSkeletalMesh(RandomMesh);
+    }
 
    /* AnimInstance = Cast<UAGN_AnimInstance>(GetMesh()->GetAnimInstance());*/
     AIController = Cast<AGN_AIController>(GetController());
