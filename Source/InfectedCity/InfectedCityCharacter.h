@@ -87,11 +87,11 @@ public:
 	UInputAction* InteractAction;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
-	float ZoomedFOV = 45.0f;
+	float ZoomedFOV = 360.0f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
-	float DefaultFOV = 90.0f;
+	float DefaultFOV = 360.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float ZoomInterpSpeed = 10.0f;

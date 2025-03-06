@@ -232,6 +232,12 @@
     <Filter Include="Source\InfectedCity\00.GameObjects\Boss\Interface">
       <UniqueIdentifier>{14ab280e-0e51-48cb-8839-a0f6200466ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\EffectManager\DataAsset">
+      <UniqueIdentifier>{d346e63a-c35e-40ae-bdcd-8f00bf225ef8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\Spawner">
+      <UniqueIdentifier>{e5708dac-88c2-43bc-a097-d28fb88fd104}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -509,6 +515,15 @@
     <ClCompile Include="..\..\Source\InfectedCity\Private\BossObserverInterface.cpp">
       <Filter>Source\InfectedCity\00.GameObjects\Boss\Interface</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossEffectDataAsset.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager\DataAsset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossEffectDataAsset.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager\DataAsset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MobSpawner.cpp">
+      <Filter>Source\InfectedCity\01.Utility\Spawner</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\InfectedCity.uproject" />
@@ -522,5 +537,10 @@
     <None Include="..\..\Shaders\OutlineShader.usf" />
     <None Include="..\..\UpgradeLog.htm" />
     <None Include="..\..\Config\DefaultHoldoutComposite.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\InfectedCity\Public\MobSpawner.h">
+      <Filter>Source\InfectedCity\01.Utility\Spawner</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -22,7 +22,7 @@ AGN_Character::AGN_Character()
 
     PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
     PawnSensingComp->OnSeePawn.AddDynamic(this, &AGN_Character::OnSeePawn);
-    
+
     // 감지 반경 및 시야각 설정
     PawnSensingComp->SightRadius = 1500.0f;  // 플레이어 감지 거리 (기존보다 넓힘)
     PawnSensingComp->SetPeripheralVisionAngle(100.0f);  // 시야각 설정 (기존보다 넓힘)
@@ -34,12 +34,13 @@ AGN_Character::AGN_Character()
     // 체력 초기화
     CurrentHealth = MaxHealth;
 
-    
+    AIControllerClass = AGN_AIController::StaticClass();
+    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // 충돌 박스 생성
     RightArmStartCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("RightArmStartCollider"));
     RightArmStartCollider->SetupAttachment(GetMesh(), FName("RightHand"));  // RightHand 소켓에 첨부
-    
+
 
     // 충돌 발생 시 처리할 함수 설정
     RightArmStartCollider->OnComponentBeginOverlap.AddDynamic(this, &AGN_Character::OnRightArmStartOverlap);
@@ -54,7 +55,7 @@ void AGN_Character::OnNotifyBegin(FName NotifyName, const FBranchingPointNotifyP
 {
     if (NotifyName == "Attack")
     {
-        
+
         EnableRightArmCollision();
 
     }
@@ -64,7 +65,7 @@ void AGN_Character::OnNotifyEnd(FName NotifyName, const FBranchingPointNotifyPay
 {
     if (NotifyName == "Attack")
     {
-        
+
         DisableRightArmCollision();
 
     }
@@ -76,7 +77,7 @@ void AGN_Character::EnableRightArmCollision()
     if (RightArmStartCollider)
     {
         RightArmStartCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
-        RightArmStartCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); 
+        RightArmStartCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
         RightArmStartCollider->SetSimulatePhysics(true);  // 물리적 시뮬레이션 활성화// Pawn(플레이어)와의 충돌을 오버랩으로 설정
         //UE_LOG(LogTemp, Warning, TEXT("RightArmStartCollider 충돌 활성화"));
     }
@@ -97,8 +98,8 @@ void AGN_Character::OnRightArmStartOverlap(UPrimitiveComponent* OverlappedCompon
 {
     if (OtherActor && OtherActor != this) // 자신과의 충돌이 아닌 경우
     {
-        
-        if (CurrentState == EEnemyState::Attacking) 
+
+        if (CurrentState == EEnemyState::Attacking)
         {
             AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(OtherActor);
             if (Player)
@@ -109,7 +110,7 @@ void AGN_Character::OnRightArmStartOverlap(UPrimitiveComponent* OverlappedCompon
             }
 
         }
-        
+
     }
 }
 // 데미지 적용 함수
@@ -132,14 +133,34 @@ void AGN_Character::BeginPlay()
 {
     Super::BeginPlay();
 
-   /* AnimInstance = Cast<UAGN_AnimInstance>(GetMesh()->GetAnimInstance());*/
+    MeshComp = GetMesh();
 
-    
+    if (!MeshComp) return;
 
+    const TCHAR* MeshPaths[] = {
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Ch10_nonPBR.Ch10_nonPBR'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Girlscout_T_Masuyama.Girlscout_T_Masuyama'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Parasite_L_Starkie.Parasite_L_Starkie'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Pumpkinhulk_L_Shaw.Pumpkinhulk_L_Shaw'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Warzombie_F_Pedroso.Warzombie_F_Pedroso'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Yaku_J_Ignite.Yaku_J_Ignite'"),
+        TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Zombie/Mesh/Zombiegirl_W_Kurniawan.Zombiegirl_W_Kurniawan'")
+    };
+
+    Random = FMath::RandRange(0, 6);
+
+    USkeletalMesh* RandomMesh = LoadObject<USkeletalMesh>(nullptr, MeshPaths[Random]);
+
+    if (RandomMesh)
+    {
+        MeshComp->SetSkeletalMesh(RandomMesh);
+    }
     AIController = Cast<AGN_AIController>(GetController());
 
     PreAnimation = IdleAnimation;
     CurAnimation = IdleAnimation;
+
+    OutlineComponent->DisableOutline();
     Patrol();
 }
 
@@ -173,7 +194,7 @@ void AGN_Character::Tick(float DeltaTime)
             float AnimDuration = PreAnimation->GetPlayLength();
 
             GetMesh()->PlayAnimation(PreAnimation, false);
-            
+
             GetWorldTimerManager().SetTimer(DeadAnimTimerHandle, this, &AGN_Character::Dead, AnimDuration, false);
         }
         else if (PreAnimation == AttackAnimation)
@@ -346,7 +367,7 @@ void AGN_Character::Attack()
     CurrentState = EEnemyState::Attacking;
     AIController->RemovePatrolling();
 
-    
+
 
     GetWorld()->GetTimerManager().ClearTimer(PatrolTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(ScreamTimerHandle);
@@ -365,13 +386,13 @@ void AGN_Character::Die()
 {
     //SetEnemyState(EEnemyState::Dead);
     //PlayDeathAnimation();
-    
+
     PreAnimation = DeathAnimation;
     CurrentState = EEnemyState::Dead;
 
     GetWorld()->GetTimerManager().ClearTimer(PatrolTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(ScreamTimerHandle);
-    
+
     PawnSensingComp->OnSeePawn.RemoveDynamic(this, &AGN_Character::OnSeePawn);
     AIController->RemovePatrolling();
 }
@@ -444,6 +465,6 @@ void AGN_Character::Dead()
 
 void AGN_Character::AttackEnd()
 {
-    
+
     CurrentState = EEnemyState::Chasing;
 }

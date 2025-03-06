@@ -1,5 +1,7 @@
 #include "MobSpawner.h"
 #include "Components/BoxComponent.h"
+//#include "/InfectedCity/Source/InfectedCity/Public/GN_Character.h"
+
 #include "Engine/World.h"
 
 AMobSpawner::AMobSpawner()
@@ -19,7 +21,7 @@ void AMobSpawner::BeginPlay()
 {
     Super::BeginPlay();
 
-    SpawnMobs();
+    //SpawnMobs();
 }
 
 void AMobSpawner::SpawnMobs()
@@ -45,6 +47,6 @@ void AMobSpawner::SpawnMobs()
 
         // 액터 스폰
         FActorSpawnParameters SpawnParams;
-        World->SpawnActor<AActor>(MobClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+        World->SpawnActor<AGN_Character>(MobClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
     }
 }
