@@ -1,7 +1,6 @@
 #include "Pill.h"
 #include "InfectedCity/InfectedCityCharacter.h"
-#include "TimerManager.h"
-#include "HUDWidget.h"  // UHUDWidget을 포함합니다.
+#include "HUDWidget.h"
 
 APill::APill()
 {
@@ -10,39 +9,23 @@ APill::APill()
     ItemType = "Pill";
 }
 
-void APill::UseItem_Implementation(AActor* User)
+void APill::UseItem(AActor* User)
 {
     AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(User);
-    if (Player)
+    if (!Player)
     {
-        // 플레이어의 스태미나를 100으로 설정
-        Player->Stamina = 100.0f;
-
-        if (Player->HUDWidget)
-        {
-            Player->HUDWidget->UpdateStaminaBar(Player->Stamina / Player->MaxStamina);
-        }
-
-        GetWorld()->GetTimerManager().SetTimer(
-            StaminaResetTimerHandle,
-            FTimerDelegate::CreateUObject(this, &APill::ResetStamina, Player),
-            5.0f,
-            false
-        );
+        UE_LOG(LogTemp, Error, TEXT("UseItem() - Player가 NULL입니다!"));
+        return;
     }
-}
 
-void APill::ResetStamina(AInfectedCityCharacter* Player)
-{
-    if (Player)
+    // 스태미나를 100으로 설정
+    Player->Stamina = 100.0f;
+
+    // HUD 업데이트
+    if (Player->HUDWidget)
     {
-        // 원래 스태미나로 복원
-        Player->Stamina = Player->MaxStamina;
-
-        // HUD 업데이트
-        if (Player->HUDWidget)
-        {
-            Player->HUDWidget->UpdateStaminaBar(Player->Stamina / Player->MaxStamina);
-        }
+        Player->HUDWidget->UpdateStaminaBar(Player->Stamina / Player->MaxStamina);
     }
+
+    UE_LOG(LogTemp, Warning, TEXT("UseItem() - 스태미나가 100으로 설정됨!"));
 }

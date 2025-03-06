@@ -53,5 +53,5 @@ public: /*ktw*/
 
     virtual void Tick(float DeltaTime) override;
 
-    virtual void UseItem_Implementation(AActor* User) override;
+    virtual void UseItem(AActor* User);
 };
