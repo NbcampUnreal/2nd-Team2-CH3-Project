@@ -101,12 +101,13 @@ void UHUDWidget::OnKey4Pressed()
     AInfectedCityCharacter* Player = GetPlayerCharacter();
     if (!Player) return;
 
-    int32* BandageCount = Player->Inventory.Find(ABandage::StaticClass());
-    if (BandageCount && *BandageCount > 0)
+    int32 BandageCount = Player->Inventory[TEXT("Bandage")];
+
+    if (BandageCount > 0)
     {
         StartProgressBar(4, 5.0f);
-        Player->UseItem(ABandage::StaticClass());
-        UpdateBandageCount(*BandageCount - 1);
+        Player->UseItem(TEXT("Bandage"));
+        UpdateBandageCount(BandageCount - 1);
     }
 }
 
@@ -115,17 +116,14 @@ void UHUDWidget::OnKey5Pressed()
     AInfectedCityCharacter* Player = GetPlayerCharacter();
     if (!Player) return;
 
-    int32* PillCount = Player->Inventory.Find(APill::StaticClass());
-    if (PillCount && *PillCount > 0)
+    int32 PillCount = Player->Inventory[TEXT("Pill")];
+
+    if (PillCount > 0)
     {
-        // 진행 바 시작
         StartProgressBar(5, 10.0f);
+        Player->UseItem(TEXT("Pill"));
 
-        // Pill 아이템 사용
-        Player->UseItem(APill::StaticClass());
-
-        // Pill 아이템 수 감소
-        UpdatePillCount(*PillCount - 1);
+        UpdatePillCount(PillCount - 1);
     }
 }
 

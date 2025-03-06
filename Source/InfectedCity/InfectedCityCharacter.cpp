@@ -535,10 +535,8 @@ void AInfectedCityCharacter::UpdateReloadText(bool bIsReloading)
 	}
 }
 
-void AInfectedCityCharacter::AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount)
+void AInfectedCityCharacter::AddItem(FName ItemClass, int32 Amount)
 {
-	if (!ItemClass) return;
-
 	// 기존 개수 확인 후 추가
 	if (Inventory.Contains(ItemClass))
 	{
@@ -550,24 +548,21 @@ void AInfectedCityCharacter::AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amo
 	}
 }
 
-void AInfectedCityCharacter::UseItem(TSubclassOf<UItemBase> ItemClass)
+void AInfectedCityCharacter::UseItem(FName ItemClass)
 {
-	if (!ItemClass || !Inventory.Contains(ItemClass) || Inventory[ItemClass] <= 0)
-		return;
-
-	// 아이템 사용
-	IItemBase* Item = Cast<IItemBase>(ItemClass->GetDefaultObject());
-	if (Item)
+	if (ItemClass == "Bandage")
 	{
-		Item->Execute_UseItem(ItemClass->GetDefaultObject(), this);
-		Inventory[ItemClass]--;
-
-		// 개수가 0이면 삭제
-		if (Inventory[ItemClass] <= 0)
-		{
-			Inventory.Remove(ItemClass);
-		}
+		Health += 10;
+		/* HP */
+		Inventory["Bandage"]--;
 	}
+	else if (ItemClass == "Pill")
+	{
+		Stamina += 10;
+		/* 스테미나 */
+		Inventory["Pill"]--;
+	}
+	
 }
 
 void AInfectedCityCharacter::DrainStamina()
@@ -670,11 +665,13 @@ void AInfectedCityCharacter::PickupItem()
 		{
 			BandageCount++;
 			HUDWidget->UpdateBandageCount(BandageCount);
+			AddItem(TEXT("Bandage"), BandageCount);
 		}
 		else if (CurrentItem->ItemType == "Pill")
 		{
 			PillCount++;
 			HUDWidget->UpdatePillCount(PillCount);
+			AddItem(TEXT("Pill"), PillCount);
 		}
 		else if (CurrentItem->ItemType == "GasDrum")
 		{
@@ -707,6 +704,7 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 		
 	}
 
+	UpdateHP(Health);
 	// 체력이 0 이하일 때 사망 처리
 	if (Health <= 0)
 	{
@@ -715,7 +713,6 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력이 0 이하로 감소! 사망 처리!"));
 	}
 
-	UpdateHP(Health);
 
 	return DamageAmount;  // 데미지가 제대로 적용되었는지 확인하려면 반환값 확인
 }
@@ -725,6 +722,7 @@ void AInfectedCityCharacter::ResetHitAnimState()
 {
 	bIsPlayingHitAnim = false;  // 애니메이션이 끝났으므로 상태 리셋
 }
+
 void AInfectedCityCharacter::Die()
 {
 	if (bIsDead)

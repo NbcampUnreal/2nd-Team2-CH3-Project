@@ -191,15 +191,15 @@ public:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TMap<TSubclassOf<UItemBase>, int32> Inventory;
+	TMap<FName, int32> Inventory;
 
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount);
+	void AddItem(FName ItemClass, int32 Amount);
 
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void UseItem(TSubclassOf<UItemBase> ItemClass);
+	void UseItem(FName ItemClass);
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
@@ -216,9 +216,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void UpdateHP(float NewHP);
-
-	/** 데미지 처리 함수 */
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable, Category = "RideSystem")
 	void OnRideAvailable();
