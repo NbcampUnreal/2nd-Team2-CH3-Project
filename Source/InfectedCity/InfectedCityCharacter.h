@@ -93,10 +93,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
 	virtual void BeginPlay() override;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* DeathSound;  // 죽음 시 재생할 소리
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* HitAnimMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* DamageSound;  // 데미지 소리 (에디터에서 지정 가능)
 public:
 	void UpdateAmmoBar();
 
@@ -241,5 +244,7 @@ public:
 
 		// 애니메이션 상태 리셋 함수
 		void ResetHitAnimState();
+		bool bCanPlayDamageSound = true;
+		void EnableDamageSound();
 
 };

@@ -678,19 +678,28 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 	// 체력 감소
 	if (Health > 0)
 	{
-		Health -= DamageAmount;
-		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력 감소: %.2f -> %.2f (데미지: %.2f)"), Health + DamageAmount, Health, DamageAmount);
-
-		// 애니메이션이 진행 중이지 않다면 애니메이션 실행
-		if (HitAnimMontage && !bIsPlayingHitAnim)
+		// 데미지를 받았을 때 피격 애니메이션을 실행
+		if (!bIsPlayingHitAnim) // 애니메이션이 진행 중이지 않다면 실행
 		{
-			bIsPlayingHitAnim = true;
-			PlayAnimMontage(HitAnimMontage);
+			bIsPlayingHitAnim = true;  // 피격 애니메이션이 실행 중임을 나타냄
+			PlayAnimMontage(HitAnimMontage);  // 피격 애니메이션 몽타주 실행
 
-			// 애니메이션이 끝났을 때 상태를 다시 원래로 복구하도록 설정
+			// 애니메이션이 끝나면 상태를 다시 원래대로 복구
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AInfectedCityCharacter::ResetHitAnimState, HitAnimMontage->GetPlayLength(), false);
 		}
+		if (bCanPlayDamageSound && DamageSound)  // 소리가 재생 가능하고 DamageSound가 설정되어 있으면
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, DamageSound, GetActorLocation());  // 캐릭터 위치에서 소리 재생
+			bCanPlayDamageSound = false;  // 소리 재생 후, 2초 동안은 소리가 재생되지 않도록 설정
+
+			// 2초 후에 다시 소리가 재생될 수 있도록 타이머 설정
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AInfectedCityCharacter::EnableDamageSound, 2.0f, false);
+		}
+		// 체력 감소 처리
+		Health -= DamageAmount;
+		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력 감소: %.2f -> %.2f (데미지: %.2f)"), Health + DamageAmount, Health, DamageAmount);
 	}
 
 	// 체력이 0 이하일 때 사망 처리
@@ -702,6 +711,11 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 	}
 
 	return DamageAmount;  // 데미지가 제대로 적용되었는지 확인하려면 반환값 확인
+}
+void AInfectedCityCharacter::EnableDamageSound()
+{
+	// 2초 후에 소리가 재생될 수 있도록 설정
+	bCanPlayDamageSound = true;
 }
 
 // 애니메이션 상태를 리셋하는 함수
@@ -724,7 +738,10 @@ void AInfectedCityCharacter::Die()
 	{
 		// 애니메이션 재생
 		GetMesh()->PlayAnimation(DeathAnimSequence, false);
-
+		if (DeathSound) // DeathSound가 지정되어 있으면
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation()); // 캐릭터 위치에서 소리 재생
+		}
 		// 애니메이션이 끝난 후 캐릭터를 숨기거나 게임 오버 처리를 할 수 있도록 타이머를 설정
 		GetWorld()->GetTimerManager().SetTimer(DeathAnimTimerHandle, this, &AInfectedCityCharacter::HandleDeath, DeathAnimSequence->GetPlayLength(), false);
 	}
