@@ -74,6 +74,9 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	MaxHealth = 100.0f;
 	Health = MaxHealth; // 체력 초기화
 	DeathAnimTimerHandle = FTimerHandle();
+
+	MaxHP = 100.0f;
+	CurrentHP = MaxHP;
 	
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
@@ -81,6 +84,11 @@ void AInfectedCityCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		//PC->SetMouseLocation(1920/2, 1080/2);
+	}
 }
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
@@ -99,7 +107,6 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 void AInfectedCityCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
 	Stamina = MaxStamina;  // 스테미나 초기화
 
@@ -115,6 +122,7 @@ void AInfectedCityCharacter::BeginPlay()
 
 	UpdateAmmoBar();
 }
+
 
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -527,10 +535,8 @@ void AInfectedCityCharacter::UpdateReloadText(bool bIsReloading)
 	}
 }
 
-void AInfectedCityCharacter::AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount)
+void AInfectedCityCharacter::AddItem(FName ItemClass, int32 Amount)
 {
-	if (!ItemClass) return;
-
 	// 기존 개수 확인 후 추가
 	if (Inventory.Contains(ItemClass))
 	{
@@ -542,24 +548,21 @@ void AInfectedCityCharacter::AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amo
 	}
 }
 
-void AInfectedCityCharacter::UseItem(TSubclassOf<UItemBase> ItemClass)
+void AInfectedCityCharacter::UseItem(FName ItemClass)
 {
-	if (!ItemClass || !Inventory.Contains(ItemClass) || Inventory[ItemClass] <= 0)
-		return;
-
-	// 아이템 사용
-	IItemBase* Item = Cast<IItemBase>(ItemClass->GetDefaultObject());
-	if (Item)
+	if (ItemClass == "Bandage")
 	{
-		Item->Execute_UseItem(ItemClass->GetDefaultObject(), this);
-		Inventory[ItemClass]--;
-
-		// 개수가 0이면 삭제
-		if (Inventory[ItemClass] <= 0)
-		{
-			Inventory.Remove(ItemClass);
-		}
+		Health += 10;
+		/* HP */
+		Inventory["Bandage"]--;
 	}
+	else if (ItemClass == "Pill")
+	{
+		Stamina += 10;
+		/* 스테미나 */
+		Inventory["Pill"]--;
+	}
+	
 }
 
 void AInfectedCityCharacter::DrainStamina()
@@ -662,12 +665,20 @@ void AInfectedCityCharacter::PickupItem()
 		{
 			BandageCount++;
 			HUDWidget->UpdateBandageCount(BandageCount);
+			AddItem(TEXT("Bandage"), BandageCount);
 		}
-		else
+		else if (CurrentItem->ItemType == "Pill")
 		{
 			PillCount++;
-			HUDWidget->UpdateBandageCount(PillCount);
+			HUDWidget->UpdatePillCount(PillCount);
+			AddItem(TEXT("Pill"), PillCount);
 		}
+		else if (CurrentItem->ItemType == "GasDrum")
+		{
+			GasCount++;
+			HUDWidget->UpdateGasCount(GasCount);
+		}
+		
 
 		CurrentItem->DestroyItem();
 	}
@@ -702,6 +713,7 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력 감소: %.2f -> %.2f (데미지: %.2f)"), Health + DamageAmount, Health, DamageAmount);
 	}
 
+	UpdateHP(Health);
 	// 체력이 0 이하일 때 사망 처리
 	if (Health <= 0)
 	{
@@ -709,6 +721,7 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 		Die(); // 죽음 처리
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력이 0 이하로 감소! 사망 처리!"));
 	}
+
 
 	return DamageAmount;  // 데미지가 제대로 적용되었는지 확인하려면 반환값 확인
 }
@@ -723,6 +736,7 @@ void AInfectedCityCharacter::ResetHitAnimState()
 {
 	bIsPlayingHitAnim = false;  // 애니메이션이 끝났으므로 상태 리셋
 }
+
 void AInfectedCityCharacter::Die()
 {
 	if (bIsDead)
@@ -763,4 +777,49 @@ void AInfectedCityCharacter::HandleDeath()
 
 	// 게임 오버 처리
 	UGameplayStatics::OpenLevel(GetWorld(), "GameOverLevel");
+}
+
+void AInfectedCityCharacter::UpdateHP(float NewHP)
+{
+	CurrentHP = FMath::Clamp(NewHP, 0.0f, MaxHP);
+
+	if (HUDWidget)
+	{
+		HUDWidget->UpdateHPBar(CurrentHP / MaxHP);
+	}
+}
+
+void AInfectedCityCharacter::OnRideAvailable()
+{
+	HUDWidget->StartRideSequence();
+}
+
+void AInfectedCityCharacter::DeathEvent()
+{
+	// 기존 UI 제거
+	if (CurrentUIWidget)
+	{
+		CurrentUIWidget->RemoveFromParent();
+		CurrentUIWidget = nullptr;
+	}
+
+	// 사망 UI 표시
+	if (EndWidgetClass)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC)
+		{
+			CurrentUIWidget = CreateWidget<UUserWidget>(PC, EndWidgetClass);
+			if (CurrentUIWidget)
+			{
+				CurrentUIWidget->AddToViewport();
+			}
+
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.1f);
+
+			PC->bShowMouseCursor = true;
+			FInputModeUIOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+	}
 }

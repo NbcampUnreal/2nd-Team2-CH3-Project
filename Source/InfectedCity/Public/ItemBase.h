@@ -15,7 +15,6 @@ class INFECTEDCITY_API IItemBase
     GENERATED_BODY()
 
 public:
-    // ������ ��� �Լ� (��ӹ��� Ŭ�������� ����)
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
     void UseItem(AActor* User);
 };

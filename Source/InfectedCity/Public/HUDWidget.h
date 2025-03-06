@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
+#include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
 #include "HUDWidget.generated.h"
 
@@ -123,10 +124,44 @@ public:
     FTimerHandle PillRotationTimerHandle;
     float PillRotationAngle = 0.0f;
 
+    void UpdateHPBar(float HPRatio);
+
+    UPROPERTY(meta = (BindWidget))
+    UImage* GasCanImg;
+
+    UPROPERTY(meta = (BindWidget))
+    UImage* WarningImg;
+
+    UFUNCTION(BlueprintCallable)
+    void UpdateGasCount(int32 Count);
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Story01Text;
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Story02Text;
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Story03Text;
+
+    FTimerHandle StoryTimerHandle;
+    FTimerHandle CountdownTimerHandle;
+
+    void StartRideSequence();  // canride가 true가 되었을 때 호출
+    void HideStory01AndStartCountdown(); // story01을 숨기고 카운트다운 시작
+    void UpdateCountdown();  // story02의 텍스트 업데이트
+
+    UFUNCTION()
+    void HideWarningImg();
+
 protected:
     FTimerHandle BorderColorTimerHandle;
 
+    FTimerHandle WarningImgTimerHandle;
+
     int32 BlinkCount = 0;
+
+    bool Canout = false;
 
     bool bToggle = false;
 
@@ -135,6 +170,11 @@ protected:
 
     UPROPERTY(meta = (BindWidget))
         class UProgressBar* StaminaProgressBar;
+
+    UPROPERTY(meta = (BindWidget))
+    class UProgressBar* HPProgressBar;
+
+    int32 CountdownTime = 180;
 
 private:
     AInfectedCityCharacter* GetPlayerCharacter();

@@ -205,6 +205,39 @@
     <Filter Include="Source\InfectedCity\01.Utility\PCG\Spline">
       <UniqueIdentifier>{3eee07b1-e2f9-48c3-80d7-cee0d3ad1019}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item">
+      <UniqueIdentifier>{c1a44ac1-a429-4f57-8931-2270771d6592}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item\Bandage">
+      <UniqueIdentifier>{a66dc5e6-ad2d-444f-b983-879f983c4920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item\Interface">
+      <UniqueIdentifier>{5d2211f7-4d7b-4bbb-80fa-1d350d9f42b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Item\Pill">
+      <UniqueIdentifier>{e15eacf8-a1d6-46a7-aca6-93e0fd0a3fad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss">
+      <UniqueIdentifier>{348a37d6-943b-4924-98a5-3035166612d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\BossSphere">
+      <UniqueIdentifier>{1d0c0e87-7071-46bb-b0df-8aef9b4e5ba5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\Pattern">
+      <UniqueIdentifier>{a5f2de76-e092-475f-b5a0-76c33eaca89c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\EffectManager">
+      <UniqueIdentifier>{c44c7020-68e2-4279-a674-829e17250b2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\Interface">
+      <UniqueIdentifier>{14ab280e-0e51-48cb-8839-a0f6200466ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\00.GameObjects\Boss\EffectManager\DataAsset">
+      <UniqueIdentifier>{d346e63a-c35e-40ae-bdcd-8f00bf225ef8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\InfectedCity\01.Utility\Spawner">
+      <UniqueIdentifier>{e5708dac-88c2-43bc-a097-d28fb88fd104}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source\InfectedCity\99.Default">
@@ -386,6 +419,111 @@
     <ClCompile Include="..\..\Source\InfectedCity\Private\CustomSpline.cpp">
       <Filter>Source\InfectedCity\01.Utility\PCG\Spline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\GameHUD.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\GameHUD.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\CustomHUD.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\CustomHUD.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\Bandage.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Bandage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\Bandage.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Bandage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\ItemBase.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\ItemBase.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BaseItem.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BaseItem.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\Pill.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Pill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\Pill.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Item\Pill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\MainMenuGameMode.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MainMenuGameMode.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\MenuWidget.h">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MenuWidget.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\State.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\State.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BaseMagazine.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BaseMagazine.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\ProceduralGenerationCity.h">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\ProceduralGenerationCity.cpp">
+      <Filter>Source\InfectedCity\99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\Boss.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\Boss.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossSphere.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\BossSphere</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossSphere.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\BossSphere</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossPattern.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossPattern.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossEffectManager.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossEffectManager.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossObserverInterface.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossObserverInterface.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Public\BossEffectDataAsset.h">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager\DataAsset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\BossEffectDataAsset.cpp">
+      <Filter>Source\InfectedCity\00.GameObjects\Boss\EffectManager\DataAsset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\InfectedCity\Private\MobSpawner.cpp">
+      <Filter>Source\InfectedCity\01.Utility\Spawner</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\InfectedCity.uproject" />
@@ -397,5 +535,12 @@
     <None Include="..\..\RestoreFilter.bat" />
     <None Include="..\..\shadertoolsconfig.json" />
     <None Include="..\..\Shaders\OutlineShader.usf" />
+    <None Include="..\..\UpgradeLog.htm" />
+    <None Include="..\..\Config\DefaultHoldoutComposite.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\InfectedCity\Public\MobSpawner.h">
+      <Filter>Source\InfectedCity\01.Utility\Spawner</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

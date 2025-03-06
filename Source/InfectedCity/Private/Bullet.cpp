@@ -100,6 +100,7 @@ void ABullet::MoveBullet(float DeltaTime)
             
             if (Enemy)
             {
+
                 Enemy->CurrentHealth -= 100;
 
                 if (Enemy->CurrentHealth <= 0)
