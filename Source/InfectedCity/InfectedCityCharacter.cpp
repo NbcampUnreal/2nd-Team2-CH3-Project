@@ -18,6 +18,7 @@
 #include "Components/PointLightComponent.h"
 #include "EnemyEffectManager.h"
 #include "BaseItem.h"
+#include "TimerManager.h"
 
 AInfectedCityCharacter::AInfectedCityCharacter()
 {
@@ -70,6 +71,9 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 
 	CameraBoom->ProbeChannel = ECC_Visibility;
 	CameraBoom->bDoCollisionTest = true;
+	MaxHealth = 100.0f;
+	Health = MaxHealth; // 체력 초기화
+	DeathAnimTimerHandle = FTimerHandle();
 	
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
@@ -108,6 +112,8 @@ void AInfectedCityCharacter::BeginPlay()
 			HUDWidget->AddToViewport();
 		}
 	}
+
+	UpdateAmmoBar();
 }
 
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -267,7 +273,7 @@ void AInfectedCityCharacter::StartRunning()
 {
 	if (bCanRun && Stamina > 0)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+		GetCharacterMovement()->MaxWalkSpeed = 900.f;
 		GetWorldTimerManager().SetTimer(StaminaTimerHandle, this, &AInfectedCityCharacter::DrainStamina, 0.1f, true);
 	}
 }
@@ -338,35 +344,44 @@ void AInfectedCityCharacter::Reload()
 
 void AInfectedCityCharacter::ToggleFlashlight()
 {
-
-
+	if (CurrentWeapon)
+	{
+		AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
+		if (Weapon)
+		{
+			// 스포트라이트를 현재 상태 반대로 토글
+			bool bCurrentVisibility = (Weapon->SpotLight1->IsVisible() && Weapon->SpotLight2->IsVisible());
+			Weapon->ToggleSpotlights(!bCurrentVisibility);
+		}
+	}
 }
 void AInfectedCityCharacter::PickupWeapon()
 {
-	AWeaponBase* NearestWeapon = FindNearestWeapon();
-	if (NearestWeapon)
-	{
-		CurrentWeapon = NearestWeapon;
+    AWeaponBase* NearestWeapon = FindNearestWeapon();
+    if (NearestWeapon)
+    {
+        CurrentWeapon = NearestWeapon;
 
-		UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
-		if (WeaponComponent)
-		{
-			WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
-		}
+        UPrimitiveComponent* WeaponComponent = Cast<UPrimitiveComponent>(CurrentWeapon->GetRootComponent());
+        if (WeaponComponent)
+        {
+            WeaponComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        }
 
-		NearestWeapon->SetActorHiddenInGame(false);
-		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
-		CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
+        NearestWeapon->SetActorHiddenInGame(false);
+        FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 
-		UpdateAmmoBar();
+        // 무기를 캐릭터에 장착하고, 소켓에 라이트도 연결
+        CurrentWeapon->AttachToComponent(GetMesh(), AttachRules, TEXT("AKGun"));
 
-		UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("There are no weapons nearby"));
-	}
+        UpdateAmmoBar();
 
+        UE_LOG(LogTemp, Log, TEXT("Hold Weapon: %s"), *CurrentWeapon->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("There are no weapons nearby"));
+    }
 }
 
 AWeaponBase* AInfectedCityCharacter::FindNearestWeapon()
@@ -417,89 +432,75 @@ void AInfectedCityCharacter::RotateCharacterToMouseCursor()
 }
 void AInfectedCityCharacter::FireBullet()
 {
-	if (!BulletClass || !CurrentWeapon)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Bullet class or weapon is not valid!"));
-		return;
-	}
+    if (!BulletClass || !CurrentWeapon)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Bullet class or weapon is not valid!"));
+        return;
+    }
 
-	AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
-	if (Weapon && Weapon->IsOutOfAmmo())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Out of ammo!"));
-		return;
-	}
-	if (Weapon && Weapon->bIsReloading)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Cannot fire while reloading!"));
-		return;
-	}
-	FVector MouseWorldLocation, MouseWorldDirection;
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (PlayerController && PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection))
-	{
-		FVector ShootDirection = MouseWorldDirection.GetSafeNormal();
-		FVector SpawnLocation = GetMesh()->GetSocketLocation("Bullet");
-		FRotator SpawnRotation = ShootDirection.Rotation();
+    AWeaponBase* Weapon = Cast<AWeaponBase>(CurrentWeapon);
+    if (Weapon && Weapon->IsOutOfAmmo())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Out of ammo!"));
+        return;
+    }
 
-		if (ABullet* NewBullet = GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocation, SpawnRotation))
-		{
-			NewBullet->Fire(ShootDirection, BulletSpeed);
+    if (Weapon && Weapon->bIsReloading)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Cannot fire while reloading!"));
+        return;
+    }
 
-		}
+    FVector CameraLocation;
+    FRotator CameraRotation;
+    FVector ForwardVector;
+    
+    // SecondFollowCamera가 활성화되었는지 확인
+    if (SecondFollowCamera && SecondFollowCamera->IsActive())
+    {
+        // SecondFollowCamera의 위치와 회전값을 사용
+        CameraLocation = SecondFollowCamera->GetComponentLocation();
+        CameraRotation = SecondFollowCamera->GetComponentRotation();
+        
+        // Second 카메라의 중앙 방향 벡터
+        ForwardVector = CameraRotation.Vector();  // 카메라의 앞 방향 벡터
+    }
+    else
+    {
+        // 기본 카메라가 사용되면 플레이어 카메라의 위치와 회전값을 사용
+        APlayerController* PlayerController = Cast<APlayerController>(GetController());
+        if (!PlayerController)
+        {
+            UE_LOG(LogTemp, Error, TEXT("PlayerController not found!"));
+            return;
+        }
+        
+        CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+        CameraRotation = PlayerController->GetControlRotation();
+        
+        // 기본 카메라의 중앙 방향 벡터
+        ForwardVector = CameraRotation.Vector();  // 카메라의 앞 방향 벡터
+    }
 
-   
-		if (ShootAnimMontage)
-		{
-			PlayAnimMontage(ShootAnimMontage);
-		}
-	}
+    // 총알 발사 위치를 캐릭터의 'Bullet' 소켓으로 설정
+    FVector SpawnLocation = GetMesh()->GetSocketLocation("Bullet"); // 총알 출발 위치
+    FRotator SpawnRotation = ForwardVector.Rotation(); // 발사 방향 회전 (카메라 방향에 맞춤)
+
+    // 총알을 발사합니다
+    if (ABullet* NewBullet = GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocation, SpawnRotation))
+    {
+        NewBullet->Fire(ForwardVector, BulletSpeed); // 발사 방향과 속도 설정
+    }
+
+    // 발사 애니메이션이 있다면 실행
+    if (ShootAnimMontage)
+    {
+        PlayAnimMontage(ShootAnimMontage);
+    }
+
+    // 카메라 회복
+    RecoverCameraRecoil();
 }
-void AInfectedCityCharacter::RecoverCameraRecoil()
-{
-	if (!bIsFiring)
-	{
-		return;  // 총을 쏘지 않으면 함수 종료
-	}
-
-	// 카메라 회전 및 위치를 복구하는 함수
-	auto RecoverCamera = [this](UCameraComponent* Camera)  // 'this' 캡처
-		{
-			// 현재 카메라의 회전과 위치 가져오기
-			FRotator CurrentRotation = Camera->GetComponentRotation();
-			FVector CurrentLocation = Camera->GetComponentLocation();
-
-			// 반동으로 인한 임의의 회전 (X, Y 회전은 반동 효과 추가)
-			FRotator NewRotation = FRotator(
-				FMath::RandRange(-RecoilRotationAmount, RecoilRotationAmount), // 임의의 X 회전
-				FMath::RandRange(-RecoilRotationAmount, RecoilRotationAmount), // 임의의 Y 회전
-				0 // Z 회전은 고정
-			);
-
-			// 위치 회복 (부드럽게)
-			FVector NewLocation = FMath::VInterpTo(CurrentLocation, CurrentLocation + CameraRecoil, GetWorld()->GetDeltaSeconds(), RecoilRecoverySpeed);
-			Camera->SetWorldLocation(NewLocation);
-
-			// 회전 보정
-			FRotator RecoilCompensation = FRotator(
-				-NewRotation.Pitch, // 반동 회전값을 빼서 보정
-				-NewRotation.Yaw,   // 반동 회전값을 빼서 보정
-				0                   // Z 회전은 고정
-			);
-
-			// 회전 부드럽게 회복
-			FRotator TargetRotation = CurrentRotation + RecoilCompensation;
-			FRotator SmoothedRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RecoilRecoverySpeed);
-
-			// 회전 적용
-			Camera->SetWorldRotation(SmoothedRotation);
-		};
-
-	// FollowCamera와 SecondFollowCamera에 대해 회복 적용
-	RecoverCamera(FollowCamera);
-	RecoverCamera(SecondFollowCamera);
-}
-
 void AInfectedCityCharacter::UpdateAmmoBar()
 {
 	if (HUDWidget)
@@ -580,6 +581,59 @@ void AInfectedCityCharacter::DrainStamina()
 	}
 }
 
+void AInfectedCityCharacter::RecoverCameraRecoil()
+{
+	if (!bIsFiring)
+	{
+		return;  // 총을 쏘지 않으면 함수 종료
+	}
+
+	// 카메라 회전 및 위치를 복구하는 함수
+	auto RecoverCamera = [this](UCameraComponent* Camera)  // 'this' 캡처
+		{
+			if (!Camera)
+			{
+				return;
+			}
+
+			// 현재 카메라의 회전과 위치 가져오기
+			FRotator CurrentRotation = Camera->GetComponentRotation();
+			FVector CurrentLocation = Camera->GetComponentLocation();
+
+			// 반동으로 인한 임의의 회전 (X, Y 회전은 반동 효과 추가)
+			FRotator NewRotation = FRotator(
+				FMath::RandRange(-RecoilRotationAmount, RecoilRotationAmount), // 임의의 X 회전
+				FMath::RandRange(-RecoilRotationAmount, RecoilRotationAmount), // 임의의 Y 회전
+				0 // Z 회전은 고정
+			);
+
+			// 회전 보정 (부드럽게 회복)
+			FRotator RecoilCompensation = FRotator(
+				-NewRotation.Pitch, // 반동 회전값을 빼서 보정
+				-NewRotation.Yaw,   // 반동 회전값을 빼서 보정
+				0                   // Z 회전은 고정
+			);
+
+			// 목표 회전 (현재 회전 + 보정값)
+			FRotator TargetRotation = CurrentRotation + RecoilCompensation;
+
+			// 회전 부드럽게 회복
+			FRotator SmoothedRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RecoilRecoverySpeed);
+			Camera->SetWorldRotation(SmoothedRotation);  // 회전 적용
+
+			// 위치 회복 (부드럽게)
+			FVector NewLocation = FMath::VInterpTo(CurrentLocation, CurrentLocation + CameraRecoil, GetWorld()->GetDeltaSeconds(), RecoilRecoverySpeed);
+
+			// 위치 보정이 적당히 이루어지도록 카메라 위치를 부드럽게 복구
+			Camera->SetWorldLocation(NewLocation);  // 위치 적용
+		};
+
+	// FollowCamera와 SecondFollowCamera에 대해 회복 적용
+	RecoverCamera(FollowCamera);
+	RecoverCamera(SecondFollowCamera);
+}
+
+
 void AInfectedCityCharacter::RecoverStamina()
 {
 	if (Stamina < MaxStamina)
@@ -619,3 +673,77 @@ void AInfectedCityCharacter::PickupItem()
 	}
 }
 
+float AInfectedCityCharacter::TakeDamage(float DamageAmount)
+{
+	// 체력 감소
+	if (Health > 0)
+	{
+		bIsPlayingHitAnim = false;
+		Health -= DamageAmount;
+		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력 감소: %.2f -> %.2f (데미지: %.2f)"), Health + DamageAmount, Health, DamageAmount);
+
+		// 애니메이션이 진행 중이지 않다면 애니메이션 실행
+		
+			bIsPlayingHitAnim = true;
+			PlayAnimMontage(HitAnimMontage);
+
+			// 애니메이션이 끝났을 때 상태를 다시 원래로 복구하도록 설정
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AInfectedCityCharacter::ResetHitAnimState, HitAnimMontage->GetPlayLength(), false);
+		
+	}
+
+	// 체력이 0 이하일 때 사망 처리
+	if (Health <= 0)
+	{
+		Health = 0;
+		Die(); // 죽음 처리
+		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력이 0 이하로 감소! 사망 처리!"));
+	}
+
+	return DamageAmount;  // 데미지가 제대로 적용되었는지 확인하려면 반환값 확인
+}
+
+// 애니메이션 상태를 리셋하는 함수
+void AInfectedCityCharacter::ResetHitAnimState()
+{
+	bIsPlayingHitAnim = false;  // 애니메이션이 끝났으므로 상태 리셋
+}
+void AInfectedCityCharacter::Die()
+{
+	if (bIsDead)
+	{
+		// 이미 죽은 상태라면 애니메이션을 다시 실행하지 않음
+		return;
+	}
+
+	bIsDead = true;  // 캐릭터가 죽었음을 설정
+
+	// 사망 애니메이션 실행
+	if (DeathAnimSequence)
+	{
+		// 애니메이션 재생
+		GetMesh()->PlayAnimation(DeathAnimSequence, false);
+
+		// 애니메이션이 끝난 후 캐릭터를 숨기거나 게임 오버 처리를 할 수 있도록 타이머를 설정
+		GetWorld()->GetTimerManager().SetTimer(DeathAnimTimerHandle, this, &AInfectedCityCharacter::HandleDeath, DeathAnimSequence->GetPlayLength(), false);
+	}
+	else
+	{
+		// DeathAnimSequence가 없다면 그냥 바로 처리
+		HandleDeath();
+	}
+
+	// 죽은 후 캐릭터의 이동을 막음
+	GetCharacterMovement()->DisableMovement();  // 이동 비활성화
+	GetCharacterMovement()->StopMovementImmediately();  // 즉시 멈춤
+}
+void AInfectedCityCharacter::HandleDeath()
+{
+	// 캐릭터 숨기기 및 충돌 비활성화
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+
+	// 게임 오버 처리
+	UGameplayStatics::OpenLevel(GetWorld(), "GameOverLevel");
+}

@@ -7,6 +7,9 @@
 #include "GN_AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "OutlineComponent.h"
+#include "InfectedCity/InfectedCityCharacter.h"
+#include "Components/BoxComponent.h"
+
 
 AGN_Character::AGN_Character()
 {
@@ -30,6 +33,99 @@ AGN_Character::AGN_Character()
 
     // 체력 초기화
     CurrentHealth = MaxHealth;
+
+    
+
+    // 충돌 박스 생성
+    RightArmStartCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("RightArmStartCollider"));
+    RightArmStartCollider->SetupAttachment(GetMesh(), FName("RightHand"));  // RightHand 소켓에 첨부
+    
+
+    // 충돌 발생 시 처리할 함수 설정
+    RightArmStartCollider->OnComponentBeginOverlap.AddDynamic(this, &AGN_Character::OnRightArmStartOverlap);
+    RightArmStartCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    RightArmStartCollider->SetCollisionResponseToAllChannels(ECR_Ignore); // 기본값을 모든 채널에서 무시
+    RightArmStartCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // 캐릭터와의 충돌은 Overlap
+
+
+}
+
+void AGN_Character::OnNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
+{
+    if (NotifyName == "Attack")
+    {
+        
+        EnableRightArmCollision();
+        UE_LOG(LogTemp, Warning, TEXT("NotifyBegin - 공격 충돌 활성화!"));
+    }
+}
+
+void AGN_Character::OnNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& Payload)
+{
+    if (NotifyName == "Attack")
+    {
+        
+        DisableRightArmCollision();
+        UE_LOG(LogTemp, Warning, TEXT("NotifyEnd - 공격 충돌 비활성화!"));
+    }
+}
+
+
+void AGN_Character::EnableRightArmCollision()
+{
+    if (RightArmStartCollider)
+    {
+        RightArmStartCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
+        RightArmStartCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); 
+        RightArmStartCollider->SetSimulatePhysics(true);  // 물리적 시뮬레이션 활성화// Pawn(플레이어)와의 충돌을 오버랩으로 설정
+        UE_LOG(LogTemp, Warning, TEXT("RightArmStartCollider 충돌 활성화"));
+    }
+}
+
+void AGN_Character::DisableRightArmCollision()
+{
+    if (RightArmStartCollider)
+    {
+        RightArmStartCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌 비활성화
+        RightArmStartCollider->SetSimulatePhysics(false);
+        UE_LOG(LogTemp, Warning, TEXT("RightArmStartCollider 충돌 비활성화"));
+    }
+}
+void AGN_Character::OnRightArmStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
+    bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && OtherActor != this) // 자신과의 충돌이 아닌 경우
+    {
+        
+        if (CurrentState == EEnemyState::Attacking) 
+        {
+            AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(OtherActor);
+            if (Player)
+            {
+                // 플레이어가 충돌 시작 시 데미지 처리
+                UE_LOG(LogTemp, Warning, TEXT("플레이어가 RightArmStart에 충돌했습니다."));
+                ApplyDamageToPlayer(OtherActor);
+            }
+
+        }
+        
+    }
+}
+// 데미지 적용 함수
+void AGN_Character::ApplyDamageToPlayer(AActor* Player)
+{
+    if (Player)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("플레이어가 충돌하여 데미지를 받았습니다."));
+
+        // 데미지 처리 예시 (플레이어가 AInfectedCityCharacter인 경우)
+        AInfectedCityCharacter* InfectedCityCharacter = Cast<AInfectedCityCharacter>(Player);
+        if (InfectedCityCharacter)
+        {
+            InfectedCityCharacter->TakeDamage(10.0f); // 데미지 10 적용
+        }
+    }
 }
 
 void AGN_Character::BeginPlay()
@@ -47,6 +143,7 @@ void AGN_Character::BeginPlay()
 void AGN_Character::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
 
     float Speed = GetVelocity().Size();
 
@@ -79,9 +176,7 @@ void AGN_Character::Tick(float DeltaTime)
         else if (PreAnimation == AttackAnimation)
         {
             float AnimDuration = PreAnimation->GetPlayLength();
-
-            GetMesh()->PlayAnimation(PreAnimation, false);
-
+            GetMesh()->PlayAnimation(PreAnimation, false);  // 어택 애니메이션 실행
             GetWorldTimerManager().SetTimer(DeadAnimTimerHandle, this, &AGN_Character::AttackEnd, AnimDuration, false);
         }
         else
@@ -97,12 +192,12 @@ void AGN_Character::Tick(float DeltaTime)
         if (Player)
         {
             float Distance = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
-            UE_LOG(LogTemp, Warning, TEXT("추적 중... 남은 거리: %f"), Distance);
+            //UE_LOG(LogTemp, Warning, TEXT("추적 중... 남은 거리: %f"), Distance);
 
             // 공격 범위 내에 들어오면 공격 실행
             if (Distance <= AttackRange)
             {
-                UE_LOG(LogTemp, Warning, TEXT("공격 범위에 도달! 공격 시작!"));
+                //UE_LOG(LogTemp, Warning, TEXT("공격 범위에 도달! 공격 시작!"));
                 Attack();
                 return;  // 공격 후 이동을 중단
             }
@@ -110,7 +205,7 @@ void AGN_Character::Tick(float DeltaTime)
             // 플레이어를 놓친 경우 순찰로 복귀
             if (Distance > 2000.0f)
             {
-                UE_LOG(LogTemp, Warning, TEXT("플레이어가 범위를 벗어남. 3초 후 다시 확인."));
+                //UE_LOG(LogTemp, Warning, TEXT("플레이어가 범위를 벗어남. 3초 후 다시 확인."));
                 GetWorld()->GetTimerManager().SetTimer(
                     PatrolTimerHandle,
                     this,
@@ -248,6 +343,8 @@ void AGN_Character::Attack()
     CurrentState = EEnemyState::Attacking;
     AIController->RemovePatrolling();
 
+    
+
     GetWorld()->GetTimerManager().ClearTimer(PatrolTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(ScreamTimerHandle);
     //AttackAnimation
@@ -344,5 +441,6 @@ void AGN_Character::Dead()
 
 void AGN_Character::AttackEnd()
 {
+    
     CurrentState = EEnemyState::Chasing;
 }

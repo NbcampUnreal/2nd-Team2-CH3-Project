@@ -4,8 +4,12 @@
 #include "GameFramework/Character.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Animation/AnimMontage.h"
+#include "Components/BillboardComponent.h"
 #include "GN_Character.generated.h"
 
+class UBillboardComponent;
+class UBoxComponent;
+class AInfectedCityCharacter;
 class UOutlineComponent;
 
 UENUM(BlueprintType)
@@ -60,6 +64,12 @@ public:
     UPROPERTY(EditAnywhere, Category = "Animations")
     UAnimationAsset* ScreamAnimation;  // 비명 애니메이션 추가
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Billboards")
+    UBillboardComponent* RightArmStart;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Billboards")
+    UBillboardComponent* RightArmEnd;
+
 
     //체력 변수
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
@@ -85,6 +95,7 @@ public:
     void AttackEnd();
     class AGN_AIController* AIController;
 
+   
 private:
     UAnimationAsset* PreAnimation{ nullptr };
     UAnimationAsset* CurAnimation{ nullptr };
@@ -97,9 +108,37 @@ private:
     APawn* CurTarget{ nullptr };
     UFUNCTION()
     void OnSeePawn(APawn* Pawn);
+
 public:
     void EnableOutline(bool bEnable);
+   
+    // 오른팔 시작과 끝에 충돌을 처리할 박스 컴포넌트
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UBoxComponent* RightArmStartCollider;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UBoxComponent* RightArmEndCollider;
+
+    // 충돌이 시작될 때 호출되는 함수
+    UFUNCTION()
+    void OnRightArmStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
+                                UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 
+                                bool bFromSweep, const FHitResult& SweepResult);
+
+
+   
+
+    UFUNCTION()
+    void EnableRightArmCollision();
+
+    UFUNCTION()
+    void DisableRightArmCollision();
+    // 플레이어에게 데미지를 적용하는 함수
+    void ApplyDamageToPlayer(AActor* Player);
+    virtual void OnNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
+    virtual void OnNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
 private:
     UPROPERTY(VisibleAnywhere, Category = "Effects")
     UOutlineComponent* OutlineComponent;
+
 };
