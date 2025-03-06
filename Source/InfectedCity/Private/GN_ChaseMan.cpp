@@ -2,12 +2,16 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "AIController.h"
+#include "GN_AIController.h"
 #include "Engine/Engine.h"
 
 AGN_ChaseMan::AGN_ChaseMan()
 {
     PrimaryActorTick.bCanEverTick = true;
     bIsAttacking = false;
+
+    AIControllerClass = AGN_AIController::StaticClass();
+    AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     CurrentHealth = MaxHealth;
 }
