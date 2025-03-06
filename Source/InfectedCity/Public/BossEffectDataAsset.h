@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "NiagaraSystem.h"
 #include "BossEffectDataAsset.generated.h"
 
 UCLASS()
@@ -15,4 +16,7 @@ public:
 
     UPROPERTY(EditAnywhere, Category = "Sounds")
     TMap<FName, USoundBase*> SoundMap;
+
+    UPROPERTY(EditAnywhere, Category = "Effects")
+    TMap<FName, UNiagaraSystem*> NiagaraEffectMap;
 };

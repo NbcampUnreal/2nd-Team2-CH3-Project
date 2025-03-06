@@ -20,14 +20,24 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
-    UPROPERTY(EditAnywhere, Category = "Boss")
+    UPROPERTY(EditAnywhere, Category = "BossSphere")
     class UStaticMeshComponent* MeshComponent;
+
+    UMaterialInstanceDynamic* DynMaterialInstance;
+
+    UPROPERTY(EditAnywhere, Category = "BossSphere")
+    class USphereComponent* SphereCollider;
+
 
     void OnPatternChanged(EBossPattern NewPattern) override;
 
     void SetBoss(class ABoss* InitialBoss, int32 InitialUniqueId, float InitialAngle, float* InitialOrbitSpeed, float* InitialOrbitRadius);
 
     void IdleAnimation(float DeltaTime);
+
+    void EnableTick();
+
+    void CustomCollisionCheck();
 private:
     class ABoss*    Boss{ nullptr };
 
@@ -39,7 +49,7 @@ private:
 
     FTransform      LocalTransform;
     FTransform      IdleWorldTransform;
-
+    FTimerHandle    EnableTimerHandle;
 
 private: /* Parttern Member */
 
@@ -50,15 +60,22 @@ private: /* Parttern Member */
     float           PatternDuration{ 0.f };
 
     bool            bWarningFinished{ false };
+    bool            bPatternFinished{ false };
+
+    bool            bFinishedLock{ false };
     FVector         OriginalLocation{};
+
     void HeavyCrash(float DeltaTime);
 
 private: /* Move Member */
+
     bool            bMoveToChange{ false };
     float           AccMoveTime{ 0.f };
     float           MoveInSecond{ 0.f };
     FVector         TargetPoint;
     FVector         MoveStartPoint;
+
     void TargetToMove(float DeltaTime);
     void InitializeAfterMoveDone();
+    
 };

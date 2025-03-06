@@ -52,6 +52,31 @@ void ABoss::Tick(float DeltaTime)
     {
         IdleAnimation(DeltaTime);
     }
+    else if (CurrentPattern == EBossPattern::Lock)
+    {
+        if (MoveDoneCount >= NumSpheres)
+        {
+            MoveDoneCount = 0;
+
+            CurrentPattern = EBossPattern::Idle;
+            NotifyObservers();
+        }
+    }
+    else if (CurrentPattern == EBossPattern::HeavyCrash)
+    {
+        /* 구체를 따로 부술수 있게 하면 카운트는 다르게 재야됨 */
+        if (MoveDoneCount >= NumSpheres)
+        {
+            MoveDoneCount = 0;
+
+            CurrentPattern = EBossPattern::Lock;
+            NotifyObservers();
+        }
+    }
+    else if (CurrentPattern == EBossPattern::Beam)
+    {
+        BeamAnimation(DeltaTime);
+    }
 }
 
 void ABoss::SpawnSpheres()
@@ -101,9 +126,19 @@ void ABoss::NotifyObservers()
 
 void ABoss::ChangePattern()
 {
-    CurrentPattern = EBossPattern::HeavyCrash;;
-    NotifyObservers();
+    CurrentPattern = EBossPattern::Beam;
 
+    /* 랜덤으로 패턴잡히면 초기 세팅해줘야됨 */
+    if (CurrentPattern == EBossPattern::Beam)
+    {
+        BeamAxisAccTime = 0.f;
+        BeamAxisDuration = 1.f;
+
+        BeamStartAxis = RandomRotationAxis;
+    }
+
+    NotifyObservers();
+    bChangePattern = false;
 }
 
 void ABoss::IdleAnimation(float DeltaTime)
@@ -130,4 +165,21 @@ void ABoss::IdleAnimation(float DeltaTime)
     float DeltaRotation = OribitSpeed * DeltaTime;
 
     Transform.ConcatenateRotation(FQuat(RandomRotationAxis, FMath::DegreesToRadians(DeltaRotation)));
+}
+
+void ABoss::BeamAnimation(float DeltaTime)
+{
+    BeamAxisAccTime += DeltaTime;
+
+    float Alpha = FMath::Clamp(BeamAxisAccTime / BeamAxisDuration, 0.0f, 1.0f);
+
+    RandomRotationAxis = FVector((1 - Alpha) * BeamStartAxis.X, (1 - Alpha) * BeamStartAxis.Y, 1.f);
+
+    float DeltaRotation = OribitSpeed * DeltaTime;
+
+    Transform.ConcatenateRotation(FQuat(RandomRotationAxis, FMath::DegreesToRadians(DeltaRotation)));
+    if (Alpha >= 1.f)
+    {
+
+    }
 }

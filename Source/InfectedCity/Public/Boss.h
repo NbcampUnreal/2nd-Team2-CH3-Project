@@ -60,13 +60,22 @@ public:
 
     FTransform Transform;
 
-    FVector RandomRotationAxis;
-    float AxisChangeTime;
-    float CurrentAxisTime;
-    
     bool bChangePattern{ false };
     int32 MoveDoneCount{ 0 };
     FTimerHandle PatternTimerHandle;
-private:
+
+private: /* Beam Member */
+    float BeamAxisAccTime;
+    float BeamAxisDuration;
+
+    FVector BeamStartAxis;
+    void BeamAnimation(float DeltaTime);
+
+private: /* Idle Member */
+    float AxisChangeTime;
+    float CurrentAxisTime;
+
+    FVector RandomRotationAxis;
+
     void IdleAnimation(float DeltaTime);
 };

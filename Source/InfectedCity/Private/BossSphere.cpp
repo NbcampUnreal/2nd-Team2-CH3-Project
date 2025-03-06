@@ -1,6 +1,7 @@
 #include "BossSphere.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h" 
 #include "BossEffectManager.h"
 #include "Boss.h"
@@ -12,26 +13,52 @@ ABossSphere::ABossSphere()
     MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
     RootComponent = MeshComponent;
 
+    SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollider"));
+    SphereCollider->SetSphereRadius(100.0f);
+    SphereCollider->SetCollisionProfileName(TEXT("Trigger"));
+
     LocalTransform = FTransform::Identity;
 }
 
 void ABossSphere::BeginPlay()
 {
     Super::BeginPlay();
-    UE_LOG(LogTemp, Warning, TEXT("ABossSphere Spawned!"));
+
+    /* 디버그 */
+    SphereCollider->SetHiddenInGame(false);
+
+    if (MeshComponent)
+    {
+        DynMaterialInstance = MeshComponent->CreateAndSetMaterialInstanceDynamic(0);
+    }
 }
 
 void ABossSphere::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (Boss == nullptr) return;
+    if (Boss == nullptr || bFinishedLock == true) return;
 
     IdleWorldTransform = LocalTransform * Boss->Transform;
 
     if (Boss->CurrentPattern == EBossPattern::Idle)
     {
         IdleAnimation(DeltaTime);
+    }
+    else if (Boss->CurrentPattern == EBossPattern::Lock)
+    {
+        if (bMoveToChange == true)
+        {
+            TargetPoint = IdleWorldTransform.GetLocation();
+            TargetToMove(DeltaTime);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Lockon Player ! ID : %d"), UniqueId);
+
+            bFinishedLock = true;
+            Boss->MoveDoneCount++;
+        }
     }
     else if (Boss->CurrentPattern == EBossPattern::HeavyCrash)
     {
@@ -44,14 +71,31 @@ void ABossSphere::Tick(float DeltaTime)
             HeavyCrash(DeltaTime);
         }
     }
-
+    else if (Boss->CurrentPattern == EBossPattern::Beam)
+    {
+        IdleAnimation(DeltaTime);
+    }
 }
 
 void ABossSphere::OnPatternChanged(EBossPattern NewPattern)
 {
     UE_LOG(LogTemp, Warning, TEXT("ABossSphere pattern change: %d"), (int32)NewPattern);
 
-    if (NewPattern == EBossPattern::HeavyCrash)
+    if (NewPattern == EBossPattern::Idle)
+    {
+        bFinishedLock = false;
+    }
+    else if (NewPattern == EBossPattern::Lock)
+    {
+        bFinishedLock = false;
+        bMoveToChange = true;
+
+        AccMoveTime = 0.f;
+        MoveInSecond = 1.f;
+
+        MoveStartPoint = GetActorLocation();
+    }
+    else if (NewPattern == EBossPattern::HeavyCrash)
     {
         FVector BossLocation = Boss->Transform.GetLocation();
         
@@ -61,15 +105,44 @@ void ABossSphere::OnPatternChanged(EBossPattern NewPattern)
         bMoveToChange = true;
 
         AccMoveTime = 0.f;
-        MoveInSecond = 2.f;
+        MoveInSecond = 1.f;
 
         MoveStartPoint = GetActorLocation();
+    }
+    else if (NewPattern == EBossPattern::Beam)
+    {
+        
     }
 }
 
 void ABossSphere::IdleAnimation(float DeltaTime)
 {
     SetActorTransform(IdleWorldTransform);
+}
+
+void ABossSphere::EnableTick()
+{
+    SetActorTickEnabled(true);
+}
+
+void ABossSphere::CustomCollisionCheck()
+{
+    if (Boss->CurrentPattern == EBossPattern::HeavyCrash)
+    {
+        if (APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0))
+        {
+            FVector PlayerLocation = PlayerPawn->GetActorLocation();
+            PlayerLocation -= FVector(0, 0, PlayerPawn->GetSimpleCollisionHalfHeight());
+
+            float SphereRadius = SphereCollider->GetUnscaledSphereRadius();
+            float Distance = FVector::Dist(GetActorLocation(), PlayerLocation);
+
+            if (Distance <= SphereRadius)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Player Collision! Distance: %f, Radius: %f"), Distance, SphereRadius);
+            }
+        }
+    }
 }
 
 void ABossSphere::TargetToMove(float DeltaTime)
@@ -81,8 +154,6 @@ void ABossSphere::TargetToMove(float DeltaTime)
 
     if (Alpha >= 1.f)
     {
-        Boss->MoveDoneCount++; /* 쓸지말지 고민 */
-
         bMoveToChange   = false;
         AccMoveTime     = 0.f;
         MoveInSecond    = 0.f;
@@ -90,6 +161,12 @@ void ABossSphere::TargetToMove(float DeltaTime)
         TargetPoint     = FVector::ZeroVector;
         MoveStartPoint  = FVector::ZeroVector;
 
+        if (bPatternFinished == true)
+        {
+            Boss->MoveDoneCount++;
+            bFinishedLock = true;
+            bPatternFinished = false;
+        }
         InitializeAfterMoveDone();
     }
 }
@@ -112,7 +189,6 @@ void ABossSphere::InitializeAfterMoveDone()
 
 void ABossSphere::HeavyCrash(float DeltaTime)
 {
-    
     if (bWarningFinished == false)
     {
         WarningAccTime += DeltaTime;
@@ -126,6 +202,9 @@ void ABossSphere::HeavyCrash(float DeltaTime)
         ShakeOffset.Z = FMath::Sin(GetWorld()->TimeSeconds * ShakeSpeed) * ShakeIntensity;
 
         SetActorLocation(OriginalLocation + ShakeOffset);
+        
+        float WarningFactor = FMath::Clamp(WarningAccTime / WarningDuration, 0.0f, 1.0f);
+        DynMaterialInstance->SetVectorParameterValue(TEXT("Factor"), FVector(1.f, 1.f - WarningFactor, 1.f - WarningFactor));
 
         if (WarningAccTime > WarningDuration - 0.3f && TargetPoint == FVector::ZeroVector)
         {
@@ -134,8 +213,6 @@ void ABossSphere::HeavyCrash(float DeltaTime)
                 FVector PlayerLocation = PlayerPawn->GetActorLocation();
                 PlayerLocation -= FVector(0, 0, PlayerPawn->GetSimpleCollisionHalfHeight());
                 TargetPoint = PlayerLocation;
-
-                UE_LOG(LogTemp, Warning, TEXT("Lockon Player ! ID : %d"), UniqueId);
             }
         }
 
@@ -154,11 +231,33 @@ void ABossSphere::HeavyCrash(float DeltaTime)
 
         SetActorLocation(FMath::Lerp(MoveStartPoint, TargetPoint, Alpha));
 
+        DynMaterialInstance->SetVectorParameterValue(TEXT("Factor"), FVector(1.f, Alpha, Alpha));
+
         if (Alpha >= 1.0f)
         {
+            /* 충돌 체크 */
+            CustomCollisionCheck();
+
             /* 이펙트 사운드 추가 */
-            /* 중복 발생 여기서 제어하던가 아니면 이펙트 메니저에서 세팅값 추가하던가 */
             UBossEffectManager::GetInstance()->PlaySound(GetWorld(), TEXT("HeavyCrash_Landing"), GetActorLocation());
+            UBossEffectManager::GetInstance()->PlayEffect(GetWorld(), TEXT("HeavyCrash_Landing"), GetActorLocation());
+            UBossEffectManager::GetInstance()->PlayEffect(GetWorld(), TEXT("HeavyCrash_LandingFog"), GetActorLocation());
+
+            /* 1초 딜레이 */
+            SetActorTickEnabled(false);
+            GetWorldTimerManager().SetTimer(EnableTimerHandle, this, &ABossSphere::EnableTick, 1.0f, false);
+
+            /* 원래 위치로 돌아가기 세팅 */
+            FVector BossLocation = Boss->Transform.GetLocation();
+            float OneSpcae = 300.f;
+            TargetPoint = { BossLocation.X - (OneSpcae * 2) + (UniqueId * OneSpcae), BossLocation.Y - 300.f, BossLocation.Z };
+            bMoveToChange = true;
+            AccMoveTime = 0.f;
+            MoveInSecond = 2.f;
+            MoveStartPoint = GetActorLocation();
+
+            /* 패턴 끝났다 */
+            bPatternFinished = true;
         }
     }
 }

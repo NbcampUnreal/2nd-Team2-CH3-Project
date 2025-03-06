@@ -1,6 +1,7 @@
 #include "BossEffectManager.h"
 #include "BossEffectDataAsset.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 
 UBossEffectManager* UBossEffectManager::Instance = nullptr;
 
@@ -21,6 +22,7 @@ void UBossEffectManager::Initialize(UBossEffectDataAsset* DataAsset)
     {
         EffectMap = DataAsset->EffectMap;
         SoundMap = DataAsset->SoundMap;
+        NiagaraEffectMap = DataAsset->NiagaraEffectMap;
     }
 }
 
@@ -28,7 +30,6 @@ void UBossEffectManager::PlayEffect(UWorld* World, FName EffectName, FVector Loc
 {
     if (EffectMap.Contains(EffectName))
     {
-
         UGameplayStatics::SpawnEmitterAtLocation(World, EffectMap[EffectName], Location);
     }
 }
@@ -38,5 +39,13 @@ void UBossEffectManager::PlaySound(UWorld* World, FName SoundName, FVector Locat
     if (SoundMap.Contains(SoundName))
     {
         UGameplayStatics::PlaySoundAtLocation(World, SoundMap[SoundName], Location);
+    }
+}
+
+void UBossEffectManager::PlayNiagaraEffect(UWorld* World, FName EffectName, FVector Location)
+{
+    if (NiagaraEffectMap.Contains(EffectName))
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, NiagaraEffectMap[EffectName], Location);
     }
 }
