@@ -25,8 +25,6 @@ void UHUDWidget::NativeConstruct()
         PC->InputComponent->BindKey(EKeys::One, IE_Pressed, this, &UHUDWidget::OnKey1Pressed);
         PC->InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &UHUDWidget::OnKey2Pressed);
         PC->InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &UHUDWidget::OnKey3Pressed);
-        PC->InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &UHUDWidget::OnKey4Pressed);
-        PC->InputComponent->BindKey(EKeys::Five, IE_Pressed, this, &UHUDWidget::OnKey5Pressed);
     }
 
     ImageMap.Add(1, MaingunImage);
@@ -98,32 +96,46 @@ void UHUDWidget::StartProgressBar(int32 Key, float Duration)
 
 void UHUDWidget::OnKey4Pressed()
 {
+    UE_LOG(LogTemp, Warning, TEXT("4번 키가 눌렸습니다!"));
+
     AInfectedCityCharacter* Player = GetPlayerCharacter();
-    if (!Player) return;
-
-    int32 BandageCount = Player->Inventory[TEXT("Bandage")];
-
-    if (BandageCount > 0)
+    if (!Player)
     {
+        UE_LOG(LogTemp, Error, TEXT("플레이어 캐릭터를 찾을 수 없습니다!"));
+        return;
+    }
+
+    int32* BandageCount = Player->Inventory.Find(ABandage::StaticClass());
+    if (BandageCount && *BandageCount > 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("붕대 사용 시작. 현재 개수: %d"), *BandageCount);
         StartProgressBar(4, 5.0f);
-        Player->UseItem(TEXT("Bandage"));
-        UpdateBandageCount(BandageCount - 1);
+        Player->UseItem(ABandage::StaticClass());
+        UpdateBandageCount(*BandageCount - 1);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("붕대가 없습니다!"));
     }
 }
+
 
 void UHUDWidget::OnKey5Pressed()
 {
     AInfectedCityCharacter* Player = GetPlayerCharacter();
-    if (!Player) return;
-
-    int32 PillCount = Player->Inventory[TEXT("Pill")];
-
-    if (PillCount > 0)
+    if (!Player)
     {
-        StartProgressBar(5, 10.0f);
-        Player->UseItem(TEXT("Pill"));
-
-        UpdatePillCount(PillCount - 1);
+        return;
+    }
+    int32* PillCount = Player->Inventory.Find(APill::StaticClass());
+    if (PillCount && *PillCount > 0)
+    {
+        StartProgressBar(5, 3.0f);
+        Player->UseItem(APill::StaticClass());
+        UpdatePillCount(*PillCount - 1);
+    }
+    else
+    {
     }
 }
 

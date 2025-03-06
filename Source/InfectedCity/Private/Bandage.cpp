@@ -8,14 +8,14 @@ ABandage::ABandage()
     ItemType = "Bandage";
 }
 
-void ABandage::UseItem_Implementation(AActor* User)
+void ABandage::UseItem(AActor* User)
 {
-    
     AInfectedCityCharacter* Player = Cast<AInfectedCityCharacter>(User);
     if (Player)
     {
-        Player->CurrentHP = FMath::Clamp(Player->CurrentHP + 10.0f, 0, Player->MaxHP);
+        float HealAmount = 20.0f;
+        float CurrentHP = Player->GetCurrentHP();
+        Player->UpdateHP(CurrentHP + HealAmount);
     }
-
-    
 }
+

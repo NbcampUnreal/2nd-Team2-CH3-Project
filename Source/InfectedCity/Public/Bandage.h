@@ -11,7 +11,8 @@ class INFECTEDCITY_API ABandage : public ABaseItem
 
 public:
     ABandage();
-   
-    // ������ ��� (HP ȸ��)
-    virtual void UseItem_Implementation(AActor* User) override;
+
+    void UseItem(AActor* User);
+
+    float GetCurrentHP();
 };

@@ -17,4 +17,7 @@ class INFECTEDCITY_API IItemBase
 public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item")
     void UseItem(AActor* User);
+
+    FString ItemType;
+
 };

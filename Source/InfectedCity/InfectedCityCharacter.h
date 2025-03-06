@@ -2,7 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "ItemBase.h"
+#include "BaseItem.h"
+#include "Bandage.h"
+#include "Pill.h"
 #include "InfectedCityCharacter.generated.h"
 
 class UHUDWidget;
@@ -23,12 +25,11 @@ class AInfectedCityCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-
 	AInfectedCityCharacter();
 
 	void DrainStamina();
 	void RecoverStamina();
-	void PickupItem();
+
 	AEnemyEffectManager* EnemyEffectManager{ nullptr };
 	int32 BandageCount{ 0 };
 	int32 PillCount{ 0 };
@@ -79,6 +80,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupItemAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* UseItemAction;
+
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float ZoomedFOV = 360.0f;
 
@@ -96,11 +100,16 @@ public:
 	UInputMappingContext* DefaultMappingContext;
 	virtual void BeginPlay() override;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* HitAnimMontage;
-public:
+
 	void UpdateAmmoBar();
+
+	void OnKey4Pressed();
+	void OnKey5Pressed();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TMap<TSubclassOf<ABaseItem>, int32> Inventory;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	AWeaponBase* EquippedWeapon;  // ������ ����
@@ -120,12 +129,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI)
 	TSubclassOf<UHUDWidget> HUDWidgetClass;
 
-	// Zoomed view�� �⺻ Zoom �Ÿ�
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float DefaultArmLength = 600.0f;  // �⺻ �������� ���� (��: 400)
+	float DefaultArmLength = 600.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float ZoomedArmLength = 600.0f;  // ���� �� �������� ���� (��: 600)
+	float ZoomedArmLength = 600.0f;
 
 	virtual void Tick(float DeltaTime) override;
 	void Reload();
@@ -133,8 +141,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* FlashlightAction;
 
-
-	// �÷��ö���Ʈ ��� �Լ�
 	void ToggleFlashlight();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -149,20 +155,15 @@ public:
 	void StartCrouching();
 	void StopCrouching();
 
-	
-	// 무기 주울 ?�의 ?�작
 	void PickupWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	bool BHASRifle() const;
 
-
-	// �㸮 ���� ������ ���� ���� (0 = �� �ִ� ����, 1 = ������ ���� ����)
 	float CrouchBlendFactor = 0.0f;
 	
 	AWeaponBase* FindNearestWeapon();
 
-	// **���� �� �� �߻� ���**
 	void StartAiming();
 	void StopAiming();
 	void StartShoot();
@@ -189,24 +190,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateReloadText(bool bIsReloading);
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TMap<FName, int32> Inventory;
-
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AddItem(TSubclassOf<ABaseItem> ItemClass, int32 Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddItem(FName ItemClass, int32 Amount);
-
+	void UseItem(TSubclassOf<ABaseItem> ItemClass);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void UseItem(FName ItemClass);
+	void UseBandage();
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void UsePill();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	float CurrentHP;
+	void PickupItem();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	float MaxHP;
+	TSubclassOf<ABaseItem> FindBandageClass();
+	TSubclassOf<ABaseItem> FindPillClass();
 
 	float Stamina;
 	const float MaxStamina = 100.0f;
@@ -217,6 +216,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void UpdateHP(float NewHP);
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	float GetCurrentHP() const { return Health; }
+
 	UFUNCTION(BlueprintCallable, Category = "RideSystem")
 	void OnRideAvailable();
 
@@ -225,6 +227,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "State")
 	void DeathEvent();
+
+	void FinishBandageUse();
+
+	void FinishPillUse();
 
 private:
 	float LastFireTime = 0.0f;
@@ -235,6 +241,8 @@ private:
 	bool bCanRun = true;
 	FTimerHandle DeathAnimTimerHandle;
 	FTimerHandle StaminaTimerHandle;
+	FTimerHandle BandageTimerHandle;
+	FTimerHandle PillTimerHandle;
 
 public:
 		// 플레이어의 현재 체력과 최대 체력
