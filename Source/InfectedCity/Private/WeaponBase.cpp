@@ -10,9 +10,30 @@
 
 AWeaponBase::AWeaponBase()
 {
+    // WeaponMesh 생성
     WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-    RootComponent = WeaponMesh;
-    // �⺻ �� ����
+    RootComponent = WeaponMesh;  // 루트 컴포넌트를 WeaponMesh로 설정
+
+    // 스포트라이트 생성
+    SpotLight1 = CreateDefaultSubobject<USpotLightComponent>(TEXT("SpotLight1"));
+    SpotLight2 = CreateDefaultSubobject<USpotLightComponent>(TEXT("SpotLight2"));
+
+    // 스포트라이트를 WeaponMesh에 연결 (자식으로 설정)
+    SpotLight1->SetupAttachment(WeaponMesh);  // WeaponMesh에 어태치
+    SpotLight2->SetupAttachment(WeaponMesh);  // WeaponMesh에 어태치
+
+    // 스포트라이트 초기화
+    SpotLight1->SetVisibility(false);  // 초기 상태에서 꺼짐
+    SpotLight2->SetVisibility(false);  // 초기 상태에서 꺼짐
+    SpotLight1->SetIntensity(1000.f);  // 스포트라이트 강도 설정
+    SpotLight2->SetIntensity(1000.f);  // 스포트라이트 강도 설정
+    SpotLight1->SetAttenuationRadius(500.f);  // 거리 설정
+    SpotLight2->SetAttenuationRadius(500.f);  // 거리 설정
+   
+
+
+    
+
     WeaponCollision = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponCollision"));
 
     MaxAmmo = 30;  // ���÷� �⺻ ź�� ���� 30���� ����
@@ -157,4 +178,12 @@ float AWeaponBase::GetAmmoRatio() const
         return (float)CurrentAmmo / (float)MaxAmmo;
     }
     return 0.f;  // Ammo�� 0�� ��� 0 ��ȯ
+}
+void AWeaponBase::ToggleSpotlights(bool bIsEnabled)
+{
+    if (SpotLight1 && SpotLight2)
+    {
+        SpotLight1->SetVisibility(bIsEnabled);
+        SpotLight2->SetVisibility(bIsEnabled);
+    }
 }

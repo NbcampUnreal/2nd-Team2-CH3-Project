@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Bullet.h" 
 #include "HUDWidget.h"
+#include "Components/SpotLightComponent.h"
 #include "WeaponBase.generated.h"
 
 class UStaticMeshComponent;
@@ -11,6 +12,8 @@ class USphereComponent;
 class USoundBase;
 class UParticleSystem;
 class UAnimMontage;
+
+
 
 UCLASS()
 class INFECTEDCITY_API AWeaponBase : public AActor
@@ -45,7 +48,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
     USkeletalMeshComponent* WeaponMesh;
-    // �浹 ������Ʈ
+    USkeletalMeshComponent* GetMesh() const { return WeaponMesh; }
     UPROPERTY(VisibleAnywhere)
     USphereComponent* WeaponCollision;
 
@@ -81,4 +84,13 @@ public:
     void CompleteReload();
 
     float GetAmmoRatio() const;
+
+    UPROPERTY(VisibleAnywhere)
+    USpotLightComponent* SpotLight1;
+
+    UPROPERTY(VisibleAnywhere)
+    USpotLightComponent* SpotLight2;
+
+    // 스포트라이트를 켜고 끄는 함수
+    void ToggleSpotlights(bool bIsEnabled);
 };

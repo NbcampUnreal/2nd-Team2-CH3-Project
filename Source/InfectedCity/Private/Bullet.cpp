@@ -3,6 +3,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"  
+#include "NiagaraFunctionLibrary.h"  
 #include "DrawDebugHelpers.h"  // 디버깅용
 #include <GN_Character.h>
 
@@ -51,6 +53,7 @@ void ABullet::InitializeBullet(FVector InDirection, float InSpeed)
 
 void ABullet::MoveBullet(float DeltaTime)
 {
+
     FVector CurrentLocation = GetActorLocation();  // 현재 위치
     FVector NewLocation = CurrentLocation + (Direction * Speed * DeltaTime);  // 새로운 위치
 
@@ -103,6 +106,15 @@ void ABullet::MoveBullet(float DeltaTime)
                 if (Enemy->CurrentHealth <= 0)
                 {
                     Enemy->Die();
+                }
+                if (EnemyHitNiagaraEffect)
+                {
+                    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                        GetWorld(),
+                        EnemyHitNiagaraEffect,  // 적 맞았을 때 사용할 나이아가라 이펙트
+                        HitResult.ImpactPoint,  // 충돌 지점에서 이펙트 생성
+                        HitResult.ImpactNormal.Rotation()  // 충돌 표면의 회전값을 이펙트에 적용
+                    );
                 }
             }
         }

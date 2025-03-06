@@ -15,6 +15,7 @@ class AWeaponBase;
 class ABullet;
 class UPointLightComponent;
 class AEnemyEffectManager;
+class AFlashLight;
 
 UCLASS(config = Game)
 class AInfectedCityCharacter : public ACharacter
@@ -50,6 +51,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* PickupWeaponAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* PickupFlashlightAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* MoveAction;
@@ -91,7 +95,8 @@ public:
 	virtual void BeginPlay() override;
 
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* HitAnimMontage;
 public:
 	void UpdateAmmoBar();
 
@@ -152,7 +157,7 @@ public:
 
 	// �㸮 ���� ������ ���� ���� (0 = �� �ִ� ����, 1 = ������ ���� ����)
 	float CrouchBlendFactor = 0.0f;
-
+	
 	AWeaponBase* FindNearestWeapon();
 
 	// **���� �� �� �߻� ���**
@@ -203,8 +208,9 @@ public:
 
 	float Stamina;
 	const float MaxStamina = 100.0f;
-
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Death", meta = (AllowPrivateAccess = "true"))
+	class UAnimSequence* DeathAnimSequence;  
 private:
 	float LastFireTime = 0.0f;  // ������ �߻� �ð�
 	float FireRate = 0.1f;      // �߻� �ӵ� (�� ����)
@@ -212,7 +218,28 @@ private:
 	const float StaminaDrainRate = 20.0f;  // �ʴ� ���ҷ�
 	const float StaminaRecoveryRate = 10.0f; // �ʴ� ȸ����
 	bool bCanRun = true;
-
+	FTimerHandle DeathAnimTimerHandle;
 	FTimerHandle StaminaTimerHandle;
+
+public:
+		// 플레이어의 현재 체력과 최대 체력
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+		float Health;
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+		float MaxHealth;
+
+		// 체력 변경 함수
+		virtual float TakeDamage(float DamageAmount);
+
+		void Die();
+
+		bool bIsDead;
+		
+		void HandleDeath();
+		bool bIsPlayingHitAnim;
+
+		// 애니메이션 상태 리셋 함수
+		void ResetHitAnimState();
 
 };

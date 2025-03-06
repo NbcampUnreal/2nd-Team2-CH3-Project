@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"  
+#include "NiagaraFunctionLibrary.h" 
 #include "Components/SphereComponent.h"  
 #include "Bullet.generated.h"  
 
@@ -21,10 +23,12 @@ public:
 public:
     // Tick 함수, 매 프레임마다 호출됨
     virtual void Tick(float DeltaTime) override;
-
+    UPROPERTY(EditDefaultsOnly, Category = "Effects")
+    UNiagaraSystem* EnemyHitNiagaraEffect;
 
     // 총알의 이동 방향과 속도 설정
     void InitializeBullet(FVector InDirection, float InSpeed);
+
 
     // 총알 이동 함수
     void MoveBullet(float DeltaTime);
