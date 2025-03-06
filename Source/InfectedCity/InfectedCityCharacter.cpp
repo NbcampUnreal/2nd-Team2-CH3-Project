@@ -81,6 +81,11 @@ void AInfectedCityCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		PC->SetMouseLocation(1920/2, 1080/2);
+	}
 }
 void AInfectedCityCharacter::NotifyControllerChanged()
 {
