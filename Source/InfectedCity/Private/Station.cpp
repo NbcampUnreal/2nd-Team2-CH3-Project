@@ -46,12 +46,20 @@ void AStation::Tick(float DeltaTime)
     if (OverlappingPawn)
     {
         APlayerController* PlayerController = Cast<APlayerController>(OverlappingPawn->GetController());
-        if (PlayerController && PlayerController->WasInputKeyJustPressed(EKeys::F))
+        if (PlayerController)
         {
-            HandleInput();
+            if (PlayerController->WasInputKeyJustPressed(EKeys::F))
+            {
+                UE_LOG(LogTemp, Log, TEXT("F key pressed"));
+                HandleInput();
+            }
+            else
+            {
+            }
         }
     }
 }
+
 
 void AStation::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -69,27 +77,36 @@ void AStation::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 void AStation::HandleInput()
 {
     AInfectedCityCharacter* PlayerCharacter = Cast<AInfectedCityCharacter>(OverlappingPawn);
-    if (PlayerCharacter && PlayerCharacter->GasCount > 0)
+    if (PlayerCharacter)
     {
-        PlayerCharacter->GasCount--;
-        StationCount++;
-        TextComponent->SetText(FText::AsNumber(StationCount));
+        UE_LOG(LogTemp, Log, TEXT("Current GasCount: %d"), PlayerCharacter->GasCount);
+        if (PlayerCharacter->GasCount > 0)
+        {
+            PlayerCharacter->GasCount--;
+            StationCount++;
+            TextComponent->SetText(FText::AsNumber(StationCount));
 
-        if (StationCount >= 5)
-        {
-            CanOut = true;
+            if (StationCount >= 5)
+            {
+                CanOut = true;
+            }
+
+            if (PlayerCharacter->HUDWidget)
+            {
+                UHUDWidget* HUDWidget = Cast<UHUDWidget>(PlayerCharacter->HUDWidget);
+                if (HUDWidget)
+                {
+                    HUDWidget->UpdateGasCount(PlayerCharacter->GasCount);
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Error, TEXT("HUDWidget is nullptr in HandleInput!"));
+                }
+            }
         }
-        if (PlayerCharacter->HUDWidget)
+        else
         {
-            UHUDWidget* HUDWidget = Cast<UHUDWidget>(PlayerCharacter->HUDWidget);
-            if (HUDWidget)
-            {
-                HUDWidget->UpdateGasCount(PlayerCharacter->GasCount);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("HUDWidget is nullptr in HandleInput!"));
-            }
+            UE_LOG(LogTemp, Warning, TEXT("GasCount is 0 or less. No action performed."));
         }
     }
 }
