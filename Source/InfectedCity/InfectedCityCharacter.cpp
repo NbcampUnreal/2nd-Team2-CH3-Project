@@ -75,9 +75,7 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	Health = MaxHealth; // 체력 초기화
 	DeathAnimTimerHandle = FTimerHandle();
 
-	MaxHP = 100.0f;
-	CurrentHP = MaxHP;
-	
+	GasCount = 0;
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
 {
@@ -162,10 +160,140 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		EnhancedInputComponent->BindAction(PickupItemAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::PickupItem);
 
-		
+		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::UseBandage);
+		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::UsePill);
+
+
 	}
 
 }
+
+void AInfectedCityCharacter::UseBandage()
+{
+	TSubclassOf<ABaseItem> BandageClass = FindBandageClass();
+	if (!BandageClass || !Inventory.Contains(BandageClass) || Inventory[BandageClass] <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Bandages available"));
+		return;
+	}
+
+	float BandageUseTime = 5.0f; // 붕대 사용 시간
+
+	if (HUDWidget)
+	{
+		HUDWidget->StartProgressBar(4, BandageUseTime);
+	}
+
+	// 5초 후에 체력을 회복하는 함수 실행
+	GetWorld()->GetTimerManager().SetTimer(BandageTimerHandle, this, &AInfectedCityCharacter::FinishBandageUse, BandageUseTime, false);
+}
+
+void AInfectedCityCharacter::FinishBandageUse()
+{
+	TSubclassOf<ABaseItem> BandageClass = FindBandageClass();
+	if (!BandageClass || !Inventory.Contains(BandageClass) || Inventory[BandageClass] <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("붕대 사용 실패 - 아이템 없음"));
+		return;
+	}
+
+	ABaseItem* BandageItem = Cast<ABaseItem>(BandageClass->GetDefaultObject());
+	if (BandageItem)
+	{
+		BandageItem->UseItem(this);
+
+		Inventory[BandageClass]--;
+		if (Inventory[BandageClass] <= 0)
+		{
+			Inventory.Remove(BandageClass);
+		}
+
+		if (HUDWidget)
+		{
+			HUDWidget->UpdateBandageCount(Inventory.Contains(BandageClass) ? Inventory[BandageClass] : 0);
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("붕대 사용 완료 - 체력 회복됨"));
+	}
+}
+
+
+
+void AInfectedCityCharacter::UsePill()
+{
+	TSubclassOf<ABaseItem> PillClass = FindPillClass();
+	if (!PillClass || !Inventory.Contains(PillClass) || Inventory[PillClass] <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Pills available"));
+		return;
+	}
+
+	float PillUseTime = 3.0f;
+
+	if (HUDWidget)
+	{
+		HUDWidget->StartProgressBar(5, PillUseTime);
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(PillTimerHandle, this, &AInfectedCityCharacter::FinishPillUse, PillUseTime, false);
+}
+
+void AInfectedCityCharacter::FinishPillUse()
+{
+	TSubclassOf<ABaseItem> PillClass = FindPillClass();
+	if (!PillClass || !Inventory.Contains(PillClass) || Inventory[PillClass] <= 0)
+	{
+		return;
+	}
+
+	ABaseItem* PillItem = Cast<ABaseItem>(PillClass->GetDefaultObject());
+	if (PillItem)
+	{
+		PillItem->UseItem(this);
+
+		Inventory[PillClass]--;
+		if (Inventory[PillClass] <= 0)
+		{
+			Inventory.Remove(PillClass);
+		}
+
+		if (HUDWidget)
+		{
+			HUDWidget->UpdatePillCount(Inventory.Contains(PillClass) ? Inventory[PillClass] : 0);
+		}
+	}
+}
+
+
+TSubclassOf<ABaseItem> AInfectedCityCharacter::FindBandageClass()
+{
+	for (const auto& Item : Inventory)
+	{
+		ABaseItem* ItemObject = Cast<ABaseItem>(Item.Key->GetDefaultObject());
+		if (ItemObject && ItemObject->GetItemType() == TEXT("Bandage"))
+		{
+			return Item.Key;
+		}
+	}
+	return nullptr;
+}
+
+
+TSubclassOf<ABaseItem> AInfectedCityCharacter::FindPillClass()
+{
+	for (const auto& Item : Inventory)
+	{
+		ABaseItem* ItemObject = Cast<ABaseItem>(Item.Key->GetDefaultObject());
+		if (ItemObject && ItemObject->GetItemType() == TEXT("Pill"))  // FName 비교
+		{
+			return Item.Key;
+		}
+	}
+	return nullptr;
+}
+
+
+
 
 void AInfectedCityCharacter::StartAiming()
 {
@@ -535,8 +663,11 @@ void AInfectedCityCharacter::UpdateReloadText(bool bIsReloading)
 	}
 }
 
-void AInfectedCityCharacter::AddItem(FName ItemClass, int32 Amount)
+void AInfectedCityCharacter::AddItem(TSubclassOf<ABaseItem> ItemClass, int32 Amount)
 {
+	if (!ItemClass) {
+		return;
+	}
 	// 기존 개수 확인 후 추가
 	if (Inventory.Contains(ItemClass))
 	{
@@ -548,22 +679,31 @@ void AInfectedCityCharacter::AddItem(FName ItemClass, int32 Amount)
 	}
 }
 
-void AInfectedCityCharacter::UseItem(FName ItemClass)
+void AInfectedCityCharacter::UseItem(TSubclassOf<ABaseItem> ItemClass)
 {
-	if (ItemClass == "Bandage")
+	if (!ItemClass || !Inventory.Contains(ItemClass) || Inventory[ItemClass] <= 0)
 	{
-		Health += 10;
-		/* HP */
-		Inventory["Bandage"]--;
+		return;
 	}
-	else if (ItemClass == "Pill")
+
+	ABaseItem* Item = Cast<ABaseItem>(ItemClass->GetDefaultObject());
+	if (Item && Item->Implements<UItemBase>())
 	{
-		Stamina += 10;
-		/* 스테미나 */
-		Inventory["Pill"]--;
+		IItemBase::Execute_UseItem(Item, this);
+		Inventory[ItemClass]--;
+		if (Inventory[ItemClass] <= 0)
+		{
+			Inventory.Remove(ItemClass);
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("아이템 사용 성공: %s 남은 개수: %d"), *ItemClass->GetName(), Inventory.Contains(ItemClass) ? Inventory[ItemClass] : 0);
 	}
-	
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Item이 UItemBase 인터페이스를 구현하지 않았습니다!"));
+	}
 }
+
 
 void AInfectedCityCharacter::DrainStamina()
 {
@@ -658,31 +798,33 @@ void AInfectedCityCharacter::RecoverStamina()
 
 void AInfectedCityCharacter::PickupItem()
 {
-	
 	if (ABaseItem* CurrentItem = EnemyEffectManager->GetCurrentItem())
 	{
-		if (CurrentItem->ItemType == "Bandage")
+		FName ItemType = CurrentItem->GetItemType();  // GetItemType()으로 아이템 타입 가져오기
+
+		if (ItemType == TEXT("Bandage"))
 		{
-			BandageCount++;
-			HUDWidget->UpdateBandageCount(BandageCount);
-			AddItem(TEXT("Bandage"), BandageCount);
+			AddItem(CurrentItem->GetClass(), 1);
+			HUDWidget->UpdateBandageCount(Inventory[CurrentItem->GetClass()]);
 		}
-		else if (CurrentItem->ItemType == "Pill")
+		else if (ItemType == TEXT("Pill"))
 		{
-			PillCount++;
-			HUDWidget->UpdatePillCount(PillCount);
-			AddItem(TEXT("Pill"), PillCount);
+			AddItem(CurrentItem->GetClass(), 1);
+			HUDWidget->UpdatePillCount(Inventory[CurrentItem->GetClass()]);
 		}
-		else if (CurrentItem->ItemType == "GasDrum")
+		else if (ItemType == TEXT("GasDrum"))
 		{
+			AddItem(CurrentItem->GetClass(), 1);
+			HUDWidget->UpdateGasCount(Inventory[CurrentItem->GetClass()]);
 			GasCount++;
-			HUDWidget->UpdateGasCount(GasCount);
+			UE_LOG(LogTemp, Log, TEXT("GasCount updated: %d"), GasCount);  // 로그 추가
 		}
-		
 
 		CurrentItem->DestroyItem();
 	}
 }
+
+
 
 float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 {
@@ -781,11 +923,11 @@ void AInfectedCityCharacter::HandleDeath()
 
 void AInfectedCityCharacter::UpdateHP(float NewHP)
 {
-	CurrentHP = FMath::Clamp(NewHP, 0.0f, MaxHP);
+	Health = FMath::Clamp(NewHP, 0.0f, MaxHealth);
 
 	if (HUDWidget)
 	{
-		HUDWidget->UpdateHPBar(CurrentHP / MaxHP);
+		HUDWidget->UpdateHPBar(Health / MaxHealth);
 	}
 }
 
@@ -823,3 +965,55 @@ void AInfectedCityCharacter::DeathEvent()
 		}
 	}
 }
+
+void AInfectedCityCharacter::OnKey4Pressed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("4번 키가 눌렸습니다!"));
+
+	TSubclassOf<ABaseItem> BandageClass = FindBandageClass();
+	if (!BandageClass || !Inventory.Contains(BandageClass) || Inventory[BandageClass] <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("붕대가 없습니다!"));
+		return;
+	}
+
+	int32* BandageCountPtr = Inventory.Find(BandageClass);  // 이름 변경
+	if (!BandageCountPtr) return;
+
+	if (HUDWidget)
+	{
+		HUDWidget->StartProgressBar(4, 5.0f);
+	}
+
+	UseItem(BandageClass);
+
+	*BandageCountPtr -= 1;
+	HUDWidget->UpdateBandageCount(*BandageCountPtr);
+}
+
+
+void AInfectedCityCharacter::OnKey5Pressed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("5번 키가 눌렸습니다!"));
+
+	TSubclassOf<ABaseItem> PillClass = FindPillClass();
+	if (!PillClass || !Inventory.Contains(PillClass) || Inventory[PillClass] <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("알약이 없습니다!"));
+		return;
+	}
+
+	int32* PillCountPtr = Inventory.Find(PillClass);  // 이름 변경
+	if (!PillCountPtr) return;
+
+	if (HUDWidget)
+	{
+		HUDWidget->StartProgressBar(5, 7.0f);
+	}
+
+	UseItem(PillClass);
+
+	*PillCountPtr -= 1;
+	HUDWidget->UpdatePillCount(*PillCountPtr);
+}
+

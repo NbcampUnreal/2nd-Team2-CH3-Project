@@ -14,7 +14,7 @@ class INFECTEDCITY_API APill : public ABaseItem
 public:
     APill();
 
-    virtual void UseItem_Implementation(AActor* User) override;
+    virtual void UseItem(AActor* User);
 
     void ResetStamina(AInfectedCityCharacter* Player);
 

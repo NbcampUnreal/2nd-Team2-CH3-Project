@@ -90,7 +90,7 @@ void ABaseItem::Tick(float DeltaTime)
 
 }
 
-void ABaseItem::UseItem_Implementation(AActor* User)
+void ABaseItem::UseItem(AActor* User)
 {
 
 }
