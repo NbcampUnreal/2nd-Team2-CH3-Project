@@ -95,7 +95,7 @@ public:
     void AttackEnd();
     class AGN_AIController* AIController;
 
-   
+
 private:
     UAnimationAsset* PreAnimation{ nullptr };
     UAnimationAsset* CurAnimation{ nullptr };
@@ -104,14 +104,16 @@ private:
     FTimerHandle PatrolTimerHandle;
     FTimerHandle DeadAnimTimerHandle;
     float AttackRange = 150.0f;
+    int32 Random;
 
+    USkeletalMeshComponent* MeshComp;
     APawn* CurTarget{ nullptr };
     UFUNCTION()
     void OnSeePawn(APawn* Pawn);
 
 public:
     void EnableOutline(bool bEnable);
-   
+
     // 오른팔 시작과 끝에 충돌을 처리할 박스 컴포넌트
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     UBoxComponent* RightArmStartCollider;
@@ -121,12 +123,12 @@ public:
 
     // 충돌이 시작될 때 호출되는 함수
     UFUNCTION()
-    void OnRightArmStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
-                                UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 
-                                bool bFromSweep, const FHitResult& SweepResult);
+    void OnRightArmStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+        UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
+        bool bFromSweep, const FHitResult& SweepResult);
 
 
-   
+
 
     UFUNCTION()
     void EnableRightArmCollision();

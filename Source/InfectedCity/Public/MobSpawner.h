@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GN_Character.h"
 #include "MobSpawner.generated.h"
 
 UCLASS()
@@ -28,8 +29,8 @@ private:
     class UBoxComponent* SpawnArea;
 
     /** 스폰할 액터 클래스 (블루프린트에서 설정 가능) */
-    UPROPERTY(EditAnywhere, Category = "Spawning")
-    TSubclassOf<AActor> MobClass;
+    UPROPERTY(EditAnywhere,  Category = "Spawning")
+    TSubclassOf<AGN_Character> MobClass;
 
     /** 스폰할 개수 */
     UPROPERTY(EditAnywhere, Category = "Spawning")
