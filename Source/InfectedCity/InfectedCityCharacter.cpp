@@ -74,6 +74,9 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	MaxHealth = 100.0f;
 	Health = MaxHealth; // 체력 초기화
 	DeathAnimTimerHandle = FTimerHandle();
+
+	MaxHP = 100.0f;
+	CurrentHP = MaxHP;
 	
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
@@ -104,7 +107,6 @@ void AInfectedCityCharacter::NotifyControllerChanged()
 void AInfectedCityCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
 	Stamina = MaxStamina;  // 스테미나 초기화
 
@@ -120,6 +122,7 @@ void AInfectedCityCharacter::BeginPlay()
 
 	UpdateAmmoBar();
 }
+
 
 void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -668,10 +671,15 @@ void AInfectedCityCharacter::PickupItem()
 			BandageCount++;
 			HUDWidget->UpdateBandageCount(BandageCount);
 		}
-		else
+		else if (CurrentItem->ItemType == "Pill")
 		{
 			PillCount++;
-			HUDWidget->UpdateBandageCount(PillCount);
+			HUDWidget->UpdatePillCount(PillCount);
+		}
+		else if (CurrentItem->ItemType == "GasDrum")
+		{
+			GasCount++;
+			HUDWidget->UpdateGasCount(GasCount);
 		}
 		
 
@@ -706,6 +714,8 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 		Die(); // 죽음 처리
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력이 0 이하로 감소! 사망 처리!"));
 	}
+
+	UpdateHP(Health);
 
 	return DamageAmount;  // 데미지가 제대로 적용되었는지 확인하려면 반환값 확인
 }
@@ -752,4 +762,49 @@ void AInfectedCityCharacter::HandleDeath()
 
 	// 게임 오버 처리
 	UGameplayStatics::OpenLevel(GetWorld(), "GameOverLevel");
+}
+
+void AInfectedCityCharacter::UpdateHP(float NewHP)
+{
+	CurrentHP = FMath::Clamp(NewHP, 0.0f, MaxHP);
+
+	if (HUDWidget)
+	{
+		HUDWidget->UpdateHPBar(CurrentHP / MaxHP);
+	}
+}
+
+void AInfectedCityCharacter::OnRideAvailable()
+{
+	HUDWidget->StartRideSequence();
+}
+
+void AInfectedCityCharacter::DeathEvent()
+{
+	// 기존 UI 제거
+	if (CurrentUIWidget)
+	{
+		CurrentUIWidget->RemoveFromParent();
+		CurrentUIWidget = nullptr;
+	}
+
+	// 사망 UI 표시
+	if (EndWidgetClass)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC)
+		{
+			CurrentUIWidget = CreateWidget<UUserWidget>(PC, EndWidgetClass);
+			if (CurrentUIWidget)
+			{
+				CurrentUIWidget->AddToViewport();
+			}
+
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.1f);
+
+			PC->bShowMouseCursor = true;
+			FInputModeUIOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+	}
 }

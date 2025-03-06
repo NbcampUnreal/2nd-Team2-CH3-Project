@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "HUDWidget.h"
 #include "InfectedCityPlayerController.generated.h"
 
 UCLASS()

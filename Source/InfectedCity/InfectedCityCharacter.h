@@ -22,7 +22,6 @@ class AInfectedCityCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-
 public:
 
 	AInfectedCityCharacter();
@@ -33,6 +32,9 @@ public:
 	AEnemyEffectManager* EnemyEffectManager{ nullptr };
 	int32 BandageCount{ 0 };
 	int32 PillCount{ 0 };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	int32 GasCount = 0;
 
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
@@ -187,36 +189,52 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateReloadText(bool bIsReloading);
 
-	// ĳ���Ͱ� ������ �ִ� ������ ��� (������ Ŭ������ ���� ����)
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TMap<TSubclassOf<UItemBase>, int32> Inventory;
 
-	// ������ �߰� �Լ�
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void AddItem(TSubclassOf<UItemBase> ItemClass, int32 Amount);
 
-	// ������ ��� �Լ�
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UseItem(TSubclassOf<UItemBase> ItemClass);
 
-	// �÷��̾� ü��
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	int32 CurrentHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	int32 MaxHP;
+	float CurrentHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float MaxHP;
 
 	float Stamina;
 	const float MaxStamina = 100.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Death", meta = (AllowPrivateAccess = "true"))
 	class UAnimSequence* DeathAnimSequence;  
-private:
-	float LastFireTime = 0.0f;  // ������ �߻� �ð�
-	float FireRate = 0.1f;      // �߻� �ӵ� (�� ����)
 
-	const float StaminaDrainRate = 20.0f;  // �ʴ� ���ҷ�
-	const float StaminaRecoveryRate = 10.0f; // �ʴ� ȸ����
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void UpdateHP(float NewHP);
+
+	/** 데미지 처리 함수 */
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintCallable, Category = "RideSystem")
+	void OnRideAvailable();
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> EndWidgetClass;
+
+	UFUNCTION(BlueprintCallable, Category = "State")
+	void DeathEvent();
+
+private:
+	float LastFireTime = 0.0f;
+	float FireRate = 0.1f;
+
+	const float StaminaDrainRate = 20.0f;
+	const float StaminaRecoveryRate = 10.0f;
 	bool bCanRun = true;
 	FTimerHandle DeathAnimTimerHandle;
 	FTimerHandle StaminaTimerHandle;
@@ -241,5 +259,6 @@ public:
 
 		// 애니메이션 상태 리셋 함수
 		void ResetHitAnimState();
+	UUserWidget* CurrentUIWidget;
 
 };
