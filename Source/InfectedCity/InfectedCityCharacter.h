@@ -35,7 +35,7 @@ public:
 	int32 PillCount{ 0 };
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
-	int32 GasCount = 0;
+	int32 GasCount = { 0 };
 
 	UPROPERTY()
 	UHUDWidget* HUDWidget;
@@ -82,6 +82,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* UseItemAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* InteractAction;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float ZoomedFOV = 45.0f;

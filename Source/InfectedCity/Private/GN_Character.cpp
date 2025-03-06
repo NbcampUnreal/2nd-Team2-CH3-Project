@@ -56,7 +56,7 @@ void AGN_Character::OnNotifyBegin(FName NotifyName, const FBranchingPointNotifyP
     {
         
         EnableRightArmCollision();
-        UE_LOG(LogTemp, Warning, TEXT("NotifyBegin - 공격 충돌 활성화!"));
+
     }
 }
 
@@ -66,7 +66,7 @@ void AGN_Character::OnNotifyEnd(FName NotifyName, const FBranchingPointNotifyPay
     {
         
         DisableRightArmCollision();
-        UE_LOG(LogTemp, Warning, TEXT("NotifyEnd - 공격 충돌 비활성화!"));
+
     }
 }
 
@@ -78,7 +78,7 @@ void AGN_Character::EnableRightArmCollision()
         RightArmStartCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
         RightArmStartCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); 
         RightArmStartCollider->SetSimulatePhysics(true);  // 물리적 시뮬레이션 활성화// Pawn(플레이어)와의 충돌을 오버랩으로 설정
-        UE_LOG(LogTemp, Warning, TEXT("RightArmStartCollider 충돌 활성화"));
+        //UE_LOG(LogTemp, Warning, TEXT("RightArmStartCollider 충돌 활성화"));
     }
 }
 
@@ -88,7 +88,7 @@ void AGN_Character::DisableRightArmCollision()
     {
         RightArmStartCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌 비활성화
         RightArmStartCollider->SetSimulatePhysics(false);
-        UE_LOG(LogTemp, Warning, TEXT("RightArmStartCollider 충돌 비활성화"));
+        //UE_LOG(LogTemp, Warning, TEXT("RightArmStartCollider 충돌 비활성화"));
     }
 }
 void AGN_Character::OnRightArmStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -104,7 +104,7 @@ void AGN_Character::OnRightArmStartOverlap(UPrimitiveComponent* OverlappedCompon
             if (Player)
             {
                 // 플레이어가 충돌 시작 시 데미지 처리
-                UE_LOG(LogTemp, Warning, TEXT("플레이어가 RightArmStart에 충돌했습니다."));
+                //UE_LOG(LogTemp, Warning, TEXT("플레이어가 RightArmStart에 충돌했습니다."));
                 ApplyDamageToPlayer(OtherActor);
             }
 
@@ -117,7 +117,7 @@ void AGN_Character::ApplyDamageToPlayer(AActor* Player)
 {
     if (Player)
     {
-        UE_LOG(LogTemp, Warning, TEXT("플레이어가 충돌하여 데미지를 받았습니다."));
+        //UE_LOG(LogTemp, Warning, TEXT("플레이어가 충돌하여 데미지를 받았습니다."));
 
         // 데미지 처리 예시 (플레이어가 AInfectedCityCharacter인 경우)
         AInfectedCityCharacter* InfectedCityCharacter = Cast<AInfectedCityCharacter>(Player);
@@ -234,17 +234,17 @@ void AGN_Character::OnSeePawn(APawn* Pawn)
 {
     if (CurrentState == EEnemyState::Dead)
     {
-        UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - AI가 이미 죽어 있음. 감지 무시."));
+        //UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - AI가 이미 죽어 있음. 감지 무시."));
         return;
     }
 
     if (CurrentState == EEnemyState::Chasing || CurrentState == EEnemyState::Attacking)
     {
-        UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - AI가 이미 플레이어를 쫓고 있음. 감지 무시."));
+        //UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - AI가 이미 플레이어를 쫓고 있음. 감지 무시."));
         return;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - 플레이어를 감지하고 추적 시작"));
+    //UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - 플레이어를 감지하고 추적 시작"));
 
     CurTarget = Pawn;
 
@@ -252,12 +252,12 @@ void AGN_Character::OnSeePawn(APawn* Pawn)
 
     if (AIController)
     {
-        UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - AIController가 존재함. MoveToActor() 호출"));
+        //UE_LOG(LogTemp, Warning, TEXT("OnSeePawn() - AIController가 존재함. MoveToActor() 호출"));
         AIController->MoveToActor(CurTarget);
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("OnSeePawn() - AIController가 NULL임! AI 이동 불가!"));
+        //UE_LOG(LogTemp, Error, TEXT("OnSeePawn() - AIController가 NULL임! AI 이동 불가!"));
     }
 }
 
@@ -274,11 +274,11 @@ void AGN_Character::SetEnemyState(EEnemyState NewState)
 
     if (CurrentState == NewState)
     {
-        UE_LOG(LogTemp, Warning, TEXT("SetEnemyState() - 이미 상태가 %d 입니다. 변경하지 않음."), (int)NewState);
+        //UE_LOG(LogTemp, Warning, TEXT("SetEnemyState() - 이미 상태가 %d 입니다. 변경하지 않음."), (int)NewState);
         return;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("SetEnemyState() - 상태 변경: %d -> %d"), (int)CurrentState, (int)NewState);
+    //UE_LOG(LogTemp, Warning, TEXT("SetEnemyState() - 상태 변경: %d -> %d"), (int)CurrentState, (int)NewState);
 
     CurrentState = NewState;
 
@@ -286,7 +286,7 @@ void AGN_Character::SetEnemyState(EEnemyState NewState)
     {
         GetCharacterMovement()->MaxWalkSpeed = 800.0f;
         GetCharacterMovement()->MaxAcceleration = 1500.0f;
-        UE_LOG(LogTemp, Warning, TEXT("SetEnemyState() - Chasing 상태로 이동 속도 설정: %f"), GetCharacterMovement()->MaxWalkSpeed);
+        //UE_LOG(LogTemp, Warning, TEXT("SetEnemyState() - Chasing 상태로 이동 속도 설정: %f"), GetCharacterMovement()->MaxWalkSpeed);
     }
     else if (NewState == EEnemyState::Attacking)
     {
@@ -320,7 +320,7 @@ void AGN_Character::ChasePlayer(APawn* Player)
     {
         if (CurTarget != Player)  // 같은 목표를 다시 설정하지 않음
         {
-            UE_LOG(LogTemp, Warning, TEXT("ChasePlayer() - 플레이어 추적 시작!"));
+            //UE_LOG(LogTemp, Warning, TEXT("ChasePlayer() - 플레이어 추적 시작!"));
             CurTarget = Player;
             SetEnemyState(EEnemyState::Chasing);
             AIController->MoveToActor(Player);
@@ -332,11 +332,11 @@ void AGN_Character::Attack()
 {
     if (CurrentState == EEnemyState::Attacking || CurrentState == EEnemyState::Dead)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Attack() - 이미 공격 중이거나 사망 상태임. 공격 취소."));
+        //UE_LOG(LogTemp, Warning, TEXT("Attack() - 이미 공격 중이거나 사망 상태임. 공격 취소."));
         return;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("Attack() - 공격 시작!"));
+   // UE_LOG(LogTemp, Warning, TEXT("Attack() - 공격 시작!"));
 
     //SetEnemyState(EEnemyState::Attacking);
     //PlayAttackAnimation();
@@ -380,12 +380,12 @@ void AGN_Character::PlayAttackAnimation()
 {
     if (AttackAnimation)
     {
-        UE_LOG(LogTemp, Warning, TEXT("PlayAttackAnimation() - 공격 애니메이션 실행!"));
+       // UE_LOG(LogTemp, Warning, TEXT("PlayAttackAnimation() - 공격 애니메이션 실행!"));
         GetMesh()->PlayAnimation(AttackAnimation, false);
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("PlayAttackAnimation() - AttackAnimation이 설정되지 않음!"));
+        //UE_LOG(LogTemp, Error, TEXT("PlayAttackAnimation() - AttackAnimation이 설정되지 않음!"));
     }
 }
 
@@ -426,12 +426,12 @@ void AGN_Character::CheckIfPlayerLost()
     APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
     if (!Player || FVector::Dist(GetActorLocation(), Player->GetActorLocation()) > 2000.0f)
     {
-        UE_LOG(LogTemp, Warning, TEXT("플레이어를 완전히 놓침. 순찰 시작."));
+       // UE_LOG(LogTemp, Warning, TEXT("플레이어를 완전히 놓침. 순찰 시작."));
         Patrol();
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("플레이어가 아직 감지됨. 추적 유지."));
+        //UE_LOG(LogTemp, Warning, TEXT("플레이어가 아직 감지됨. 추적 유지."));
         AIController->MoveToActor(Player);
     }
 }

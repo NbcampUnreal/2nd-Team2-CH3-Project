@@ -74,6 +74,8 @@ AInfectedCityCharacter::AInfectedCityCharacter()
 	MaxHealth = 100.0f;
 	Health = MaxHealth; // 체력 초기화
 	DeathAnimTimerHandle = FTimerHandle();
+
+	GasCount = 0;
 }
 void AInfectedCityCharacter::Tick(float DeltaTime)
 {
@@ -160,6 +162,8 @@ void AInfectedCityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::UseBandage);
 		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Started, this, &AInfectedCityCharacter::UsePill);
+
+
 	}
 
 }
@@ -812,6 +816,8 @@ void AInfectedCityCharacter::PickupItem()
 		{
 			AddItem(CurrentItem->GetClass(), 1);
 			HUDWidget->UpdateGasCount(Inventory[CurrentItem->GetClass()]);
+			GasCount++;
+			UE_LOG(LogTemp, Log, TEXT("GasCount updated: %d"), GasCount);  // 로그 추가
 		}
 
 		CurrentItem->DestroyItem();
