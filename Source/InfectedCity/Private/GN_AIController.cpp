@@ -65,19 +65,19 @@ void AGN_AIController::MoveToActor(AActor* Target)
     switch (MoveResult)
     {
     case EPathFollowingRequestResult::Failed:
-        UE_LOG(LogTemp, Error, TEXT("MoveToActor() - 이동 실패! 네비 메시(NavMesh) 확인 필요!"));
+       // UE_LOG(LogTemp, Error, TEXT("MoveToActor() - 이동 실패! 네비 메시(NavMesh) 확인 필요!"));
         break;
 
     case EPathFollowingRequestResult::RequestSuccessful:
-        UE_LOG(LogTemp, Warning, TEXT("MoveToActor() - 이동 명령 성공! AI가 이동을 시도합니다."));
+        //UE_LOG(LogTemp, Warning, TEXT("MoveToActor() - 이동 명령 성공! AI가 이동을 시도합니다."));
         break;
 
     case EPathFollowingRequestResult::AlreadyAtGoal:
-        UE_LOG(LogTemp, Warning, TEXT("MoveToActor() - 이미 목표 지점에 도착해 있음."));
+        //UE_LOG(LogTemp, Warning, TEXT("MoveToActor() - 이미 목표 지점에 도착해 있음."));
         break;
 
     default:
-        UE_LOG(LogTemp, Warning, TEXT("MoveToActor() - 이동 요청이 접수되었지만, 즉시 완료되지 않음."));
+        //UE_LOG(LogTemp, Warning, TEXT("MoveToActor() - 이동 요청이 접수되었지만, 즉시 완료되지 않음."));
         break;
     }
 }

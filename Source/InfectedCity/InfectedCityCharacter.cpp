@@ -81,11 +81,10 @@ void AInfectedCityCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (PC)
+	if (PC && !isfinished)
 	{
-		//PC->SetMouseLocation(1920/2, 1080/2);
+	PC->SetMouseLocation(1920/2, 1080/2);
 	}
 }
 void AInfectedCityCharacter::NotifyControllerChanged()
@@ -833,7 +832,8 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 	{
 		bIsPlayingHitAnim = false;
 		Health -= DamageAmount;
-		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력 감소: %.2f -> %.2f (데미지: %.2f)"), Health + DamageAmount, Health, DamageAmount);
+		HUDWidget->ShowHurtimg();
+		UE_LOG(LogTemp, Error, TEXT("TakeDamage() - 체력 감소: %.2f -> %.2f (데미지: %.2f)"), Health + DamageAmount, Health, DamageAmount);
 
 		// 애니메이션이 진행 중이지 않다면 애니메이션 실행
 		
@@ -852,7 +852,7 @@ float AInfectedCityCharacter::TakeDamage(float DamageAmount)
 	{
 		Health = 0;
 		Die(); // 죽음 처리
-		UE_LOG(LogTemp, Warning, TEXT("TakeDamage() - 체력이 0 이하로 감소! 사망 처리!"));
+		UE_LOG(LogTemp, Error, TEXT("TakeDamage() - 체력이 0 이하로 감소! 사망 처리!"));
 	}
 
 
@@ -867,6 +867,7 @@ void AInfectedCityCharacter::ResetHitAnimState()
 
 void AInfectedCityCharacter::Die()
 {
+	UE_LOG(LogTemp, Error, TEXT("다이다이다이다이다이다이다이"));
 	if (bIsDead)
 	{
 		// 이미 죽은 상태라면 애니메이션을 다시 실행하지 않음
@@ -878,11 +879,14 @@ void AInfectedCityCharacter::Die()
 	// 사망 애니메이션 실행
 	if (DeathAnimSequence)
 	{
+		UE_LOG(LogTemp, Error, TEXT("사망애니메이션사망애니메이션사망애니메이션사망애니메이션"));
 		// 애니메이션 재생
 		GetMesh()->PlayAnimation(DeathAnimSequence, false);
 
 		// 애니메이션이 끝난 후 캐릭터를 숨기거나 게임 오버 처리를 할 수 있도록 타이머를 설정
 		GetWorld()->GetTimerManager().SetTimer(DeathAnimTimerHandle, this, &AInfectedCityCharacter::HandleDeath, DeathAnimSequence->GetPlayLength(), false);
+
+		DeathEvent();
 	}
 	else
 	{
@@ -901,7 +905,7 @@ void AInfectedCityCharacter::HandleDeath()
 	SetActorEnableCollision(false);
 
 	// 게임 오버 처리
-	UGameplayStatics::OpenLevel(GetWorld(), "GameOverLevel");
+	DeathEvent();
 }
 
 void AInfectedCityCharacter::UpdateHP(float NewHP)
@@ -921,13 +925,14 @@ void AInfectedCityCharacter::OnRideAvailable()
 
 void AInfectedCityCharacter::DeathEvent()
 {
+	UE_LOG(LogTemp, Error, TEXT("사망이벤트사망이벤트사망이벤트사망이벤트사망이벤트"));
 	// 기존 UI 제거
 	if (CurrentUIWidget)
 	{
 		CurrentUIWidget->RemoveFromParent();
 		CurrentUIWidget = nullptr;
 	}
-
+	isfinished = true;
 	// 사망 UI 표시
 	if (EndWidgetClass)
 	{
@@ -941,7 +946,6 @@ void AInfectedCityCharacter::DeathEvent()
 			}
 
 			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.1f);
-
 			PC->bShowMouseCursor = true;
 			FInputModeUIOnly InputMode;
 			PC->SetInputMode(InputMode);

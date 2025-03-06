@@ -1,7 +1,6 @@
 #include "Station.h"
 #include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
-#include "InfectedCity/InfectedCityCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/SceneComponent.h"
 #include "GameFramework/HUD.h"
@@ -86,6 +85,8 @@ void AStation::HandleInput()
             StationCount++;
             TextComponent->SetText(FText::AsNumber(StationCount));
             Drinkgas = true;
+            UHUDWidget* HUDWidget = Cast<UHUDWidget>(PlayerCharacter->HUDWidget);
+            HUDWidget->UpdateGasCount(PlayerCharacter->GasCount);
             if (Drinkgas == true)
             {
                 UE_LOG(LogTemp, Log, TEXT("¼ÒÈ¯Áß~!@~!@~!@!~@!~@~!"));
@@ -96,23 +97,6 @@ void AStation::HandleInput()
             {
                 CanOut = true;
             }
-
-            if (PlayerCharacter->HUDWidget)
-            {
-                UHUDWidget* HUDWidget = Cast<UHUDWidget>(PlayerCharacter->HUDWidget);
-                if (HUDWidget)
-                {
-                    HUDWidget->UpdateGasCount(PlayerCharacter->GasCount);
-                }
-                else
-                {
-                    UE_LOG(LogTemp, Error, TEXT("HUDWidget is nullptr in HandleInput!"));
-                }
-            }
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("GasCount is 0 or less. No action performed."));
         }
     }
 }

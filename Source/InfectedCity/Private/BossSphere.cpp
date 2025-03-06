@@ -37,6 +37,11 @@ void ABossSphere::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
+    if ((UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation() - GetActorLocation()).Size() > 1000)
+    {
+        return;
+    }
+
     if (Boss == nullptr || bFinishedLock == true) return;
 
     IdleWorldTransform = LocalTransform * Boss->Transform;

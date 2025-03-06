@@ -34,7 +34,7 @@ bool UMenuWidget::Initialize()
 
 void UMenuWidget::OnStartClicked()
 {
-    UGameplayStatics::OpenLevel(this, FName("ThirdPersonMap")); // "GameLevel"은 게임의 실제 레벨 이름으로 변경해야 함
+    UGameplayStatics::OpenLevel(this, FName("LV_Soul_Slum")); // "GameLevel"은 게임의 실제 레벨 이름으로 변경해야 함
 }
 
 void UMenuWidget::OnCreditClicked()

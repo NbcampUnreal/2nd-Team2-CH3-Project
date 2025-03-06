@@ -1,5 +1,5 @@
 #include "Boss.h"
-
+#include "Kismet/GameplayStatics.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"  
 #include "BossEffectDataAsset.h"
@@ -47,6 +47,11 @@ void ABoss::BeginPlay()
 void ABoss::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if ((UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation() - GetActorLocation()).Size() > 1000)
+    {
+        return;
+    }
 
     if (CurrentPattern == EBossPattern::Idle)
     {

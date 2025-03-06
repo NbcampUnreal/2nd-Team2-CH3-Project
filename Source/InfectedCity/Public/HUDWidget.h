@@ -30,6 +30,9 @@ public:
     UPROPERTY(meta = (BindWidget)) UImage* CrouchImage;
     UPROPERTY(meta = (BindWidget)) UImage* StandImage;
 
+    void ShowHurtimg();
+    void HideHurtimg();
+
     UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
     class UProgressBar* AmmoProgressBar;
 
@@ -154,14 +157,19 @@ public:
     UFUNCTION()
     void HideWarningImg();
 
+    UPROPERTY(meta = (BindWidget))
+    class UImage* Hurtimg;
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    bool SecondCanout = false;
+
 protected:
     FTimerHandle BorderColorTimerHandle;
 
     FTimerHandle WarningImgTimerHandle;
 
     int32 BlinkCount = 0;
-
-    bool Canout = false;
 
     bool bToggle = false;
 
@@ -184,6 +192,8 @@ private:
 
     FTimerHandle RotationTimerHandle;
     float RotationAngle = 0.0f;
+
+    FTimerHandle HurtTimerHandle;
 
     void StartBandageIndicator();
     void StopBandageIndicator();

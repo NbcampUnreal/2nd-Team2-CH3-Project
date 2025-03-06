@@ -37,11 +37,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
 	int32 GasCount = { 0 };
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	UHUDWidget* HUDWidget;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* CameraBoom;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SecondCameraBoom;
@@ -235,6 +235,7 @@ public:
 
 	void FinishPillUse();
 
+	bool isfinished = false;
 private:
 	float LastFireTime = 0.0f;
 	float FireRate = 0.1f;

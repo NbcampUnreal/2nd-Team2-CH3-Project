@@ -311,6 +311,25 @@ void UHUDWidget::StopPillIndicator()
     GetWorld()->GetTimerManager().ClearTimer(PillRotationTimerHandle);
 }
 
+void UHUDWidget::ShowHurtimg()
+{
+    if (Hurtimg)
+    {
+        Hurtimg->SetVisibility(ESlateVisibility::Visible);
+        GetWorld()->GetTimerManager().SetTimer(HurtTimerHandle, this, &UHUDWidget::HideHurtimg, 0.5f,false);
+    }
+}
+
+void UHUDWidget::HideHurtimg()
+{
+    if (Hurtimg)
+    {
+        Hurtimg->SetVisibility(ESlateVisibility::Hidden);
+    }
+    GetWorld()->GetTimerManager().ClearTimer(HurtTimerHandle);
+}
+
+
 void UHUDWidget::RotatePillIndicator()
 {
     if (PillIndicator)
@@ -338,13 +357,14 @@ void UHUDWidget::UpdateGasCount(int32 Count)
 {
     if (GasCanImg)
     {
-        GasCanImg->SetVisibility(Count == 1 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-    }
-    if (WarningImg)
-    {
-        if (Count == 1) {
+        if (Count > 0) {
+            GasCanImg->SetVisibility(ESlateVisibility::Visible);
             WarningImg->SetVisibility(ESlateVisibility::Visible);
             GetWorld()->GetTimerManager().SetTimer(WarningImgTimerHandle, this, &UHUDWidget::HideWarningImg, 3.0f, false);
+        }
+        else
+        {
+            GasCanImg->SetVisibility(ESlateVisibility::Hidden);
         }
     }
 }
@@ -395,7 +415,7 @@ void UHUDWidget::UpdateCountdown()
     if (CountdownTime <= 0)
     {
         GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
-        Canout = true;  // 0초가 되면 canout을 true로 변경
+        SecondCanout = true;  // 0초가 되면 canout을 true로 변경
         Story02Text->SetVisibility(ESlateVisibility::Hidden);
         Story03Text->SetVisibility(ESlateVisibility::Visible);
         return;

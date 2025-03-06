@@ -1,8 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InfectedCity/InfectedCityCharacter.h"
 #include "GameFramework/Actor.h"
 #include "Station.generated.h"
+
 
 class USceneComponent;
 class UBoxComponent;
