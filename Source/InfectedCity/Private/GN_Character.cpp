@@ -124,7 +124,7 @@ void AGN_Character::ApplyDamageToPlayer(AActor* Player)
         AInfectedCityCharacter* InfectedCityCharacter = Cast<AInfectedCityCharacter>(Player);
         if (InfectedCityCharacter)
         {
-            InfectedCityCharacter->TakeDamage(10.0f); // 데미지 10 적용
+            InfectedCityCharacter->TakeDamage(5.0f); // 데미지 10 적용
         }
     }
 }
